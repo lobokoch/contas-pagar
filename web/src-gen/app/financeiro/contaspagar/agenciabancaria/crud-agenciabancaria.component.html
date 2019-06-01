@@ -1,0 +1,72 @@
+<!--
+**********************************************************************************************
+Code generated with MKL Plug-in version: 3.5.1
+Code generated at time stamp: 2019-06-01T15:26:21.038
+Copyright: Kerubin - logokoch@gmail.com
+
+WARNING: DO NOT CHANGE THIS CODE BECAUSE THE CHANGES WILL BE LOST IN THE NEXT CODE GENERATION.
+***********************************************************************************************
+-->
+
+<div class="container">
+
+  <form #form1="ngForm" (ngSubmit)="save(form1.form)">
+  	<div class="ui-g">
+  	
+		<div class="ui-g-12">
+			<h1>{{ getTranslation('financeiro.contas_pagar.agenciaBancaria') }}</h1>
+		</div>
+		<div class="ui-g-12 ui-fluid">
+			<label for="id" class="hidden">{{ getTranslation('financeiro.contas_pagar.agenciaBancaria_id') }}</label>
+			<input type="hidden" pInputText #id="ngModel" ngModel [(ngModel)]="agenciaBancaria.id" name="id" readonly class="read-only">
+		</div>
+		
+		<div class="ui-g-12 ui-fluid ui-md-6">
+			<label for="banco">{{ getTranslation('financeiro.contas_pagar.agenciaBancaria_banco') }}</label><label class="kb-label-required">*</label>
+			<p-autoComplete placeholder="Digite para pesquisar..." [dropdown]="true" [forceSelection]="true" [suggestions]="agenciaBancariaBancoAutoCompleteSuggestions" (completeMethod)="agenciaBancariaBancoAutoComplete($event)" (onClear)="agenciaBancariaBancoAutoCompleteClear($event)" [field]="agenciaBancariaBancoAutoCompleteFieldConverter" #banco="ngModel" ngModel [(ngModel)]="agenciaBancaria.banco" name="banco" required>
+				<ng-template let-banco pTemplate="item">
+					<div class="ui-helper-clearfix">{{ agenciaBancariaBancoAutoCompleteFieldConverter(banco) }}</div>
+				</ng-template>
+			</p-autoComplete>
+			<div class="invalid-message" *ngIf="banco.invalid && banco.dirty">Campo obrigatório.</div>
+		</div>
+		
+		<div class="ui-g-12 ui-fluid ui-md-5">
+			<label for="numeroAgencia">{{ getTranslation('financeiro.contas_pagar.agenciaBancaria_numeroAgencia') }}</label><label class="kb-label-required">*</label>
+			<input type="text" pInputText #numeroAgencia="ngModel" ngModel [(ngModel)]="agenciaBancaria.numeroAgencia" name="numeroAgencia" required>
+			<div class="invalid-message" *ngIf="numeroAgencia.invalid && numeroAgencia.dirty">Campo obrigatório.</div>
+		</div>
+		
+		<div class="ui-g-12 ui-fluid ui-md-1">
+			<label for="digitoAgencia">{{ getTranslation('financeiro.contas_pagar.agenciaBancaria_digitoAgencia') }}</label><label class="kb-label-required">*</label>
+			<input type="text" pInputText #digitoAgencia="ngModel" ngModel [(ngModel)]="agenciaBancaria.digitoAgencia" name="digitoAgencia" required>
+			<div class="invalid-message" *ngIf="digitoAgencia.invalid && digitoAgencia.dirty">Campo obrigatório.</div>
+		</div>
+		
+		<div class="ui-g-12 ui-fluid ui-md-6">
+			<label for="endereco">{{ getTranslation('financeiro.contas_pagar.agenciaBancaria_endereco') }}</label>
+			<input type="text" pInputText #endereco="ngModel" ngModel [(ngModel)]="agenciaBancaria.endereco" name="endereco">
+		</div>
+		
+		<div class="ui-g-12 ui-fluid">
+			<label style="display: block" for="deleted" class="hidden">{{ getTranslation('financeiro.contas_pagar.agenciaBancaria_deleted') }}</label>
+			<p-inputSwitch #deleted="ngModel" ngModel [(ngModel)]="agenciaBancaria.deleted" name="deleted"></p-inputSwitch>
+		</div>
+		
+		<div class="ui-g-12">
+			<div class="ui-g-12 ui-md-2 ui-fluid">
+				<button class="botao-margem-direita" pButton type="submit" label="Salvar"></button>
+			</div>
+			<div class="ui-g-12 ui-md-2 ui-fluid">
+				<button pButton (click)="begin(form1)" type="button" label="Novo"></button>
+			</div>
+			<div class="ui-g-12 ui-md-2 ui-fluid">
+				<a routerLink="/agenciabancaria" pButton label="Pesquisar"></a>
+			</div>
+		</div>
+		
+	
+	</div>
+  </form>
+  
+</div>

@@ -1,0 +1,29 @@
+/**********************************************************************************************
+Code generated with MKL Plug-in version: 3.5.1
+Code generated at time stamp: 2019-06-01T15:26:21.027
+Copyright: Kerubin - logokoch@gmail.com
+
+WARNING: DO NOT CHANGE THIS CODE BECAUSE THE CHANGES WILL BE LOST IN THE NEXT CODE GENERATION.
+***********************************************************************************************/
+
+section{
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+}
+
+article{
+  margin: 0 auto;
+  align-items: center;
+  display: flex;
+  justify-content: center;
+  height: 80%;
+  width: 100%;
+}
+
+.kb-login-title {
+  font-size: 2em;
+  font-weight: bold;
+}

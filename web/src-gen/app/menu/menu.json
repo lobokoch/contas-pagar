@@ -1,0 +1,15 @@
+{
+	label: 'Financeiro',
+	icon: 'pi pi-pw',
+	items: [
+		
+		{
+			label: 'Contas a pagar',
+			icon: 'pi pi-fw ',
+			items: [
+				{ label: 'Conta a pagar', icon: 'pi pi-fw', routerLink: '/contapagar' }
+			]
+		}
+		
+	]
+}

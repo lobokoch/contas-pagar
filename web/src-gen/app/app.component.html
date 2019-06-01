@@ -1,0 +1,22 @@
+<!--
+**********************************************************************************************
+Code generated with MKL Plug-in version: 3.5.1
+Code generated at time stamp: 2019-06-01T15:26:21.038
+Copyright: Kerubin - logokoch@gmail.com
+
+WARNING: DO NOT CHANGE THIS CODE BECAUSE THE CHANGES WILL BE LOST IN THE NEXT CODE GENERATION.
+***********************************************************************************************
+-->
+
+<app-navbar *ngIf="canShowMenu()"></app-navbar>
+
+<router-outlet></router-outlet>
+
+<p-toast></p-toast>
+
+<p-confirmDialog header="Confirmação" icon="fa fa-question-circle" #confirmacao>
+    <p-footer>
+      <button type="button" pButton label="Sim" (click)="confirmacao.accept()"></button>
+      <button type="button" pButton label="Não" (click)="confirmacao.reject()"></button>
+    </p-footer>
+  </p-confirmDialog>

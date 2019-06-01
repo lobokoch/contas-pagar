@@ -1,0 +1,408 @@
+@label("Financeiro")
+domain financeiro
+
+@label("Contas a pagar")
+service contas_pagar { //xxx
+	
+	
+	config {
+		groupId: "br.com.kerubin.api"
+		version: "1.0.0"
+		cloudConfigUri: "http://localhost:9091"
+		servicePort: 0
+		messagingCore {version:"1.0.0"}
+		databaseCore {version:"1.0.0"}
+	}
+	
+	dependency {
+		groupId: "br.com.kerubin.api"
+		artifactId: "financeiro-planocontas-client"
+		version: "1.0.0" 
+	}
+	
+	dependency {
+		groupId: "br.com.kerubin.api"
+		artifactId: "cadastros-banco-client"
+		version: "1.0.0" 
+	}
+	
+	dependency {
+		groupId: "br.com.kerubin.api"
+		artifactId: "cadastros-fornecedor-client"
+		version: "1.0.0" 
+	}
+	
+	
+	@auditing
+	@baseRepository
+	@label("Conta a pagar")
+	entity ContaPagar {
+		
+		planoContas: refers PlanoConta manyToOne
+		// listFilter(many: "Plano de Contas")
+		web(styleClass: "ui-md-6")
+		
+		descricao: string
+		label: "Descrição da conta"
+		listFilter(many: "Contas")
+		web(styleClass: "ui-md-6")
+		//--
+		
+		dataVencimento: date
+		label: "Vencimento"
+		listFilter(between: "Vencimento de;Até;Intervalo de tempo")  
+		web(styleClass: "ui-md-2")
+		
+		valor: money 
+		label: "Valor da conta"
+		sum(styleClass:"kb-conta-valor-apagar" label:"A")
+		web(styleClass: "ui-md-2")
+		
+		formaPagamento: FormaPagamento
+		label: "Forma de pagamento"
+		web(styleClass: "ui-md-8")
+		//--
+				
+		
+		//--
+		contaBancaria: refers ContaBancaria? manyToOne 
+		grid(hidden)
+		label: "Pagamento com conta bancária"
+		web(styleClass: "ui-md-4")
+		
+		cartaoCredito: refers CartaoCredito? manyToOne
+		label: "Pagamento com cartão de crédito"
+		grid(hidden)
+		web(styleClass: "ui-md-4")
+		
+		outrosDescricao: string?
+		label: "Pagamento com  outra forma de pagamento"
+		web(styleClass: "ui-md-4")
+		grid(hidden)
+		//--
+		
+		//--
+		dataPagamento: date? 
+		label: "Data pagamento"
+		listFilter(isNotNull_isNull: "Pagas;Em aberto" default:"isNull") 
+		web(styleClass: "ui-md-2")
+		
+		valorDesconto: money? 
+		sum
+		label: "Descontos"
+		grid(hidden ) 
+		web(styleClass: "ui-md-2")
+		
+		valorMulta: money? 
+		sum
+		label: "Multas"
+		grid(hidden) 
+		web(styleClass: "ui-md-2")
+		
+		valorJuros: money? 
+		sum
+		label: "Juros mora"
+		grid(hidden) 
+		web(styleClass: "ui-md-2")
+		
+		valorAcrescimos: money? 
+		sum
+		label: "Acréscimos"
+		grid(hidden) 
+		web(styleClass: "ui-md-2")
+		
+		valorPago: money? 
+		sum(styleClass:"kb-conta-valor-pago" label:"B")
+		label: "Valor pago"
+		web(styleClass: "ui-md-2")
+		//--
+		
+		fornecedor: refers Fornecedor? manyToOne
+		web(styleClass: "ui-md-6")
+		
+		numDocumento: string? 
+		label: "Documento"
+		grid(hidden) 
+		web(styleClass: "ui-md-6")
+		
+		observacoes: string[1000]? 
+		label: "Observações"
+		grid(hidden) 
+		web(styleClass: "ui-md-12")
+		
+		
+		agrupador: string ? 
+		label: "Identificador para agrupamento da conta"
+		listFilter(many: "Agrupador:")
+		grid(hidden) 
+		web(styleClass: "ui-md-4")
+		
+		rules {
+			// Destaca o estado de vencimento das contas a pagar.kk
+			// Destaca as contas vencidas
+			with(grid.rows).apply(styleClass: "kb-conta-vencida").when(dataPagamento.isNull and dataVencimento.isBefore(today))
+			// Destaca as contas que vencem hoje
+			with(grid.rows).apply(styleClass: "kb-conta-vence-hoje").when(dataPagamento.isNull and dataVencimento.isSame(today))
+			// Destaca as contas que vencem amanhã
+			with(grid.rows).apply(styleClass: "kb-conta-vence-amanha").when(dataPagamento.isNull and dataVencimento.isSame(tomorrow))
+			// Destaca as contas que vencem esta semana
+			with(grid.rows).apply(styleClass: "kb-conta-vence-esta-semana").when(dataPagamento.isNull and dataVencimento.isBetween(today, endOfWeek))
+			
+			//Destaca as contas já pagas.
+			with(grid.rows).apply(styleClass: "kb-conta-paga").when(dataPagamento.isNotNull)
+		
+			with(grid.sumRow.lastCell).apply((valor - valorPago)) // xxx
+			with(grid.actions).apply(dataPagamento = today, valorPago = valor).when(dataPagamento.isNull).action(name: baixarContaComUmClique button(tooltip: "Baixar conta com um clique" icon: "pi pi-arrow-down"))
+			with(grid.actions).apply(dataPagamento = null, valorPago = null).when(dataPagamento.isNotNull).action(name: estornarPagamentoContaComUmClique button(tooltip: "Estornar pagamento com um clique" icon: "pi pi-arrow-up"))
+			
+			with(form)
+				.apply(makeCopies(title: "Gerar cópias da conta" referenceField: dataVencimento grouperField: agrupador))
+				.action(name: fazerCopiasContaPagar button(tooltip: "Fazer cópias da conta" label: "Gerar cópias" icon: "pi pi-clone"))
+			
+		}
+		
+	}
+	
+	@externalEntity
+	@subscribe(domain= cadastros, service=fornecedor, events=[created, updated, deleted])
+	@label("Fornecedor")
+	entity Fornecedor {		
+		
+		nome: string
+		label: "Nome"
+		listFilter(many: "Nome do fornecedor")
+		web(styleClass: "ui-md-6")
+		
+		cpfCNPJ: string?
+		label: "Documento (CPF/CNPJ)"
+		web(styleClass: "ui-md-6")
+	}
+	
+	@externalEntity
+	@subscribe(domain= cadastros, service=banco, events=[created, updated, deleted])
+	@label("Banco")
+	entity Banco {
+		
+		numero: string[20] 
+		label: "Número"
+		autoComplete
+		web(styleClass: "ui-md-4")
+		
+		nome: string 
+		label: "Nome"
+		autoComplete
+		listFilter(many: "Nome do(s) banco(s)")
+		web(styleClass: "ui-md-8")
+	}
+	
+	@externalEntity
+	@subscribe(domain= cadastros, service=banco, events=[cud])
+	@label("Agência bancária")
+	entity AgenciaBancaria {
+		
+		banco: refers Banco manyToOne
+		web(styleClass: "ui-md-6")
+		
+		numeroAgencia: string[50] 
+		autoComplete
+		label: "Número da agência"
+		web(styleClass: "ui-md-5")
+		
+		digitoAgencia: string[10] 
+		autoComplete(result)
+		label: "Dígito"
+		web(styleClass: "ui-md-1")
+		
+		endereco: string? 
+		autoComplete
+		label: "Endereço/localização da agência"
+		web(styleClass: "ui-md-6")
+		
+	}
+	
+	@externalEntity
+	@subscribe(domain= cadastros, service=banco, events=[cud])
+	@label("Bandeira de cartão")
+	entity BandeiraCartao {
+		
+		nomeBandeira: string
+		autoComplete
+		label: "Bandeira do cartão"
+		listFilter(many: "Bandeira(s)")
+		web(styleClass: "ui-md-12")
+	}
+	
+	@externalEntity
+	@subscribe(domain= cadastros, service=banco, events=[cud])
+	@label("Conta bancária")
+	entity ContaBancaria {
+		
+		nomeTitular: string
+		label: "Nome do títular da conta"
+		autoComplete
+		web(styleClass: "ui-md-6")
+		
+		agencia: refers AgenciaBancaria manyToOne
+		web(styleClass: "ui-md-4")
+		
+		tipoContaBancaria: TipoContaBancaria
+		label: "Tipo da conta"
+		web(styleClass: "ui-md-2")
+		//--
+		
+		numeroConta: string[30] 
+		autoComplete(result)
+		label: "Número da conta"
+		listFilter(many: "Número da(s) conta(s)")
+		web(styleClass: "ui-md-6")
+		
+		digito: string[10]? 
+		label: "Dígito"
+		web(styleClass: "ui-md-2")
+		
+		dataValidade: date?
+		mask:"MM/yyyy"
+		label: "Validade"
+		web(styleClass: "ui-md-2")
+		
+		ativo: boolean
+		label: "Conta ativa"
+		web(styleClass: "ui-md-4")
+		
+	}
+	
+	@externalEntity
+	@subscribe(domain= cadastros, service=banco, events=[cud])
+	@label("Cartão de crédito")
+	entity CartaoCredito {
+		
+		//--
+		banco: refers Banco manyToOne
+		web(styleClass: "ui-md-6")
+		
+		nomeTitular: string
+		autoComplete
+		label: "Nome do títular do cartão"
+		web(styleClass: "ui-md-6")
+		
+		//--
+		numeroCartao: string[50] 
+		autoComplete
+		label: "Número do cartão"
+		web(styleClass: "ui-md-6")
+		
+		validade: date?
+		label: "Validade"
+		mask:"mm/yy"
+		web(styleClass: "ui-md-2")
+		
+		valorLimite: money?
+		label: "Limite de crédito"
+		web(styleClass: "ui-md-2")
+		
+		//--
+		bandeiraCartao: refers BandeiraCartao manyToOne
+		label: "Bandeira do cartão"
+		web(styleClass: "ui-md-6")
+		
+		ativo: boolean
+		label: "Cartão ativo"
+		web(styleClass: "ui-md-2")
+		
+	}
+	
+	@externalEntity
+	@subscribe(domain= financeiro, service=plano_contas, events=[cud])
+	@label("Plano de contas")
+	entity PlanoConta {
+		
+		codigo: string
+		label: "Código"
+		autoComplete(sort:asc)
+		web(styleClass: "ui-md-2")
+		listFilter(many: "Códigos")
+		
+		descricao: string
+		label: "Descrição"
+		autoComplete
+		web(styleClass: "ui-md-10")		
+		listFilter(many: "Descrições")
+		
+		tipoFinanceiro: TipoPlanoContaFinanceiro
+		
+		tipoReceitaDespesa: TipoReceitaDespesa?
+		label: "Tipo receita/despesa"
+		web(styleClass: "ui-md-2")
+		
+		planoContaPai: refers PlanoConta? manyToOne
+		label: "Plano de conta pai"
+		web(styleClass: "ui-md-7")
+		
+		ativo: boolean default: true // Will be replecated
+		label: "Ativo"
+		web(styleClass: "ui-md-1")
+		listFilter(isNotNull_isNull: "Ativo;Inativo" default: "isNotNull")
+		
+		rules { // Somente aceita mensagem de DESPESA no contas a pagar.
+			with(subscribe)
+				.apply()
+				.when(tipoFinanceiro.isEquals(TipoPlanoContaFinanceiro.DESPESA))
+		}
+		
+	}
+	
+	@label("Forma de pagamento")
+	enum FormaPagamento {
+		DINHEIRO
+		label: "Dinheiro"
+		default
+		
+		CONTA_BANCARIA
+		label: "Conta bancária"
+		
+		CARTAO_CREDITO
+		label: "Cartão de crédito"
+		
+		CHEQUE
+		label: "Cheque"
+		
+		OUTROS
+		label: "Outros"
+	}
+	
+	// From Plano de Contas
+	@label("Tipo da receita/despesa")
+	enum TipoReceitaDespesa {
+		VARIAVEL
+		label: "Variável"
+		default
+		
+		FIXO
+		label: "Fixa"
+	}
+	
+	@label("Tipo da conta bancária")
+	enum TipoContaBancaria { 
+		CONTA_CORRENTE
+		label: "Conta corrente"
+		default
+		
+		CONTA_POUPANCA
+		label: "Conta poupança"
+		
+		CONTA_SALARIO
+		label: "Conta salário"
+		
+		CONTA_INVESTIMENTO
+		label: "Conta investimento"
+	}
+	
+	@label("Tipo financeiro")
+	enum TipoPlanoContaFinanceiro {
+		RECEITA
+		label: "Receita"
+		
+		DESPESA
+		label: "Despesa"
+	}
+}

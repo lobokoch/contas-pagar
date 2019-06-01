@@ -1,0 +1,77 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>br.com.kerubin.api</groupId>
+  <artifactId>contas-pagar</artifactId>
+  <version>1.0.0-SNAPSHOT</version>
+  <packaging>pom</packaging>
+<properties>
+		<mkl.version>1.0.0</mkl.version>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>		
+		<xtext.version>2.12.0</xtext.version>
+	</properties>
+	<modules>
+		<!--
+		<module>modules/app</module>		
+		<module>modules/client</module>
+		<module>modules/server</module>
+		-->				
+	</modules>
+	<repositories>
+		<repository>
+			<snapshots>
+				<enabled>false</enabled>
+			</snapshots>
+			<id>kerubin-libs-release</id>
+			<url>http://maven.kerubin.com.br:8081/artifactory/libs-release</url>
+		</repository>
+	</repositories>
+
+	<pluginRepositories>
+		<pluginRepository>
+			<id>kerubin-plugin-release</id>
+			<url>http://maven.kerubin.com.br:8081/artifactory/plugins-release</url>
+			<snapshots>
+				<enabled>false</enabled>
+			</snapshots>
+		</pluginRepository>
+	</pluginRepositories>
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.eclipse.xtext</groupId>
+				<artifactId>xtext-maven-plugin</artifactId>
+				<version>${xtext.version}</version>
+				<executions>
+					<execution>
+						<id>generate-mkl-artifacts</id>
+						<phase>generate-sources</phase>
+						<goals>
+							<goal>generate</goal>
+						</goals>
+					</execution>
+				</executions>
+				<configuration>
+					<languages>
+						<language>
+							<setup>br.com.kerubin.dsl.mkl.MklStandaloneSetup</setup>
+							<outputConfigurations>
+								<outputConfiguration>
+									<outputDirectory>src/main/generated-sources/xtend/</outputDirectory>
+								</outputConfiguration>
+							</outputConfigurations>
+						</language>
+					</languages>
+				</configuration>
+				<dependencies>
+					<dependency>
+						<groupId>br.com.kerubin.dsl.mkl</groupId>
+						<artifactId>br.com.kerubin.dsl.mkl</artifactId>
+						<version>${mkl.version}</version>
+					</dependency>
+				</dependencies>
+			</plugin>
+		</plugins>
+	</build>
+</project>
+
