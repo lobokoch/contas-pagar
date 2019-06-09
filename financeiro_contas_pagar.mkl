@@ -2,7 +2,7 @@
 domain financeiro
 
 @label("Contas a pagar")
-service contas_pagar { //xxxx
+service contas_pagar { //xxxxx
 	
 	
 	config {
@@ -35,7 +35,7 @@ service contas_pagar { //xxxx
 	
 	@auditing
 	@baseRepository
-	@label("Conta a pagar")
+	@label("Contas a pagar")
 	entity ContaPagar {
 		
 		planoContas: refers PlanoConta manyToOne
@@ -52,6 +52,7 @@ service contas_pagar { //xxxx
 		label: "Vencimento"
 		listFilter(between: "Vencimento de;Até;Intervalo de tempo")  
 		web(styleClass: "ui-md-2")
+		sort: asc
 		
 		valor: money 
 		label: "Valor da conta"
@@ -138,20 +139,24 @@ service contas_pagar { //xxxx
 		web(styleClass: "ui-md-4")
 		
 		rules {
-			// Destaca o estado de vencimento das contas a pagar.kk
+			// Destaca o estado de vencimento das contas a pagar.kkkk
 			// Destaca as contas vencidas
-			with(grid.rows).apply(styleClass: "kb-conta-vencida").when(dataPagamento.isNull and dataVencimento.isBefore(today))
+			with(grid.rows).apply(styleClass: "kb-conta-vencida" label: "Conta vencida").when(dataPagamento.isNull and dataVencimento.isBefore(today))
 			// Destaca as contas que vencem hoje
-			with(grid.rows).apply(styleClass: "kb-conta-vence-hoje").when(dataPagamento.isNull and dataVencimento.isSame(today))
+			with(grid.rows).apply(styleClass: "kb-conta-vence-hoje" label: "Conta vence hoje").when(dataPagamento.isNull and dataVencimento.isSame(today))
 			// Destaca as contas que vencem amanhã
-			with(grid.rows).apply(styleClass: "kb-conta-vence-amanha").when(dataPagamento.isNull and dataVencimento.isSame(tomorrow))
+			with(grid.rows).apply(styleClass: "kb-conta-vence-amanha" label: "Conta vence amanhã").when(dataPagamento.isNull and dataVencimento.isSame(tomorrow))
+			
 			// Destaca as contas que vencem esta semana
-			with(grid.rows).apply(styleClass: "kb-conta-vence-esta-semana").when(dataPagamento.isNull and dataVencimento.isBetween(today, endOfWeek))
+			with(grid.rows).apply(styleClass: "kb-conta-vence-proximos-3-dias" label: "Conta vence nos próximos 3 dias").when(dataPagamento.isNull and dataVencimento.isBetween(today, nextDays(3)))
+			
+			// Destaca as contas que vencem esta semana
+			with(grid.rows).apply(styleClass: "kb-conta-vence-esta-semana" label: "Conta vence esta semana").when(dataPagamento.isNull and dataVencimento.isBetween(today, endOfWeek))
 			
 			//Destaca as contas já pagas.
-			with(grid.rows).apply(styleClass: "kb-conta-paga").when(dataPagamento.isNotNull)
+			with(grid.rows).apply(styleClass: "kb-conta-paga"  label: "Conta paga").when(dataPagamento.isNotNull)
 		
-			with(grid.sumRow.lastCell).apply((valor - valorPago)) // xxx
+			with(grid.sumRow.lastCell).apply((valor - valorPago)) // xx
 			with(grid.actions).apply(dataPagamento = today, valorPago = valor).when(dataPagamento.isNull).action(name: baixarContaComUmClique button(tooltip: "Baixar conta com um clique" icon: "pi pi-arrow-down"))
 			with(grid.actions).apply(dataPagamento = null, valorPago = null).when(dataPagamento.isNotNull).action(name: estornarPagamentoContaComUmClique button(tooltip: "Estornar pagamento com um clique" icon: "pi pi-arrow-up"))
 			
