@@ -6,6 +6,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import br.com.kerubin.api.financeiro.contaspagar.model.ContasPagarSituacaoDoAnoSum;
 import br.com.kerubin.api.financeiro.contaspagar.model.MonthlySumContasPagar;
 import br.com.kerubin.api.financeiro.contaspagar.service.ContasPagarDashboardService;
 
@@ -19,6 +20,12 @@ public class DashboardController {
 	@GetMapping("/getMonthlySumContasPagar")
 	public MonthlySumContasPagar getMonthlySumContasPagar() {
 		MonthlySumContasPagar result = contasPagarDashboardService.getMonthlySumContasPagar();
+		return result;
+	}
+	
+	@GetMapping("/getContasPagarSituacaoDoAno")
+	public ContasPagarSituacaoDoAnoSum getContasPagarSituacaoDoAno() {
+		ContasPagarSituacaoDoAnoSum result = contasPagarDashboardService.getContasPagarSituacaoDoAno();
 		return result;
 	}
 

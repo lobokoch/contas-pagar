@@ -2,7 +2,9 @@ package br.com.kerubin.api.financeiro.contaspagar.service;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import javax.persistence.EntityManager;
@@ -13,13 +15,17 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.querydsl.core.Tuple;
 import com.querydsl.core.types.Predicate;
+import com.querydsl.core.types.dsl.BooleanExpression;
+import com.querydsl.core.types.dsl.Coalesce;
 import com.querydsl.core.types.dsl.DatePath;
 import com.querydsl.core.types.dsl.NumberPath;
 import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.JPQLQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
+import com.querydsl.core.types.Expression;
 
 import br.com.kerubin.api.financeiro.contaspagar.entity.contapagar.QContaPagarEntity;
+import br.com.kerubin.api.financeiro.contaspagar.model.ContasPagarSituacaoDoAnoSum;
 import br.com.kerubin.api.financeiro.contaspagar.model.MonthlySum;
 import br.com.kerubin.api.financeiro.contaspagar.model.MonthlySumContasPagar;
 
@@ -127,47 +133,111 @@ public class ContasPagarDashboardServiceImpl implements ContasPagarDashboardServ
 		return result;
 	}
 	
-	/*private JPQLQuery<BigDecimal> buildMonthSumExpression_(String monthName) {
-		int year = LocalDate.now().getYear();
-		int month = MONTHS.get(monthName);
-		
-		Predicate yearAndMonthFilter = qContaPagar.dataVencimento.year().eq(year).and(qContaPagar.dataVencimento.month().eq(month));
-		
-		JPQLQuery<BigDecimal> result = JPAExpressions
-			.select(qContaPagar.valor.sum().coalesce(BigDecimal.ZERO).as(monthName))
-			.from(qContaPagar)
-			.where(yearAndMonthFilter);
-		
-		return result;
-	}*/
-	
-	
-	
-	/*@Transactional(readOnly = true)
-	//@Override
-	public MonthlySum getMonthlySumContasPagar_() {
+	@Transactional(readOnly = true)
+	@Override
+	public ContasPagarSituacaoDoAnoSum getContasPagarSituacaoDoAno() {
 		JPAQueryFactory query = new JPAQueryFactory(em);
 		
-		
-		MonthlySum result = query.selectDistinct(
-				Projections.bean(MonthlySum.class, 
-						buildMonthSumExpression("january"),
-						buildMonthSumExpression("february"),
-						buildMonthSumExpression("march"),
-						buildMonthSumExpression("april"),
-						buildMonthSumExpression("may"),
-						buildMonthSumExpression("june"),
-						buildMonthSumExpression("july"),
-						buildMonthSumExpression("august"),
-						buildMonthSumExpression("september"),
-						buildMonthSumExpression("october"),
-						buildMonthSumExpression("november"),
-						buildMonthSumExpression("december")
-						))
+		Tuple data = query
+				.selectDistinct(getContasPagarSituacaoDoAnoSumFieldsExpression().toArray(new Expression<?>[0]))
 				.from(qContaPagar)
 				.fetchOne();
 		
+		ContasPagarSituacaoDoAnoSum result = new ContasPagarSituacaoDoAnoSum();
+		
+		if (data != null) {
+			result.setValorVencido(data.get(0, BigDecimal.class));
+			result.setValorVenceHoje(data.get(1, BigDecimal.class));
+			result.setValorVenceAmanha(data.get(2, BigDecimal.class));
+			result.setValorVenceProximos7Dias(data.get(3, BigDecimal.class));
+			result.setValorVenceMesAtual(data.get(4, BigDecimal.class));
+			result.setValorVenceProximoMes(data.get(5, BigDecimal.class));
+			result.setValorPagoMesAtual(data.get(6, BigDecimal.class));
+			result.setValorPagoMesAnterior(data.get(7, BigDecimal.class));
+		}
+		
 		return result;
-	}*/
+	}
+	
+	private List<Expression<?>> getContasPagarSituacaoDoAnoSumFieldsExpression() {
+		List<Expression<?>> result = new ArrayList<>();
+		
+		LocalDate today = LocalDate.now();
+		int year = today.getYear();
+		int month = today.getMonthValue();
+		LocalDate monthStart = today.withDayOfMonth(1);
+		LocalDate monthEnd = today.withDayOfMonth(today.lengthOfMonth());
+		
+		Coalesce<BigDecimal> valorSumCoalesce = qContaPagar.valor.sum().coalesce(BigDecimal.ZERO);
+		Coalesce<BigDecimal> valorPagoSumCoalesce = qContaPagar.valorPago.sum().coalesce(BigDecimal.ZERO);
+		BooleanExpression dataPagamentoIsNull = qContaPagar.dataPagamento.isNull();
+		BooleanExpression dataPagamentoIsNotNull = qContaPagar.dataPagamento.isNotNull();
+		DatePath<LocalDate> dataVencimento = qContaPagar.dataVencimento;
+		DatePath<LocalDate> dataPagamento = qContaPagar.dataPagamento;
+		
+		// valorVencido
+		JPQLQuery<BigDecimal> valorVencido = JPAExpressions
+				.select(valorSumCoalesce.as("valorVencido"))
+				.from(qContaPagar)
+				.where(dataVencimento.lt(today).and(dataPagamentoIsNull));
+		result.add(valorVencido);
+		
+		// valorVenceHoje
+		JPQLQuery<BigDecimal> valorVenceHoje = JPAExpressions
+				.select(valorSumCoalesce.as("valorVenceHoje"))
+				.from(qContaPagar)
+				.where(dataVencimento.eq(today).and(dataPagamentoIsNull));
+		result.add(valorVenceHoje);
+		
+		// valorVenceAmanha
+		JPQLQuery<BigDecimal> valorVenceAmanha = JPAExpressions
+				.select(valorSumCoalesce.as("valorVenceAmanha"))
+				.from(qContaPagar)
+				.where(dataVencimento.eq(today.plusDays(1)).and(dataPagamentoIsNull));
+		result.add(valorVenceAmanha);
+		
+		// valorVenceProximos7Dias
+		JPQLQuery<BigDecimal> valorVenceProximos7Dias = JPAExpressions
+				.select(valorSumCoalesce.as("valorVenceProximos7Dias"))
+				.from(qContaPagar)
+				.where(dataVencimento.between(today, today.plusDays(7)).and(dataPagamentoIsNull));
+		result.add(valorVenceProximos7Dias);
+		
+		// valorVenceMesAtual
+		JPQLQuery<BigDecimal> valorVenceMesAtual = JPAExpressions
+				.select(valorSumCoalesce.as("valorVenceMesAtual"))
+				.from(qContaPagar)
+				.where(dataVencimento.between(monthStart, monthEnd).and(dataPagamentoIsNull));
+		result.add(valorVenceMesAtual);
+		
+		// valorVenceProximoMes
+		LocalDate nextMonth = today.plusMonths(1);
+		LocalDate nextMonthStart = nextMonth.withDayOfMonth(1);
+		LocalDate nextMonthEnd = nextMonth.withDayOfMonth(nextMonth.lengthOfMonth());
+		JPQLQuery<BigDecimal> valorVenceProximoMes = JPAExpressions
+				.select(valorSumCoalesce.as("valorVenceProximoMes"))
+				.from(qContaPagar)
+				.where(dataVencimento.between(nextMonthStart, nextMonthEnd).and(dataPagamentoIsNull));
+		result.add(valorVenceProximoMes);
+		
+		// valorPagoMesAtual
+		JPQLQuery<BigDecimal> valorPagoMesAtual = JPAExpressions
+				.select(valorPagoSumCoalesce.as("valorPagoMesAtual"))
+				.from(qContaPagar)
+				.where(dataPagamento.between(monthStart, monthEnd).and(dataPagamentoIsNotNull));
+		result.add(valorPagoMesAtual);
+		
+		// valorPagoMesAnterior
+		LocalDate previousMonth = today.minusMonths(1);
+		LocalDate previousMonthStart = previousMonth.withDayOfMonth(1);
+		LocalDate previousMonthEnd = previousMonth.withDayOfMonth(previousMonth.lengthOfMonth());
+		JPQLQuery<BigDecimal> valorPagoMesAnterior = JPAExpressions
+				.select(valorPagoSumCoalesce.as("valorPagoMesAnterior"))
+				.from(qContaPagar)
+				.where(dataPagamento.between(previousMonthStart, previousMonthEnd).and(dataPagamentoIsNotNull));
+		result.add(valorPagoMesAnterior);
+		
+		return result;
+	}
 
 }
