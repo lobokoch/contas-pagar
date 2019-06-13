@@ -163,8 +163,6 @@ public class ContasPagarDashboardServiceImpl implements ContasPagarDashboardServ
 		List<Expression<?>> result = new ArrayList<>();
 		
 		LocalDate today = LocalDate.now();
-		int year = today.getYear();
-		int month = today.getMonthValue();
 		LocalDate monthStart = today.withDayOfMonth(1);
 		LocalDate monthEnd = today.withDayOfMonth(today.lengthOfMonth());
 		
