@@ -4,7 +4,6 @@ domain financeiro
 @label("Contas a pagar")
 service contas_pagar { //xxxxx
 	
-	
 	config {
 		groupId: "br.com.kerubin.api"
 		version: "1.0.0"
@@ -36,13 +35,16 @@ service contas_pagar { //xxxxx
 	@auditing
 	@baseRepository
 	@label("Contas a pagar")
+	//@publishEvents(events=[updated])
 	entity ContaPagar {
 		
 		planoContas: refers PlanoConta manyToOne
 		// listFilter(many: "Plano de Contas")
+		publishedInEvents
 		web(styleClass: "ui-md-6")
 		
 		descricao: string
+		publishedInEvents
 		label: "Descrição da conta"
 		listFilter(many: "Contas")
 		web(styleClass: "ui-md-6")
@@ -60,6 +62,7 @@ service contas_pagar { //xxxxx
 		web(styleClass: "ui-md-2")
 		
 		formaPagamento: FormaPagamento
+		publishedInEvents
 		label: "Forma de pagamento"
 		web(styleClass: "ui-md-8")
 		//--
@@ -67,11 +70,13 @@ service contas_pagar { //xxxxx
 		
 		//--
 		contaBancaria: refers ContaBancaria? manyToOne 
+		publishedInEvents
 		grid(hidden)
 		label: "Pagamento com conta bancária"
 		web(styleClass: "ui-md-4")
 		
 		cartaoCredito: refers CartaoCredito? manyToOne
+		publishedInEvents
 		label: "Pagamento com cartão de crédito"
 		grid(hidden)
 		web(styleClass: "ui-md-4")
@@ -84,6 +89,7 @@ service contas_pagar { //xxxxx
 		
 		//--
 		dataPagamento: date? 
+		publishedInEvents
 		label: "Data pagamento"
 		listFilter(isNotNull_isNull: "Pagas;Em aberto" default:"isNull") 
 		web(styleClass: "ui-md-2")
@@ -113,15 +119,18 @@ service contas_pagar { //xxxxx
 		web(styleClass: "ui-md-2")
 		
 		valorPago: money? 
+		publishedInEvents
 		sum(styleClass:"kb-conta-valor-pago" label:"B")
 		label: "Valor pago"
 		web(styleClass: "ui-md-2")
 		//--
 		
 		fornecedor: refers Fornecedor? manyToOne
+		publishedInEvents
 		web(styleClass: "ui-md-6")
 		
 		numDocumento: string? 
+		publishedInEvents
 		label: "Documento"
 		grid(hidden) 
 		web(styleClass: "ui-md-6")
@@ -157,8 +166,17 @@ service contas_pagar { //xxxxx
 			with(grid.rows).apply(styleClass: "kb-conta-paga"  label: "Conta paga").when(dataPagamento.isNotNull)
 		
 			with(grid.sumRow.lastCell).apply((valor - valorPago)) // xx
-			with(grid.actions).apply(dataPagamento = today, valorPago = valor).when(dataPagamento.isNull).action(name: baixarContaComUmClique button(tooltip: "Baixar conta com um clique" icon: "pi pi-arrow-down"))
-			with(grid.actions).apply(dataPagamento = null, valorPago = null).when(dataPagamento.isNotNull).action(name: estornarPagamentoContaComUmClique button(tooltip: "Estornar pagamento com um clique" icon: "pi pi-arrow-up"))
+			
+			
+			with(grid.actions)
+			.apply(dataPagamento = today, valorPago = valor)
+			.when(dataPagamento.isNull)
+			.action(name: baixarContaComUmClique button(tooltip: "Baixar conta com um clique" icon: "pi pi-arrow-down"))
+			
+			with(grid.actions)
+			.apply(dataPagamento = null, valorPago = null)
+			.when(dataPagamento.isNotNull)
+			.action(name: estornarPagamentoContaComUmClique button(tooltip: "Estornar pagamento com um clique" icon: "pi pi-arrow-up"))
 			
 			with(form)
 				.apply(makeCopies(title: "Gerar cópias da conta" referenceField: dataVencimento grouperField: agrupador))
