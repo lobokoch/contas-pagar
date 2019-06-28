@@ -2,18 +2,16 @@ package br.com.kerubin.api.financeiro.contaspagar.service;
 
 import java.util.UUID;
 
-import javax.inject.Inject;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import br.com.kerubin.api.database.core.ServiceContext;
 import br.com.kerubin.api.financeiro.contaspagar.FinanceiroContasPagarConstants;
 import br.com.kerubin.api.financeiro.contaspagar.entity.contapagar.ContaPagarEntity;
 import br.com.kerubin.api.financeiro.contaspagar.entity.contapagar.ContaPagarServiceImpl;
 import br.com.kerubin.api.financeiro.contaspagar.event.ContaPagarEvent;
-import br.com.kerubin.api.financeiro.contaspagar.repository.ContaPagarRepository;
 import br.com.kerubin.api.messaging.core.DomainEntityEventsPublisher;
 import br.com.kerubin.api.messaging.core.DomainEvent;
 import br.com.kerubin.api.messaging.core.DomainEventEnvelope;
@@ -28,25 +26,33 @@ public class CustomContaPagarServiceImpl extends ContaPagarServiceImpl {
 	@Autowired
 	private DomainEntityEventsPublisher publisher;
 	
-	@Inject
-	private ContaPagarRepository contaPagarRepository;
-	
-	
-	
+	@Transactional
 	@Override
 	public void actionBaixarContaComUmClique(UUID id) {
 		// Baixa a conta
 		super.actionBaixarContaComUmClique(id);
 		
 		// Busca a conta atualziada
-		ContaPagarEntity entity = contaPagarRepository.findById(id).orElse(null);
+		ContaPagarEntity entity = getContaPagarEntity(id);
 		
 		// Publica a mensagem de conta paga
-		if (entity != null && entity.getDataPagamento() != null) {
+		if (entity.getDataPagamento() != null) {
 			publishEvent(entity, ContaPagarEvent.CONTA_PAGAR_CONTAPAGA);
-			
 		}
 		
+	}
+	
+	@Transactional
+	@Override
+	public void actionEstornarPagamentoContaComUmClique(UUID id) {
+		// Pega os dados da conta antes de ser estornada.
+		ContaPagarEntity entity = getContaPagarEntity(id).clone();
+		
+		// Estorna
+		super.actionEstornarPagamentoContaComUmClique(id);
+		
+		// Publica o estorno
+		publishEvent(entity, ContaPagarEvent.CONTA_PAGAR_CONTAESTORNADA);
 	}
 	
 	protected void publishEvent(ContaPagarEntity entity, String eventName) {
