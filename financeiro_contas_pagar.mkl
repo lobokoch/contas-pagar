@@ -2,7 +2,7 @@
 domain financeiro
 
 @label("Contas a pagar")
-service contas_pagar { //xxxxx
+service contas_pagar { //xxx
 	
 	config {
 		groupId: "br.com.kerubin.api"
@@ -64,7 +64,7 @@ service contas_pagar { //xxxxx
 		formaPagamento: FormaPagamento
 		publishedInEvents
 		label: "Forma de pagamento"
-		web(styleClass: "ui-md-8")
+		web(styleClass: "ui-md-2")
 		//--
 				
 		
@@ -72,18 +72,18 @@ service contas_pagar { //xxxxx
 		contaBancaria: refers ContaBancaria? manyToOne 
 		publishedInEvents
 		grid(hidden)
-		label: "Pagamento com conta bancária"
-		web(styleClass: "ui-md-4")
+		label: "Dados da conta bancária"
+		web(styleClass: "ui-md-6")
 		
 		cartaoCredito: refers CartaoCredito? manyToOne
 		publishedInEvents
-		label: "Pagamento com cartão de crédito"
+		label: "Dados do cartão de crédito"
 		grid(hidden)
-		web(styleClass: "ui-md-4")
+		web(styleClass: "ui-md-6")
 		
 		outrosDescricao: string?
-		label: "Pagamento com  outra forma de pagamento"
-		web(styleClass: "ui-md-4")
+		label: "Dados complementares"
+		web(styleClass: "ui-md-6")
 		grid(hidden)
 		//--
 		
@@ -148,6 +148,10 @@ service contas_pagar { //xxxxx
 		web(styleClass: "ui-md-4")
 		
 		rules {
+			with(contaBancaria).apply(styleClass:"hidden").when(formaPagamento.isNotEquals(FormaPagamento.CONTA_BANCARIA))
+			with(cartaoCredito).apply(styleClass:"hidden").when(formaPagamento.isNotEquals(FormaPagamento.CARTAO_CREDITO))
+			with(outrosDescricao).apply(styleClass:"hidden").when(formaPagamento.isEquals(FormaPagamento.CONTA_BANCARIA) or formaPagamento.isEquals(FormaPagamento.CARTAO_CREDITO) )
+			
 			// Destaca o estado de vencimento das contas a pagar.kkkk
 			// Destaca as contas vencidas
 			with(grid.rows).apply(styleClass: "kb-conta-vencida" label: "Conta vencida").when(dataPagamento.isNull and dataVencimento.isBefore(today))
@@ -381,10 +385,16 @@ service contas_pagar { //xxxxx
 		default
 		
 		CONTA_BANCARIA
-		label: "Conta bancária"
+		label: "Débito em conta"
 		
 		CARTAO_CREDITO
 		label: "Cartão de crédito"
+		
+		VALE_REFEICAO
+		label: "Vale refeição"
+		
+		VALE_ALIMENTACAO
+		label: "Vale alimentação"
 		
 		CHEQUE
 		label: "Cheque"
@@ -393,7 +403,7 @@ service contas_pagar { //xxxxx
 		label: "Outros"
 	}
 	
-	// From Plano de Contas
+	// From Plano de Contas //
 	@label("Tipo da receita/despesa")
 	enum TipoReceitaDespesa {
 		VARIAVEL
