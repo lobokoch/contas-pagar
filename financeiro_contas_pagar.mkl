@@ -2,7 +2,7 @@
 domain financeiro
 
 @label("Contas a pagar")
-service contas_pagar { //xxx
+service contas_pagar { //xxxx
 	
 	config {
 		groupId: "br.com.kerubin.api"
@@ -195,14 +195,15 @@ service contas_pagar { //xxx
 	@label("Fornecedor")
 	entity Fornecedor {		
 		
+		tipoPessoa: TipoPessoa?
+		
 		nome: string
 		label: "Nome"
 		listFilter(many: "Nome do fornecedor")
-		web(styleClass: "ui-md-6")
 		
-		cpfCNPJ: string?
-		label: "Documento (CPF/CNPJ)"
-		web(styleClass: "ui-md-6")
+		cnpjCPF: string?
+		label: "Documento (CNPJ/CPF)"
+		
 	}
 	
 	@externalEntity
@@ -437,5 +438,15 @@ service contas_pagar { //xxx
 		
 		DESPESA
 		label: "Despesa"
+	}
+	
+	@label("Tipo da pessoa")
+	enum TipoPessoa {		
+		PESSOA_JURIDICA
+		label: "Pessoa jurídica"
+		default
+		
+		PESSOA_FISICA
+		label: "Pessoa física"
 	}
 }

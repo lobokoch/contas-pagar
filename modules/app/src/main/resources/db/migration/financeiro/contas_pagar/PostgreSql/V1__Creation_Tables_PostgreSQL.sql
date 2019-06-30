@@ -37,8 +37,9 @@ CREATE TABLE conta_pagar /* ContaPagar */  (
 
 CREATE TABLE fornecedor /* Fornecedor */  (
 	id UUID NOT NULL,
+	tipo_pessoa VARCHAR(255) /* tipoPessoa */,
 	nome VARCHAR(255) NOT NULL,
-	cpf_cnpj VARCHAR(255) /* cpfCNPJ */,
+	cnpj_cpf VARCHAR(255) /* cnpjCPF */,
 	deleted BOOLEAN DEFAULT false
 );
 
