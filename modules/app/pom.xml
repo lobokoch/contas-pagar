@@ -9,6 +9,11 @@
 
 	<name>financeiro-contaspagar-app</name>
 	<description>Kerubin financeiro-contaspagar-app Service</description>
+	
+	<properties>
+		<docker.image.prefix>lobokoch</docker.image.prefix>
+		<dockerfile.maven.plugin.version>1.4.10</dockerfile.maven.plugin.version>
+	</properties>
 
 	<parent>
 		<groupId>br.com.kerubin.api</groupId>
@@ -84,6 +89,21 @@
 					</execution>
 				</executions>
 			</plugin>
+			
+			<!-- For Build and Publish Docker image -->
+			<!-- mvn clean package dockerfile:build -->
+			<!-- mvn dockerfile:push -->
+			<plugin>
+				<groupId>com.spotify</groupId>
+				<artifactId>dockerfile-maven-plugin</artifactId>
+				<version>${dockerfile.maven.plugin.version}</version>
+				<configuration>
+					<repository>${docker.image.prefix}/${project.artifactId}</repository>
+					<tag>${project.version}</tag>
+        			<useMavenSettingsForAuth>true</useMavenSettingsForAuth>
+				</configuration>
+			</plugin>
+			
 		</plugins>
 	</build>
 
