@@ -2,7 +2,7 @@
 domain financeiro
 
 @label("Contas a pagar")
-service contas_pagar { //xxxx
+service contas_pagar { //xxx
 	
 	config {
 		groupId: "br.com.kerubin.api"
@@ -346,7 +346,7 @@ service contas_pagar { //xxxx
 		
 		codigo: string
 		label: "Código"
-		autoComplete(sort:asc)
+		autoComplete(data sort:asc)
 		web(styleClass: "ui-md-2")
 		listFilter(many: "Códigos")
 		

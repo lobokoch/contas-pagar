@@ -28,9 +28,9 @@
 		<querydsl.version>4.2.1</querydsl.version>
 		<commons.lang.version>3.8.1</commons.lang.version>
 		<database.core.version>1.0.0</database.core.version>
+		<service.core.version>1.0.0</service.core.version>
 		<flyway.core.version>5.2.4</flyway.core.version>
 		<kerubin.messaging.core.version>1.0.0</kerubin.messaging.core.version>
-		<modelmapper.version>1.1.0</modelmapper.version>
 		<build.helper.maven.plugin.version>3.0.0</build.helper.maven.plugin.version>
 		<apt.maven.plugin.version>1.1.1</apt.maven.plugin.version>
 		<templating.maven.plugin.version>1.0.0</templating.maven.plugin.version>
@@ -111,6 +111,11 @@
 				<groupId>br.com.kerubin.api</groupId>
 				<artifactId>database-core</artifactId>
 				<version>${database.core.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>br.com.kerubin.api</groupId>
+				<artifactId>service-core</artifactId>
+				<version>${service.core.version}</version>
 			</dependency>
 			
 			<dependency>
