@@ -3,6 +3,7 @@ package br.com.kerubin.api.notificador.contas;
 import static br.com.kerubin.api.messaging.constants.MessagingConstants.HEADER_TENANT;
 import static br.com.kerubin.api.messaging.constants.MessagingConstants.HEADER_USER;
 
+import java.text.DecimalFormat;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -128,92 +129,198 @@ public class BillsNotifier {
 	}
 
 	private String buildNotificationBillsForUserMessage(SysUser user,
-			ContasPagarSituacaoDoAnoSum contasPagarSituacaoDoAnoSum,
-			ContasReceberSituacaoDoAnoSum contasReceberSituacaoDoAnoSum) {
+			ContasPagarSituacaoDoAnoSum cp,
+			ContasReceberSituacaoDoAnoSum cr) {
 		
-		StringBuilder sb = new StringBuilder();
+		DecimalFormat df = new DecimalFormat("#,###,###,##0.00");
 		
-		sb.append("<div style=\"max-width:600px;border:0;height:auto;line-height:100%;outline:none;text-decoration:none\">Kerubin</div>")
-		.append("Olá, ").append(user.getName()).append("!")
-		.append("<div style=\"max-width:600px;border:0;height:auto;line-height:100%;outline:none;text-decoration:none\">Seu resumo das Contas a Pagar e Contas a Receber</div>")
-		.append("<div>")
+		String html = "<div style=\"background: #F7F7F7; padding: 0px; margin: 0px; height: 100vh; width:100%; font-family: Helvetica,Arial,sans-serif;\">\r\n" + 
+		"	<div style=\"background:red; display:table; max-width:600px; width:100%; margin: 0 auto;\">\r\n" + 
+		"		<div style=\"display:table-row;background: #1e94d2;\">\r\n" + 
+		"			<div style=\"border:1px solid #0586d3; border-bottom: 0px; text-align:center;vertical-align:middle; display:table-cell; background:  #1e94d2; width: 100%; color:#fff; height: 60px; font-size: 1.5em; font-weight: bold;\">Kerubin</div>\r\n" + 
+		"		</div>\r\n" + 
+		"		<div style=\"display:table-row;\">\r\n" + 
+		"			<div style=\"border:1px solid #d9d9d9;text-align:center;vertical-align:middle; display:table-cell; background: #fff; width: 100%;  height: 60px; font-size: 1.5em; font-weight: bold; padding-top: 20px; padding-bottom: 20px;\">\r\n" + 
+		"              Olá, <span style=\"color:#1e94d2;\">" + getFirstName(user.getName()) + "</span>!<br>Segue o resumo das suas contas.\r\n" + 
+		"          </div>\r\n" + 
+		"		</div>\r\n" + 
+		"      \r\n" + 
+		"      \r\n" + 
+		"      		<div style=\"display:table-row;background: #1e94d2;\">\r\n" + 
+		"			<div style=\"border:1px solid #d9d9d9; border-bottom: 0px; text-align:center;vertical-align:middle; display:table-cell; background:  #ff5722; width: 100%; color:#fff; padding-top: 5px; padding-bottom: 5px;\">Resumo do Contas a Pagar</div>\r\n" + 
+		"		</div>\r\n" + 
+		"      \r\n" + 
+		"      <div style=\"display:table-row;\">\r\n" + 
+		"			<div style=\"border:1px solid #d9d9d9; border-top:0px; text-align:center;vertical-align:middle; display:table-cell; background:  #fff; width: 100%; font-weight:50px; padding-top: 20px; padding-bottom: 20px\">\r\n" + 
+		"              \r\n" + 
+		"              <table align=\"center\" style=\"width: 60%\">\r\n" + 
+		"                \r\n" + 
+		"                	<tr style=\"background:#fc7f8b; height:25px; height: 30px;\">\r\n" + 
+		"                      	<td style=\"text-align: right; padding-right: 5px;\">Em atraso:</td>\r\n" + 
+		"                        <td style=\"text-align: left; padding-left: 5px;\">" + df.format(cp.getValorVencido()) + "</td>\r\n" + 
+		"                	</tr>\r\n" + 
+		"                \r\n" + 
+		"                	<tr style=\"background:#fdbf8f; height:25px; height: 30px;\">\r\n" + 
+		"                      	<td style=\"text-align: right;  padding-right: 5px;\">A pagar hoje:</td>\r\n" + 
+		"                        <td style=\"text-align: left; padding-left: 5px;\">" + df.format(cp.getValorVenceHoje()) + "</td>\r\n" + 
+		"                	</tr>\r\n" + 
+		"                \r\n" + 
+		"                	<tr style=\"background:#feffaa; height:25px; height: 30px;\">\r\n" + 
+		"                      	<td style=\"text-align: right;  padding-right: 5px;\">A pagar amanhã:</td>\r\n" + 
+		"                        <td style=\"text-align: left; padding-left: 5px;\">" + df.format(cp.getValorVenceAmanha()) + "</td>\r\n" + 
+		"                	</tr>\r\n" + 
+		"                \r\n" + 
+		"                	<tr style=\"background:#dfdfdf; height:25px; height: 30px;\">\r\n" + 
+		"                      	<td style=\"text-align: right;  padding-right: 5px;\">A pagar nos próximos 7 dias:</td>\r\n" + 
+		"                        <td style=\"text-align: left; padding-left: 5px;\">" + df.format(cp.getValorVenceProximos7Dias()) + "</td>\r\n" + 
+		"                	</tr>\r\n" + 
+		"                \r\n" + 
+		"                	<tr style=\"background:#a8eca5; height:25px; height: 30px;\">\r\n" + 
+		"                      	<td style=\"text-align: right;  padding-right: 5px;\">Pago este mês:</td>\r\n" + 
+		"                        <td style=\"text-align: left; padding-left: 5px;\">" + df.format(cp.getValorPagoMesAtual()) + "</td>\r\n" + 
+		"                	</tr>\r\n" + 
+		"                \r\n" + 
+		"              </table>              \r\n" + 
+		"             \r\n" + 
+		"        \r\n" + 
+		"        </div>\r\n" + 
+		"		</div>\r\n" + 
+		"      \r\n" + 
+		"            		<div style=\"display:table-row;background: #1e94d2;\">\r\n" + 
+		"			<div style=\"border:1px solid #d9d9d9; border-bottom: 0px; text-align:center;vertical-align:middle; display:table-cell; background:  #ff5722; width: 100%; color:#fff; padding-top: 5px; padding-bottom: 5px;\">Contas a Pagar de hoje (18/07/2019)</div>\r\n" + 
+		"		</div>\r\n" + 
+		"      \r\n" + 
+		"      <div style=\"display:table-row;\">\r\n" + 
+		"			<div style=\"border:1px solid #d9d9d9; border-top:0px; text-align:center;vertical-align:middle; display:table-cell; background:  #fff; width: 100%; font-weight:50px; padding-top: 20px; padding-bottom: 20px\">\r\n" + 
+		"              \r\n" + 
+		"             <table align=\"center\" style=\"width: 90%; border: 1px solid #bdbdbd; border-collapse: collapse;\">             \r\n" + 
+		"                	\r\n" + 
+		"                \r\n" + 
+		"                	<tr style=\"background: #f4f4f4;\">\r\n" + 
+		"                      	<th style=\"text-align: center; border: 1px solid #bdbdbd;\">Conta</th>\r\n" + 
+		"                        <th style=\"text-align: center; border: 1px solid #bdbdbd; \">Valor</th>\r\n" + 
+		"                	</tr>\r\n" + 
+		"                \r\n" + 
+		"                	<tr style=\"height:25px;\">\r\n" + 
+		"                      	<td style=\"text-align: center; border: 1px solid #bdbdbd;\">Telefone</td>\r\n" + 
+		"                        <td style=\"text-align: right; border: 1px solid #bdbdbd; padding-right: 5px;\">200,00</td>\r\n" + 
+		"                	</tr>\r\n" + 
+		"                \r\n" + 
+		"                	<tr style=\"background: #f4f4f4; height:25px;\">\r\n" + 
+		"                      	<td style=\"text-align: center; border: 1px solid #bdbdbd;\">Água</td>\r\n" + 
+		"                        <td style=\"text-align: right; border: 1px solid #bdbdbd; padding-right: 5px;\">350,00</td>\r\n" + 
+		"                	</tr>\r\n" + 
+		"                \r\n" + 
+		"                	<tr style=\"height:25px;\">\r\n" + 
+		"                      	<td style=\"text-align: center; border: 1px solid #bdbdbd;\">Escola</td>\r\n" + 
+		"                        <td style=\"text-align: right; border: 1px solid #bdbdbd; padding-right: 5px;\">1.350,00</td>\r\n" + 
+		"                	</tr>\r\n" + 
+		"                \r\n" + 
+		"                	<tr style=\"background: #f4f4f4; height:25px;\">\r\n" + 
+		"                      	<th style=\"text-align: center; border: 1px solid #bdbdbd;\">Total</th>\r\n" + 
+		"                        <th style=\"text-align: right; border: 1px solid #bdbdbd; padding-right: 5px;\">5.840,38</th>\r\n" + 
+		"                	</tr>\r\n" + 
+		"                \r\n" + 
+		"              </table>\r\n" + 
+		"        \r\n" + 
+		"        </div>\r\n" + 
+		"		</div>\r\n" + 
+		"\r\n" + 
+		"<!--  CONTAS A RECEBER -->\r\n" + 
+		"\r\n" + 
+		"\r\n" + 
+		"<div style=\"display:table-row;background: #1e94d2;\">\r\n" + 
+		"			<div style=\"border:1px solid #0586d3; border-bottom: 0px; text-align:center;vertical-align:middle; display:table-cell; background:  #1e94d2; width: 100%; color:#fff; padding-top: 5px; padding-bottom: 5px;\">Resumo do Contas a Receber</div>\r\n" + 
+		"		</div>\r\n" + 
+		"      \r\n" + 
+		"      <div style=\"display:table-row;\">\r\n" + 
+		"			<div style=\"border:1px solid #d9d9d9; border-top:0px; text-align:center;vertical-align:middle; display:table-cell; background:  #fff; width: 100%; font-weight:50px; padding-top: 20px; padding-bottom: 20px\">\r\n" + 
+		"              \r\n" + 
+		"              <table align=\"center\" style=\"width: 60%\">\r\n" + 
+		"                \r\n" + 
+		"                	<tr style=\"background:#fc7f8b; height:25px; height: 30px;\">\r\n" + 
+		"                      	<td style=\"text-align: right; padding-right: 5px;\">Em atraso:</td>\r\n" + 
+		"                        <td style=\"text-align: left; padding-left: 5px;\">" + df.format(cr.getValorVencido()) + "</td>\r\n" + 
+		"                	</tr>\r\n" + 
+		"                \r\n" + 
+		"                	<tr style=\"background:#fdbf8f; height:25px; height: 30px;\">\r\n" + 
+		"                      	<td style=\"text-align: right;  padding-right: 5px;\">A receber hoje:</td>\r\n" + 
+		"                        <td style=\"text-align: left; padding-left: 5px;\">" + df.format(cr.getValorVenceHoje()) + "</td>\r\n" + 
+		"                	</tr>\r\n" + 
+		"                \r\n" + 
+		"                	<tr style=\"background:#feffaa; height:25px; height: 30px;\">\r\n" + 
+		"                      	<td style=\"text-align: right;  padding-right: 5px;\">A receber amanhã:</td>\r\n" + 
+		"                        <td style=\"text-align: left; padding-left: 5px;\">" + df.format(cr.getValorVenceAmanha()) + "</td>\r\n" + 
+		"                	</tr>\r\n" + 
+		"                \r\n" + 
+		"                	<tr style=\"background:#dfdfdf; height:25px; height: 30px;\">\r\n" + 
+		"                      	<td style=\"text-align: right;  padding-right: 5px;\">A receber nos próximos 7 dias:</td>\r\n" + 
+		"                        <td style=\"text-align: left; padding-left: 5px;\">" + df.format(cr.getValorVenceProximos7Dias()) + "</td>\r\n" + 
+		"                	</tr>\r\n" + 
+		"                \r\n" + 
+		"                	<tr style=\"background:#a8eca5; height:25px; height: 30px;\">\r\n" + 
+		"                      	<td style=\"text-align: right;  padding-right: 5px;\">Recebido este mês:</td>\r\n" + 
+		"                        <td style=\"text-align: left; padding-left: 5px;\">" + df.format(cr.getValorPagoMesAtual()) + "</td>\r\n" + 
+		"                	</tr>\r\n" + 
+		"                \r\n" + 
+		"              </table>\r\n" + 
+		"        \r\n" + 
+		"        </div>\r\n" + 
+		"		</div>\r\n" + 
+		"      \r\n" + 
+		"            		<div style=\"display:table-row;background: #1e94d2;\">\r\n" + 
+		"			<div style=\"border:1px solid #0586d3; border-bottom: 0px; text-align:center;vertical-align:middle; display:table-cell; background:  #1e94d2; width: 100%; color:#fff; padding-top: 5px; padding-bottom: 5px;\">Contas a Receber de hoje (18/07/2019)</div>\r\n" + 
+		"		</div>\r\n" + 
+		"      \r\n" + 
+		"      <div style=\"display:table-row;\">\r\n" + 
+		"			<div style=\"border:1px solid #d9d9d9; border-top:0px; text-align:center;vertical-align:middle; display:table-cell; background:  #fff; width: 100%; font-weight:50px; padding-top: 20px; padding-bottom: 20px\">\r\n" + 
+		"              \r\n" + 
+		"              <table align=\"center\" style=\"width: 90%; border: 1px solid #bdbdbd; border-collapse: collapse;\">             \r\n" + 
+		"                	\r\n" + 
+		"                \r\n" + 
+		"                	<tr style=\"background: #f4f4f4;\">\r\n" + 
+		"                      	<th style=\"text-align: center; border: 1px solid #bdbdbd;\">Conta</th>\r\n" + 
+		"                        <th style=\"text-align: center; border: 1px solid #bdbdbd; \">Valor</th>\r\n" + 
+		"                	</tr>\r\n" + 
+		"                \r\n" + 
+		"                	<tr style=\"height:25px;\">\r\n" + 
+		"                      	<td style=\"text-align: center; border: 1px solid #bdbdbd;\">Cliente A</td>\r\n" + 
+		"                        <td style=\"text-align: right; border: 1px solid #bdbdbd; padding-right: 5px;\">200,00</td>\r\n" + 
+		"                	</tr>\r\n" + 
+		"                \r\n" + 
+		"                	<tr style=\"background: #f4f4f4; height:25px;\">\r\n" + 
+		"                      	<td style=\"text-align: center; border: 1px solid #bdbdbd;\">Cliente B</td>\r\n" + 
+		"                        <td style=\"text-align: right; border: 1px solid #bdbdbd; padding-right: 5px;\">350,00</td>\r\n" + 
+		"                	</tr>\r\n" + 
+		"                \r\n" + 
+		"                	<tr style=\"height:25px;\">\r\n" + 
+		"                      	<td style=\"text-align: center; border: 1px solid #bdbdbd;\">Cliente C</td>\r\n" + 
+		"                        <td style=\"text-align: right; border: 1px solid #bdbdbd; padding-right: 5px;\">1.350,00</td>\r\n" + 
+		"                	</tr>\r\n" + 
+		"                \r\n" + 
+		"                	<tr style=\"background: #f4f4f4; height:25px;\">\r\n" + 
+		"                      	<th style=\"text-align: center; border: 1px solid #bdbdbd;\">Total</th>\r\n" + 
+		"                        <th style=\"text-align: right; border: 1px solid #bdbdbd; padding-right: 5px;\">5.840,38</th>\r\n" + 
+		"                	</tr>\r\n" + 
+		"                \r\n" + 
+		"              </table>\r\n" + 
+		"        \r\n" + 
+		"        </div>\r\n" + 
+		"		</div>\r\n" + 
+		"\r\n" + 
+		"\r\n" + 
+		"      \r\n" + 
+		"      <div style=\"display:table-row;\">\r\n" + 
+		"			<div style=\"border:1px solid #d9d9d9; border-top: 0px; text-align:center;vertical-align:middle; display:table-cell; background:  #fff; width: 100%; padding-top: 20px; padding-bottom: 20px;\">\r\n" + 
+		"              <p>Para mais detalhes, acesse o <span style=\"color: #1e94d2; font-weight: bold;\">Kerubin</span> <a href=\"#\">clicando aqui</a>.</p>\r\n" + 
+		"             Abraços,<br>Equipe Kerubin\r\n" + 
+		"        </div>\r\n" + 
+		"		</div>\r\n" + 
+		"      \r\n" + 
+		"	</div>\r\n" + 
+		"</div>";
 		
-		// BEGIN Contas a pagar
-		.append("<table>") //
-			.append("<tr>") // Head
-				.append("<th colspan=\"2\">").append("Resumo das Contas a Pagar").append("</th>") //
-			.append("</tr>") //
-			
-			// Body
-			.append("<tr>") //
-				.append("<td>").append("Em atraso:").append("</td>") //
-				.append("<td>").append(contasPagarSituacaoDoAnoSum.getValorVencido()).append("</td>") //
-			.append("</tr>") //
-			
-			.append("<tr>") //
-				.append("<td>").append("A pagar hoje:").append("</td>") //
-				.append("<td>").append(contasPagarSituacaoDoAnoSum.getValorVenceHoje()).append("</td>") //
-			.append("</tr>") //
-			
-			.append("<tr>") //
-				.append("<td>").append("A pagar amanhã:").append("</td>") //
-				.append("<td>").append(contasPagarSituacaoDoAnoSum.getValorVenceAmanha()).append("</td>") //
-			.append("</tr>") //
-			
-			.append("<tr>") //
-				.append("<td>").append("A pagar nos próximos 7 dias:").append("</td>") //
-				.append("<td>").append(contasPagarSituacaoDoAnoSum.getValorVenceProximos7Dias()).append("</td>") //
-			.append("</tr>") //
-			
-			.append("<tr>") //
-				.append("<td>").append("Pago este mês:").append("</td>") //
-				.append("<td>").append(contasPagarSituacaoDoAnoSum.getValorPagoMesAtual()).append("</td>") //
-			.append("</tr>") //
-			
-		.append("</table>") 
-		// END Contas a Pagar
-		
-		// BEGIN Contas a Receber
-		.append("<table>") //
-			.append("<tr>") // Head
-				.append("<th colspan=\"2\">").append("Resumo das Contas a Receber").append("</th>") //
-			.append("</tr>") //
-			
-			// Body
-			.append("<tr>") //
-				.append("<td>").append("Em atraso:").append("</td>") //
-				.append("<td>").append(contasReceberSituacaoDoAnoSum.getValorVencido()).append("</td>") //
-			.append("</tr>") //
-			
-			.append("<tr>") //
-				.append("<td>").append("A receber hoje:").append("</td>") //
-				.append("<td>").append(contasReceberSituacaoDoAnoSum.getValorVenceHoje()).append("</td>") //
-			.append("</tr>") //
-			
-			.append("<tr>") //
-				.append("<td>").append("A receber amanhã:").append("</td>") //
-				.append("<td>").append(contasReceberSituacaoDoAnoSum.getValorVenceAmanha()).append("</td>") //
-			.append("</tr>") //
-			
-			.append("<tr>") //
-				.append("<td>").append("A receber nos próximos 7 dias:").append("</td>") //
-				.append("<td>").append(contasReceberSituacaoDoAnoSum.getValorVenceProximos7Dias()).append("</td>") //
-			.append("</tr>") //
-			
-			.append("<tr>") //
-				.append("<td>").append("Recebido este mês:").append("</td>") //
-				.append("<td>").append(contasReceberSituacaoDoAnoSum.getValorPagoMesAtual()).append("</td>") //
-			.append("</tr>") //
-			
-		.append("</table>") 
-		// END Contas a Receber
-		
-		// Contas a receber
-		.append("</div>")
-		
-		.append("Abraços, <br>Equipe Kerubin.");
-		
-		return sb.toString();
+		return html;
 	}
 
 	private ContasPagarSituacaoDoAnoSum getContasPagarSituacaoDoAno(SysUser userAndTenant) {
