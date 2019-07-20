@@ -4,6 +4,7 @@ import static br.com.kerubin.api.messaging.constants.MessagingConstants.HEADER_T
 import static br.com.kerubin.api.messaging.constants.MessagingConstants.HEADER_USER;
 
 import java.text.DecimalFormat;
+import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -23,10 +24,15 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 
+import br.com.kerubin.api.notificador.model.ContasPagarHojeResumo;
+import br.com.kerubin.api.notificador.model.ContasPagarHojeResumoCompleto;
 import br.com.kerubin.api.notificador.model.ContasPagarSituacaoDoAnoSum;
+import br.com.kerubin.api.notificador.model.ContasReceberHojeResumo;
+import br.com.kerubin.api.notificador.model.ContasReceberHojeResumoCompleto;
 import br.com.kerubin.api.notificador.model.ContasReceberSituacaoDoAnoSum;
 import br.com.kerubin.api.notificador.model.SysUser;
 import br.com.kerubin.api.servicecore.mail.MailSender;
+import br.com.kerubin.api.servicecore.util.BooleanWrapper;
 import lombok.extern.slf4j.Slf4j;
 
 import static br.com.kerubin.api.servicecore.util.CoreUtils.*;
@@ -36,12 +42,14 @@ import static br.com.kerubin.api.servicecore.util.CoreUtils.*;
 public class BillsNotifier {
 	
 	private static final String TIME_ZONE = "America/Sao_Paulo";
+	private static final int CONTA_MAX_ITEMS = 5;
 	
 	public static final String FINANCEIRO_CONTASPAGAR_SERVICE = "financeiro-contaspagar";
 	public static final String FINANCEIRO_CONTASRECEBER_SERVICE = "financeiro-contasreceber";
 	public static final String SECURITY_AUTHORIZATION_SERVICE = "security-authorization";
 	public static final String HTTP = "http://";
 	public static final String DASHBOARD = "dashboard";
+	public static final String KERUBIN_LINK = "<span style=\"color: #1e94d2; font-weight: bold;\"><a href=\"#\">Kerubin</a></span>";
 	
 	private List<SysUser> users;
 
@@ -99,45 +107,185 @@ public class BillsNotifier {
 		
 		log.info("Starting notification for tenant: {}...", tenant);
 		
-		ContasPagarSituacaoDoAnoSum contasPagarSituacaoDoAnoSum = getContasPagarSituacaoDoAno(userAndTenant);
+		ContasPagarHojeResumoCompleto contasPagarHojeResumoCompleto = getContasPagarHojeResumoCompleto(userAndTenant);
 		
-		ContasReceberSituacaoDoAnoSum contasReceberSituacaoDoAnoSum = getContasReceberSituacaoDoAno(userAndTenant);
+		ContasReceberHojeResumoCompleto contasReceberHojeResumoCompleto = getContasReceberHojeResumoCompleto(userAndTenant);
 		
 		// Filtra apenas pelos usuários do tenant para envio das informações.
 		List<SysUser> usersOfTenant = users.stream()
 				.filter(it -> it.getTenant().getId().equals(userAndTenant.getTenant().getId()))
 				.collect(Collectors.toList());
 		
-		usersOfTenant.forEach(user -> notifyBillsForUser(user, contasPagarSituacaoDoAnoSum, contasReceberSituacaoDoAnoSum));
+		usersOfTenant.forEach(user -> notifyBillsForUser(user, contasPagarHojeResumoCompleto, contasReceberHojeResumoCompleto));
 		
 		
 		log.info("DONE notifyBillsForTenant for tenant: {}.", tenant);
 	}
 	
-	private void notifyBillsForUser(SysUser user, ContasPagarSituacaoDoAnoSum contasPagarSituacaoDoAnoSum,
-			ContasReceberSituacaoDoAnoSum contasReceberSituacaoDoAnoSum) {
+	private void notifyBillsForUser(SysUser user, ContasPagarHojeResumoCompleto contasPagarHojeResumoCompleto,
+			ContasReceberHojeResumoCompleto contasReceberHojeResumoCompleto) {
 		log.info("Notifying bills for user name: {}, e-mail: {}, tenant: {} ...", user.getName(), user.getEmail(), user.getTenant());
 		
 		String from = MailSender.EMAIL_FROM_DEFAULT;
 		List<String> recipients = Arrays.asList(user.getEmail());
-		String subsject = "Kerubin - Veja o resumo das suas contas";
-		String message = buildNotificationBillsForUserMessage(user, contasPagarSituacaoDoAnoSum, contasReceberSituacaoDoAnoSum);
+		String subsject = "Kerubin - Resumo das contas";
+		String message = buildNotificationBillsForUserMessage(user, contasPagarHojeResumoCompleto, contasReceberHojeResumoCompleto);
 		
 		mailSender.sendMail(from, recipients, subsject, message);
 		
 		log.info("DONE notification bills for user name: {}, e-mail: {}, tenant: {} ...", user.getName(), user.getEmail(), user.getTenant());
 	}
-
-	private String buildNotificationBillsForUserMessage(SysUser user,
-			ContasPagarSituacaoDoAnoSum cp,
-			ContasReceberSituacaoDoAnoSum cr) {
+	
+	private String buildListaContasPagarHoje(ContasPagarHojeResumoCompleto cp) {
+		List<ContasPagarHojeResumo> cpHojeList = cp.getContasPagarHojeResumo();
+		int count = cpHojeList.size();
 		
+		if (count > CONTA_MAX_ITEMS) {
+			cpHojeList = cpHojeList.subList(0, CONTA_MAX_ITEMS);
+		}
+		
+		StringBuilder sb = new StringBuilder();
 		DecimalFormat df = new DecimalFormat("#,###,###,##0.00");
 		
-		String html = "<div style=\"background: #F7F7F7; padding: 0px; margin: 0px; height: 100vh; width:100%; font-family: Helvetica,Arial,sans-serif;\">\r\n" + 
-		"	<div style=\"background:red; display:table; max-width:600px; width:100%; margin: 0 auto;\">\r\n" + 
+		BooleanWrapper bw = new BooleanWrapper(true);
+		String trTrue = " style=\"height:25px; background: #f4f4f4;\"";
+		String trFalse = " style=\"height:25px; background: #ffffff;\"";
+		
+		sb.append("<table style=\"margin: auto; width: 90%; border: 1px solid #bdbdbd; border-collapse: collapse;\">");
+		sb.append("<tr").append(getStringAlternate(trTrue, trFalse, bw)).append(">");
+		sb.append("<th style=\"text-align: center; border: 1px solid #bdbdbd;\">").append("Conta").append("</th>");
+		sb.append("<th style=\"text-align: center; border: 1px solid #bdbdbd;\">").append("Vencimento").append("</th>");
+		sb.append("<th style=\"text-align: center; border: 1px solid #bdbdbd;\">").append("Dias atrazo").append("</th>");
+		sb.append("<th style=\"text-align: center; border: 1px solid #bdbdbd;\">").append("Valor (R$)").append("</th>");
+		sb.append("</tr>");
+		if (count > 0) {
+			for (int i = 0; i < cpHojeList.size(); i++) {
+				ContasPagarHojeResumo conta = cpHojeList.get(i);
+				sb.append("<tr").append(getStringAlternate(trTrue, trFalse, bw)).append(">");
+				sb.append("<td style=\"text-align: center; border: 1px solid #bdbdbd;\">").append(conta.getDescricao()).append("</td>");
+				sb.append("<td style=\"text-align: center; border: 1px solid #bdbdbd;\">").append(formatDate(conta.getDataVencimento())).append("</td>");
+				sb.append("<td style=\"text-align: center; border: 1px solid #bdbdbd;\">").append(conta.getDiasEmAtraso()).append("</td>");
+				sb.append("<td style=\"text-align: right; border: 1px solid #bdbdbd; padding-right: 5px;\">").append(df.format(conta.getValor())).append("</td>");
+				sb.append("</tr>");
+				
+			} // for
+			
+			if (count > CONTA_MAX_ITEMS) {
+				sb.append("<tr").append(getStringAlternate(trTrue, trFalse, bw)).append(">");
+				sb.append("<th colspan=\"4\" style=\"text-align: center; border: 1px solid #bdbdbd;\">")
+					.append("Tem mais ")
+					.append(count - CONTA_MAX_ITEMS)
+					.append(" contas.")
+					.append(" Para detalhes acesso o ")
+					.append(KERUBIN_LINK)					
+					.append("</th>");
+				sb.append("</tr>");
+			}
+			
+			sb.append("<tr").append(getStringAlternate(trTrue, trFalse, bw)).append(">");
+			sb.append("<th colspan=\"3\" style=\"text-align: right; padding-right: 5px; border: 1px solid #bdbdbd;\">").append("Total").append("</th>");
+			sb.append("<th style=\"text-align: right; border: 1px solid #bdbdbd; padding-right: 5px;\">").append(df.format(cp.getContasPagarHojeResumoSum())).append("</th>");
+			sb.append("</tr>");
+		}
+		else {
+			sb.append("<tr").append(getStringAlternate(trTrue, trFalse, bw)).append(">");
+			sb.append("<td colspan=\"4\" style=\"text-align: center; border: 1px solid #bdbdbd;\">").append("<strong>Aproveite seu dia, não há contas pra pagar hoje ;-)</strong>").append("</td>");
+			sb.append("</tr>");
+		}
+		sb.append(" </table>");
+		
+		return sb.toString();
+	}
+	
+	private String buildListaContasReceberHoje(ContasReceberHojeResumoCompleto cr) {
+		List<ContasReceberHojeResumo> crHojeList = cr.getContasReceberHojeResumo();
+		int count = crHojeList.size();
+		
+		if (count > CONTA_MAX_ITEMS) {
+			crHojeList = crHojeList.subList(0, CONTA_MAX_ITEMS);
+		}
+		
+		StringBuilder sb = new StringBuilder();
+		DecimalFormat df = new DecimalFormat("#,###,###,##0.00");
+		
+		BooleanWrapper bw = new BooleanWrapper(true);
+		String trTrue = " style=\"height:25px; background: #f4f4f4;\"";
+		String trFalse = " style=\"height:25px; background: #ffffff;\"";
+		
+		sb.append("<table style=\"margin: auto; width: 90%; border: 1px solid #bdbdbd; border-collapse: collapse;\">");
+		sb.append("<tr").append(getStringAlternate(trTrue, trFalse, bw)).append(">");
+		sb.append("<th style=\"text-align: center; border: 1px solid #bdbdbd;\">").append("Conta").append("</th>");
+		sb.append("<th style=\"text-align: center; border: 1px solid #bdbdbd;\">").append("Vencimento").append("</th>");
+		sb.append("<th style=\"text-align: center; border: 1px solid #bdbdbd;\">").append("Dias atrazo").append("</th>");
+		sb.append("<th style=\"text-align: center; border: 1px solid #bdbdbd;\">").append("Valor").append("</th>");
+		sb.append("</tr>");
+		if (count > 0) {
+			for (int i = 0; i < crHojeList.size(); i++) {
+				ContasReceberHojeResumo conta = crHojeList.get(i);
+				sb.append("<tr").append(getStringAlternate(trTrue, trFalse, bw)).append(">");
+				sb.append("<td style=\"text-align: center; border: 1px solid #bdbdbd;\">").append(conta.getDescricao()).append("</td>");
+				sb.append("<td style=\"text-align: center; border: 1px solid #bdbdbd;\">").append(formatDate(conta.getDataVencimento())).append("</td>");
+				sb.append("<td style=\"text-align: center; border: 1px solid #bdbdbd;\">").append(conta.getDiasEmAtraso()).append("</td>");
+				sb.append("<td style=\"text-align: right; border: 1px solid #bdbdbd; padding-right: 5px;\">").append(df.format(conta.getValor())).append("</td>");
+				sb.append("</tr>");
+				
+			} // for
+			
+			if (count > CONTA_MAX_ITEMS) {
+				sb.append("<tr").append(getStringAlternate(trTrue, trFalse, bw)).append(">");
+				
+				sb.append("<th colspan=\"4\" style=\"text-align: center; border: 1px solid #bdbdbd;\">")
+				.append("Tem mais ")
+				.append(count - CONTA_MAX_ITEMS)
+				.append(" contas.")
+				.append(" Para detalhes acesso o ")
+				.append(KERUBIN_LINK)					
+				.append("</th>");
+				
+				sb.append("</tr>");
+			}
+			
+			sb.append("<tr").append(getStringAlternate(trTrue, trFalse, bw)).append(">");
+			sb.append("<th colspan=\"3\" style=\"text-align: right; padding-right: 5px; border: 1px solid #bdbdbd;\">").append("Total").append("</th>");
+			sb.append("<th style=\"text-align: right; padding-right: 5px; border: 1px solid #bdbdbd;\">").append(df.format(cr.getContasReceberHojeResumoSum())).append("</th>");
+			sb.append("</tr>");
+		}
+		else {
+			sb.append("<tr").append(getStringAlternate(trTrue, trFalse, bw)).append(">");
+			sb.append("<td colspan=\"4\" style=\"text-align: center; border: 1px solid #bdbdbd;\">").append("<strong>Ainda não há contas a receber para hoje :-(</strong>").append("</td>");
+			sb.append("</tr>");
+		}
+		sb.append(" </table>");
+		
+		return sb.toString();
+	}
+	
+	private String buildNotificationBillsForUserMessage(SysUser user,
+			ContasPagarHojeResumoCompleto cp,
+			ContasReceberHojeResumoCompleto cr) {
+		
+		ContasPagarSituacaoDoAnoSum cpResumoSum = cp.getContasPagarSituacaoDoAnoSum();
+		
+		ContasReceberSituacaoDoAnoSum crResumoSum = cr.getContasReceberSituacaoDoAnoSum();
+		
+		DecimalFormat df = new DecimalFormat("#,###,###,##0.00");
+		String todayStr = formatDate(LocalDate.now());
+		
+		StringBuilder sb = new StringBuilder();
+		sb.append("");
+		
+		sb.append("<!DOCTYPE html>\r\n");
+		sb.append("<html lang=\"pt-br\">\r\n");
+		sb.append("<head>\r\n");
+		sb.append("<meta charset=\"UTF-8\">\r\n");
+		sb.append("<title>Rerubin - Resumo das contas</title>\r\n");
+		sb.append("</head>\r\n");
+		sb.append("<body>\r\n");
+		
+		String html = "<div style=\"float: left; border: 1px solid #d9d9d9; background: #F7F7F7; margin: 0 auto; width:100%; font-family: Helvetica,Arial,sans-serif; padding-left: 5px; padding-right: 5px;\">\r\n" + 
+		"	<div style=\"height: 100%; display:table; max-width:800px; width:100%; margin: 0 auto; margin-top: 20px; margin-bottom: 20px;\">\r\n" + 
 		"		<div style=\"display:table-row;background: #1e94d2;\">\r\n" + 
-		"			<div style=\"border:1px solid #0586d3; border-bottom: 0px; text-align:center;vertical-align:middle; display:table-cell; background:  #1e94d2; width: 100%; color:#fff; height: 60px; font-size: 1.5em; font-weight: bold;\">Kerubin</div>\r\n" + 
+		"			<div style=\"border:1px solid #0586d3; border-bottom: 0px; text-align:center;vertical-align:middle; display:table-cell; background:  #1e94d2; width: 100%; color:#fff; height: 60px; font-size: 1.5em; font-weight: bold;\"><img alt=\"Kerubin\" src=\"https://i.ibb.co/DRRnWT1/logo.jpg\"></div>\r\n" + 
 		"		</div>\r\n" + 
 		"		<div style=\"display:table-row;\">\r\n" + 
 		"			<div style=\"border:1px solid #d9d9d9;text-align:center;vertical-align:middle; display:table-cell; background: #fff; width: 100%;  height: 60px; font-size: 1.5em; font-weight: bold; padding-top: 20px; padding-bottom: 20px;\">\r\n" + 
@@ -147,37 +295,37 @@ public class BillsNotifier {
 		"      \r\n" + 
 		"      \r\n" + 
 		"      		<div style=\"display:table-row;background: #1e94d2;\">\r\n" + 
-		"			<div style=\"border:1px solid #d9d9d9; border-bottom: 0px; text-align:center;vertical-align:middle; display:table-cell; background:  #ff5722; width: 100%; color:#fff; padding-top: 5px; padding-bottom: 5px;\">Resumo do Contas a Pagar</div>\r\n" + 
+		"			<div style=\"border:1px solid #d9d9d9; border-bottom: 0px; text-align:center;vertical-align:middle; display:table-cell; background:  #ff5722; width: 100%; color:#fff; padding-top: 5px; padding-bottom: 5px;\">Resumo de valores (em R$) das contas a pagar</div>\r\n" + 
 		"		</div>\r\n" + 
 		"      \r\n" + 
 		"      <div style=\"display:table-row;\">\r\n" + 
-		"			<div style=\"border:1px solid #d9d9d9; border-top:0px; text-align:center;vertical-align:middle; display:table-cell; background:  #fff; width: 100%; font-weight:50px; padding-top: 20px; padding-bottom: 20px\">\r\n" + 
+		"			<div style=\"border:1px solid #d9d9d9; border-top:0px; text-align:center;vertical-align:middle; display:table-cell; background:  #fff; width: 100%; padding-top: 20px; padding-bottom: 20px\">\r\n" + 
 		"              \r\n" + 
-		"              <table align=\"center\" style=\"width: 60%\">\r\n" + 
+		"              <table style=\"margin: auto; width: 60%\">\r\n" + 
 		"                \r\n" + 
 		"                	<tr style=\"background:#fc7f8b; height:25px; height: 30px;\">\r\n" + 
 		"                      	<td style=\"text-align: right; padding-right: 5px;\">Em atraso:</td>\r\n" + 
-		"                        <td style=\"text-align: left; padding-left: 5px;\">" + df.format(cp.getValorVencido()) + "</td>\r\n" + 
+		"                        <td style=\"text-align: right; padding-right: 5px;\">" + df.format(cpResumoSum.getValorVencido()) + "</td>\r\n" + 
 		"                	</tr>\r\n" + 
 		"                \r\n" + 
 		"                	<tr style=\"background:#fdbf8f; height:25px; height: 30px;\">\r\n" + 
 		"                      	<td style=\"text-align: right;  padding-right: 5px;\">A pagar hoje:</td>\r\n" + 
-		"                        <td style=\"text-align: left; padding-left: 5px;\">" + df.format(cp.getValorVenceHoje()) + "</td>\r\n" + 
+		"                        <td style=\"text-align: right; padding-right: 5px;\">" + df.format(cpResumoSum.getValorVenceHoje()) + "</td>\r\n" + 
 		"                	</tr>\r\n" + 
 		"                \r\n" + 
 		"                	<tr style=\"background:#feffaa; height:25px; height: 30px;\">\r\n" + 
 		"                      	<td style=\"text-align: right;  padding-right: 5px;\">A pagar amanhã:</td>\r\n" + 
-		"                        <td style=\"text-align: left; padding-left: 5px;\">" + df.format(cp.getValorVenceAmanha()) + "</td>\r\n" + 
+		"                        <td style=\"text-align: right; padding-right: 5px;\">" + df.format(cpResumoSum.getValorVenceAmanha()) + "</td>\r\n" + 
 		"                	</tr>\r\n" + 
 		"                \r\n" + 
 		"                	<tr style=\"background:#dfdfdf; height:25px; height: 30px;\">\r\n" + 
 		"                      	<td style=\"text-align: right;  padding-right: 5px;\">A pagar nos próximos 7 dias:</td>\r\n" + 
-		"                        <td style=\"text-align: left; padding-left: 5px;\">" + df.format(cp.getValorVenceProximos7Dias()) + "</td>\r\n" + 
+		"                        <td style=\"text-align: right; padding-right: 5px;\">" + df.format(cpResumoSum.getValorVenceProximos7Dias()) + "</td>\r\n" + 
 		"                	</tr>\r\n" + 
 		"                \r\n" + 
 		"                	<tr style=\"background:#a8eca5; height:25px; height: 30px;\">\r\n" + 
 		"                      	<td style=\"text-align: right;  padding-right: 5px;\">Pago este mês:</td>\r\n" + 
-		"                        <td style=\"text-align: left; padding-left: 5px;\">" + df.format(cp.getValorPagoMesAtual()) + "</td>\r\n" + 
+		"                        <td style=\"text-align: right; padding-right: 5px;\">" + df.format(cpResumoSum.getValorPagoMesAtual()) + "</td>\r\n" + 
 		"                	</tr>\r\n" + 
 		"                \r\n" + 
 		"              </table>              \r\n" + 
@@ -187,42 +335,15 @@ public class BillsNotifier {
 		"		</div>\r\n" + 
 		"      \r\n" + 
 		"            		<div style=\"display:table-row;background: #1e94d2;\">\r\n" + 
-		"			<div style=\"border:1px solid #d9d9d9; border-bottom: 0px; text-align:center;vertical-align:middle; display:table-cell; background:  #ff5722; width: 100%; color:#fff; padding-top: 5px; padding-bottom: 5px;\">Contas a Pagar de hoje (18/07/2019)</div>\r\n" + 
+		"			<div style=\"border:1px solid #d9d9d9; border-bottom: 0px; text-align:center;vertical-align:middle; display:table-cell; background:  #ff5722; width: 100%; color:#fff; padding-top: 5px; padding-bottom: 5px;\">Contas a pagar para hoje (" + todayStr + ")</div>\r\n" + 
 		"		</div>\r\n" + 
 		"      \r\n" + 
 		"      <div style=\"display:table-row;\">\r\n" + 
-		"			<div style=\"border:1px solid #d9d9d9; border-top:0px; text-align:center;vertical-align:middle; display:table-cell; background:  #fff; width: 100%; font-weight:50px; padding-top: 20px; padding-bottom: 20px\">\r\n" + 
-		"              \r\n" + 
-		"             <table align=\"center\" style=\"width: 90%; border: 1px solid #bdbdbd; border-collapse: collapse;\">             \r\n" + 
-		"                	\r\n" + 
-		"                \r\n" + 
-		"                	<tr style=\"background: #f4f4f4;\">\r\n" + 
-		"                      	<th style=\"text-align: center; border: 1px solid #bdbdbd;\">Conta</th>\r\n" + 
-		"                        <th style=\"text-align: center; border: 1px solid #bdbdbd; \">Valor</th>\r\n" + 
-		"                	</tr>\r\n" + 
-		"                \r\n" + 
-		"                	<tr style=\"height:25px;\">\r\n" + 
-		"                      	<td style=\"text-align: center; border: 1px solid #bdbdbd;\">Telefone</td>\r\n" + 
-		"                        <td style=\"text-align: right; border: 1px solid #bdbdbd; padding-right: 5px;\">200,00</td>\r\n" + 
-		"                	</tr>\r\n" + 
-		"                \r\n" + 
-		"                	<tr style=\"background: #f4f4f4; height:25px;\">\r\n" + 
-		"                      	<td style=\"text-align: center; border: 1px solid #bdbdbd;\">Água</td>\r\n" + 
-		"                        <td style=\"text-align: right; border: 1px solid #bdbdbd; padding-right: 5px;\">350,00</td>\r\n" + 
-		"                	</tr>\r\n" + 
-		"                \r\n" + 
-		"                	<tr style=\"height:25px;\">\r\n" + 
-		"                      	<td style=\"text-align: center; border: 1px solid #bdbdbd;\">Escola</td>\r\n" + 
-		"                        <td style=\"text-align: right; border: 1px solid #bdbdbd; padding-right: 5px;\">1.350,00</td>\r\n" + 
-		"                	</tr>\r\n" + 
-		"                \r\n" + 
-		"                	<tr style=\"background: #f4f4f4; height:25px;\">\r\n" + 
-		"                      	<th style=\"text-align: center; border: 1px solid #bdbdbd;\">Total</th>\r\n" + 
-		"                        <th style=\"text-align: right; border: 1px solid #bdbdbd; padding-right: 5px;\">5.840,38</th>\r\n" + 
-		"                	</tr>\r\n" + 
-		"                \r\n" + 
-		"              </table>\r\n" + 
-		"        \r\n" + 
+		"			<div style=\"border:1px solid #d9d9d9; border-top:0px; text-align:center;vertical-align:middle; display:table-cell; background:  #fff; width: 100%; padding-top: 20px; padding-bottom: 20px\">\r\n" 
+		
+		+ buildListaContasPagarHoje(cp) +
+		
+
 		"        </div>\r\n" + 
 		"		</div>\r\n" + 
 		"\r\n" + 
@@ -230,37 +351,37 @@ public class BillsNotifier {
 		"\r\n" + 
 		"\r\n" + 
 		"<div style=\"display:table-row;background: #1e94d2;\">\r\n" + 
-		"			<div style=\"border:1px solid #0586d3; border-bottom: 0px; text-align:center;vertical-align:middle; display:table-cell; background:  #1e94d2; width: 100%; color:#fff; padding-top: 5px; padding-bottom: 5px;\">Resumo do Contas a Receber</div>\r\n" + 
+		"			<div style=\"border:1px solid #0586d3; border-bottom: 0px; text-align:center;vertical-align:middle; display:table-cell; background:  #1e94d2; width: 100%; color:#fff; padding-top: 5px; padding-bottom: 5px;\">Resumo de valores (em R$) das contas a receber</div>\r\n" + 
 		"		</div>\r\n" + 
 		"      \r\n" + 
 		"      <div style=\"display:table-row;\">\r\n" + 
-		"			<div style=\"border:1px solid #d9d9d9; border-top:0px; text-align:center;vertical-align:middle; display:table-cell; background:  #fff; width: 100%; font-weight:50px; padding-top: 20px; padding-bottom: 20px\">\r\n" + 
+		"			<div style=\"border:1px solid #d9d9d9; border-top:0px; text-align:center;vertical-align:middle; display:table-cell; background:  #fff; width: 100%; padding-top: 20px; padding-bottom: 20px\">\r\n" + 
 		"              \r\n" + 
-		"              <table align=\"center\" style=\"width: 60%\">\r\n" + 
+		"              <table style=\"margin: auto; width: 60%\">\r\n" + 
 		"                \r\n" + 
 		"                	<tr style=\"background:#fc7f8b; height:25px; height: 30px;\">\r\n" + 
 		"                      	<td style=\"text-align: right; padding-right: 5px;\">Em atraso:</td>\r\n" + 
-		"                        <td style=\"text-align: left; padding-left: 5px;\">" + df.format(cr.getValorVencido()) + "</td>\r\n" + 
+		"                        <td style=\"text-align: right; padding-right: 5px;\">" + df.format(crResumoSum.getValorVencido()) + "</td>\r\n" + 
 		"                	</tr>\r\n" + 
 		"                \r\n" + 
 		"                	<tr style=\"background:#fdbf8f; height:25px; height: 30px;\">\r\n" + 
 		"                      	<td style=\"text-align: right;  padding-right: 5px;\">A receber hoje:</td>\r\n" + 
-		"                        <td style=\"text-align: left; padding-left: 5px;\">" + df.format(cr.getValorVenceHoje()) + "</td>\r\n" + 
+		"                        <td style=\"text-align: right; padding-right: 5px;\">" + df.format(crResumoSum.getValorVenceHoje()) + "</td>\r\n" + 
 		"                	</tr>\r\n" + 
 		"                \r\n" + 
 		"                	<tr style=\"background:#feffaa; height:25px; height: 30px;\">\r\n" + 
 		"                      	<td style=\"text-align: right;  padding-right: 5px;\">A receber amanhã:</td>\r\n" + 
-		"                        <td style=\"text-align: left; padding-left: 5px;\">" + df.format(cr.getValorVenceAmanha()) + "</td>\r\n" + 
+		"                        <td style=\"text-align: right; padding-right: 5px;\">" + df.format(crResumoSum.getValorVenceAmanha()) + "</td>\r\n" + 
 		"                	</tr>\r\n" + 
 		"                \r\n" + 
 		"                	<tr style=\"background:#dfdfdf; height:25px; height: 30px;\">\r\n" + 
 		"                      	<td style=\"text-align: right;  padding-right: 5px;\">A receber nos próximos 7 dias:</td>\r\n" + 
-		"                        <td style=\"text-align: left; padding-left: 5px;\">" + df.format(cr.getValorVenceProximos7Dias()) + "</td>\r\n" + 
+		"                        <td style=\"text-align: right; padding-right: 5px;\">" + df.format(crResumoSum.getValorVenceProximos7Dias()) + "</td>\r\n" + 
 		"                	</tr>\r\n" + 
 		"                \r\n" + 
 		"                	<tr style=\"background:#a8eca5; height:25px; height: 30px;\">\r\n" + 
 		"                      	<td style=\"text-align: right;  padding-right: 5px;\">Recebido este mês:</td>\r\n" + 
-		"                        <td style=\"text-align: left; padding-left: 5px;\">" + df.format(cr.getValorPagoMesAtual()) + "</td>\r\n" + 
+		"                        <td style=\"text-align: right; padding-right: 5px;\">" + df.format(crResumoSum.getValorPagoMesAtual()) + "</td>\r\n" + 
 		"                	</tr>\r\n" + 
 		"                \r\n" + 
 		"              </table>\r\n" + 
@@ -269,41 +390,15 @@ public class BillsNotifier {
 		"		</div>\r\n" + 
 		"      \r\n" + 
 		"            		<div style=\"display:table-row;background: #1e94d2;\">\r\n" + 
-		"			<div style=\"border:1px solid #0586d3; border-bottom: 0px; text-align:center;vertical-align:middle; display:table-cell; background:  #1e94d2; width: 100%; color:#fff; padding-top: 5px; padding-bottom: 5px;\">Contas a Receber de hoje (18/07/2019)</div>\r\n" + 
+		"			<div style=\"border:1px solid #0586d3; border-bottom: 0px; text-align:center;vertical-align:middle; display:table-cell; background:  #1e94d2; width: 100%; color:#fff; padding-top: 5px; padding-bottom: 5px;\">Contas a Receber de hoje (" + todayStr + ")</div>\r\n" + 
 		"		</div>\r\n" + 
 		"      \r\n" + 
 		"      <div style=\"display:table-row;\">\r\n" + 
-		"			<div style=\"border:1px solid #d9d9d9; border-top:0px; text-align:center;vertical-align:middle; display:table-cell; background:  #fff; width: 100%; font-weight:50px; padding-top: 20px; padding-bottom: 20px\">\r\n" + 
-		"              \r\n" + 
-		"              <table align=\"center\" style=\"width: 90%; border: 1px solid #bdbdbd; border-collapse: collapse;\">             \r\n" + 
-		"                	\r\n" + 
-		"                \r\n" + 
-		"                	<tr style=\"background: #f4f4f4;\">\r\n" + 
-		"                      	<th style=\"text-align: center; border: 1px solid #bdbdbd;\">Conta</th>\r\n" + 
-		"                        <th style=\"text-align: center; border: 1px solid #bdbdbd; \">Valor</th>\r\n" + 
-		"                	</tr>\r\n" + 
-		"                \r\n" + 
-		"                	<tr style=\"height:25px;\">\r\n" + 
-		"                      	<td style=\"text-align: center; border: 1px solid #bdbdbd;\">Cliente A</td>\r\n" + 
-		"                        <td style=\"text-align: right; border: 1px solid #bdbdbd; padding-right: 5px;\">200,00</td>\r\n" + 
-		"                	</tr>\r\n" + 
-		"                \r\n" + 
-		"                	<tr style=\"background: #f4f4f4; height:25px;\">\r\n" + 
-		"                      	<td style=\"text-align: center; border: 1px solid #bdbdbd;\">Cliente B</td>\r\n" + 
-		"                        <td style=\"text-align: right; border: 1px solid #bdbdbd; padding-right: 5px;\">350,00</td>\r\n" + 
-		"                	</tr>\r\n" + 
-		"                \r\n" + 
-		"                	<tr style=\"height:25px;\">\r\n" + 
-		"                      	<td style=\"text-align: center; border: 1px solid #bdbdbd;\">Cliente C</td>\r\n" + 
-		"                        <td style=\"text-align: right; border: 1px solid #bdbdbd; padding-right: 5px;\">1.350,00</td>\r\n" + 
-		"                	</tr>\r\n" + 
-		"                \r\n" + 
-		"                	<tr style=\"background: #f4f4f4; height:25px;\">\r\n" + 
-		"                      	<th style=\"text-align: center; border: 1px solid #bdbdbd;\">Total</th>\r\n" + 
-		"                        <th style=\"text-align: right; border: 1px solid #bdbdbd; padding-right: 5px;\">5.840,38</th>\r\n" + 
-		"                	</tr>\r\n" + 
-		"                \r\n" + 
-		"              </table>\r\n" + 
+		"			<div style=\"border:1px solid #d9d9d9; border-top:0px; text-align:center;vertical-align:middle; display:table-cell; background:  #fff; width: 100%; padding-top: 20px; padding-bottom: 20px\">\r\n" + 
+		"              "
+		
+		+ buildListaContasReceberHoje(cr) +
+		
 		"        \r\n" + 
 		"        </div>\r\n" + 
 		"		</div>\r\n" + 
@@ -312,57 +407,66 @@ public class BillsNotifier {
 		"      \r\n" + 
 		"      <div style=\"display:table-row;\">\r\n" + 
 		"			<div style=\"border:1px solid #d9d9d9; border-top: 0px; text-align:center;vertical-align:middle; display:table-cell; background:  #fff; width: 100%; padding-top: 20px; padding-bottom: 20px;\">\r\n" + 
-		"              <p>Para mais detalhes, acesse o <span style=\"color: #1e94d2; font-weight: bold;\">Kerubin</span> <a href=\"#\">clicando aqui</a>.</p>\r\n" + 
+		"              <p>Para mais detalhes, acesse o " + KERUBIN_LINK + ".</p>\r\n" + 
 		"             Abraços,<br>Equipe Kerubin\r\n" + 
 		"        </div>\r\n" + 
 		"		</div>\r\n" + 
 		"      \r\n" + 
 		"	</div>\r\n" + 
-		"</div>";
+		"</div>\r\n";
+		
+		sb.append(html);
+		
+		sb.append("</body>\r\n");
+		sb.append("</html>\r\n");
+		
+		html = sb.toString();
+		// saveText(html, "D:\\bkp\\email.HTML");
 		
 		return html;
+		
 	}
 
-	private ContasPagarSituacaoDoAnoSum getContasPagarSituacaoDoAno(SysUser userAndTenant) {
+	private ContasPagarHojeResumoCompleto getContasPagarHojeResumoCompleto(SysUser userAndTenant) {
 		String tenant = userAndTenant.getTenant().getName();
 		String username = userAndTenant.getEmail();
 		
-		log.info("Starting getContasPagarSituacaoDoAno for tenant: {} and user: {}...", tenant,  username);
-		String url = HTTP + FINANCEIRO_CONTASPAGAR_SERVICE + "/" + DASHBOARD + "/getContasPagarSituacaoDoAno";
+		log.info("Starting getContasPagarHojeResumoCompleto for tenant: {} and user: {}...", tenant,  username);
+		String url = HTTP + FINANCEIRO_CONTASPAGAR_SERVICE + "/" + DASHBOARD + "/getContasPagarHojeResumoCompleto";
 		
         HttpEntity<String> httpEntity = buildHttpHeaders(tenant, username);
 
-		ResponseEntity<ContasPagarSituacaoDoAnoSum> response = restTemplate.exchange(url, HttpMethod.GET, httpEntity,
-				new ParameterizedTypeReference<ContasPagarSituacaoDoAnoSum>() {
+		ResponseEntity<ContasPagarHojeResumoCompleto> response = restTemplate.exchange(url, HttpMethod.GET, httpEntity,
+				new ParameterizedTypeReference<ContasPagarHojeResumoCompleto>() {
 				});
 		
-		ContasPagarSituacaoDoAnoSum result = response.getBody();
+		ContasPagarHojeResumoCompleto result = response.getBody();
 		
-		log.info("Result at getContasPagarSituacaoDoAno for tenant: {} and user: {}, result: {}", tenant,  username, result);
+		log.info("Result at getContasPagarHojeResumoCompleto for tenant: {} and user: {}, result: {}", tenant,  username, result);
 		
-		log.info("DONE getContasPagarSituacaoDoAno for tenant: {} and user: {}...", tenant,  username);
+		log.info("DONE getContasPagarHojeResumoCompleto for tenant: {} and user: {}...", tenant,  username);
 		return result;
 	}
 	
-	private ContasReceberSituacaoDoAnoSum getContasReceberSituacaoDoAno(SysUser userAndTenant) {
+	private ContasReceberHojeResumoCompleto getContasReceberHojeResumoCompleto(SysUser userAndTenant) {
 		String tenant = userAndTenant.getTenant().getName();
 		String username = userAndTenant.getEmail();
 		
-		log.info("Starting getContasReceberSituacaoDoAno for tenant: {} and user: {}...", tenant,  username);
+		log.info("Starting getContasReceberHojeResumoCompleto for tenant: {} and user: {}...", tenant,  username);
 		
-		String url = HTTP + FINANCEIRO_CONTASRECEBER_SERVICE + "/" + DASHBOARD + "/getContasReceberSituacaoDoAno";
+		String url = HTTP + FINANCEIRO_CONTASRECEBER_SERVICE + "/" + DASHBOARD + "/getContasReceberHojeResumoCompleto";
 		
 		HttpEntity<String> httpEntity = buildHttpHeaders(tenant, username);
         
-		ResponseEntity<ContasReceberSituacaoDoAnoSum> response = restTemplate.exchange(url, HttpMethod.GET, httpEntity,
-				new ParameterizedTypeReference<ContasReceberSituacaoDoAnoSum>() {
+		ResponseEntity<ContasReceberHojeResumoCompleto> response = restTemplate.exchange(url, HttpMethod.GET, httpEntity,
+				new ParameterizedTypeReference<ContasReceberHojeResumoCompleto>() {
 		});
 		
-		ContasReceberSituacaoDoAnoSum result = response.getBody();
+		ContasReceberHojeResumoCompleto result = response.getBody();
 		
-		log.info("Result at getContasReceberSituacaoDoAno for tenant: {} and user: {}, result: {}", tenant,  username, result);
+		log.info("Result at getContasReceberHojeResumoCompleto for tenant: {} and user: {}, result: {}", tenant,  username, result);
 		
-		log.info("DONE getContasReceberSituacaoDoAno for tenant: {} and user: {}...", tenant,  username);
+		log.info("DONE getContasReceberHojeResumoCompleto for tenant: {} and user: {}...", tenant,  username);
 		return result;
 	}
 	

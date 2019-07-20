@@ -8,7 +8,8 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import br.com.kerubin.api.financeiro.contaspagar.model.ContasPagarHojeResumoDTO;
+import br.com.kerubin.api.financeiro.contaspagar.model.ContasPagarHojeResumo;
+import br.com.kerubin.api.financeiro.contaspagar.model.ContasPagarHojeResumoCompleto;
 import br.com.kerubin.api.financeiro.contaspagar.model.ContasPagarSituacaoDoAnoSum;
 import br.com.kerubin.api.financeiro.contaspagar.model.MonthlySumContasPagar;
 import br.com.kerubin.api.financeiro.contaspagar.service.ContasPagarDashboardService;
@@ -33,8 +34,14 @@ public class DashboardController {
 	}
 	
 	@GetMapping("/getContasPagarHojeResumo")
-	public List<ContasPagarHojeResumoDTO> getContasPagarHojeResumo() {
-		List<ContasPagarHojeResumoDTO> result = contasPagarDashboardService.getContasPagarHojeResumo();
+	public List<ContasPagarHojeResumo> getContasPagarHojeResumo() {
+		List<ContasPagarHojeResumo> result = contasPagarDashboardService.getContasPagarHojeResumo();
+		return result;
+	}
+	
+	@GetMapping("/getContasPagarHojeResumoCompleto")
+	public ContasPagarHojeResumoCompleto getContasPagarHojeResumoCompleto() {
+		ContasPagarHojeResumoCompleto result = contasPagarDashboardService.getContasPagarHojeResumoCompleto();
 		return result;
 	}
 

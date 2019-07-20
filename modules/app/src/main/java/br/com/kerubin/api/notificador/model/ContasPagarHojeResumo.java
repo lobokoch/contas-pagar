@@ -1,4 +1,4 @@
-package br.com.kerubin.api.financeiro.contaspagar.model;
+package br.com.kerubin.api.notificador.model;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -11,7 +11,7 @@ import lombok.ToString;
 @Getter
 @Setter
 @ToString
-public class ContasPagarHojeResumoDTO {
+public class ContasPagarHojeResumo {
 	
 	private UUID id;
 	private String descricao;
@@ -19,7 +19,7 @@ public class ContasPagarHojeResumoDTO {
 	private Long diasEmAtraso;
 	private BigDecimal valor;
 	
-	public ContasPagarHojeResumoDTO() {
+	public ContasPagarHojeResumo() {
 		
 	}
 
