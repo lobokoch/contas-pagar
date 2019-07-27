@@ -24,6 +24,7 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 
+import br.com.kerubin.api.notificador.model.CaixaMovimentoItem;
 import br.com.kerubin.api.notificador.model.ContasPagarHojeResumo;
 import br.com.kerubin.api.notificador.model.ContasPagarHojeResumoCompleto;
 import br.com.kerubin.api.notificador.model.ContasPagarSituacaoDoAnoSum;
@@ -34,6 +35,7 @@ import br.com.kerubin.api.notificador.model.SysUser;
 import br.com.kerubin.api.servicecore.mail.MailSender;
 import br.com.kerubin.api.servicecore.util.BooleanWrapper;
 import lombok.extern.slf4j.Slf4j;
+
 
 import static br.com.kerubin.api.servicecore.util.CoreUtils.*;
 
@@ -46,6 +48,7 @@ public class BillsNotifier {
 	
 	public static final String FINANCEIRO_CONTASPAGAR_SERVICE = "financeiro-contaspagar";
 	public static final String FINANCEIRO_CONTASRECEBER_SERVICE = "financeiro-contasreceber";
+	public static final String FINANCEIRO_FLUXOCAIXA_SERVICE = "financeiro-fluxocaixa";
 	public static final String SECURITY_AUTHORIZATION_SERVICE = "security-authorization";
 	public static final String HTTP = "http://";
 	public static final String DASHBOARD = "dashboard";
@@ -111,25 +114,32 @@ public class BillsNotifier {
 		
 		ContasReceberHojeResumoCompleto contasReceberHojeResumoCompleto = getContasReceberHojeResumoCompleto(userAndTenant);
 		
+		List<CaixaMovimentoItem> fluxoCaixaResumoMovimentacoes = getFluxoCaixaResumoMovimentacoes(userAndTenant);
+		
 		// Filtra apenas pelos usuários do tenant para envio das informações.
 		List<SysUser> usersOfTenant = users.stream()
 				.filter(it -> it.getTenant().getId().equals(userAndTenant.getTenant().getId()))
 				.collect(Collectors.toList());
 		
-		usersOfTenant.forEach(user -> notifyBillsForUser(user, contasPagarHojeResumoCompleto, contasReceberHojeResumoCompleto));
+		usersOfTenant.forEach(user -> notifyBillsForUser(user, contasPagarHojeResumoCompleto, contasReceberHojeResumoCompleto, fluxoCaixaResumoMovimentacoes));
 		
 		
 		log.info("DONE notifyBillsForTenant for tenant: {}.", tenant);
 	}
 	
-	private void notifyBillsForUser(SysUser user, ContasPagarHojeResumoCompleto contasPagarHojeResumoCompleto,
-			ContasReceberHojeResumoCompleto contasReceberHojeResumoCompleto) {
+	private void notifyBillsForUser(SysUser user, 
+			ContasPagarHojeResumoCompleto contasPagarHojeResumoCompleto,
+			ContasReceberHojeResumoCompleto contasReceberHojeResumoCompleto,
+			List<CaixaMovimentoItem> fluxoCaixaResumoMovimentacoes) {
 		log.info("Notifying bills for user name: {}, e-mail: {}, tenant: {} ...", user.getName(), user.getEmail(), user.getTenant());
 		
 		String from = MailSender.EMAIL_FROM_DEFAULT;
 		List<String> recipients = Arrays.asList(user.getEmail());
 		String subsject = "Kerubin - Resumo das contas";
-		String message = buildNotificationBillsForUserMessage(user, contasPagarHojeResumoCompleto, contasReceberHojeResumoCompleto);
+		String message = buildNotificationBillsForUserMessage(user, 
+				contasPagarHojeResumoCompleto, 
+				contasReceberHojeResumoCompleto,
+				fluxoCaixaResumoMovimentacoes);
 		
 		mailSender.sendMail(from, recipients, subsject, message);
 		
@@ -197,6 +207,58 @@ public class BillsNotifier {
 		return sb.toString();
 	}
 	
+	private String buildListaFluxoCaixaResumoMovimentacoes(List<CaixaMovimentoItem> fc) {
+		StringBuilder sb = new StringBuilder();
+		DecimalFormat df = new DecimalFormat("#,###,###,##0.00");
+		
+		BooleanWrapper bw = new BooleanWrapper(true);
+		String trTrue = " style=\"height:25px; background: #f4f4f4;\"";
+		String trFalse = " style=\"height:25px; background: #ffffff;\"";
+		
+		sb.append("<table style=\"margin: auto; width: 90%; border: 1px solid #bdbdbd; border-collapse: collapse;\">");
+		
+		// Mount the table headers.
+		sb.append("<tr").append(getStringAlternate(trTrue, trFalse, bw)).append(">");
+		
+		sb.append("<th style=\"text-align: center; border: 1px solid #bdbdbd;\">").append("").append("</th>");
+		fc.forEach(item -> {
+			sb.append("<th style=\"text-align: center; border: 1px solid #bdbdbd;\">").append(item.getDescricao()).append("</th>");
+		});
+		
+		sb.append("</tr>");
+		
+		// Mount each table row
+		final byte MAX_ROWS = 3;
+		List<String> tipos = Arrays.asList("Créditos", "Débitos", "Saldo");
+		List<String> bgColors = Arrays.asList("rgba(0, 191, 255, 0.4)", "rgba(255, 0, 0, 0.4)", "rgba(0, 206, 0, 0.4)");
+		final int MAX_COLS = fc.size();
+		String[][] values = new String[MAX_ROWS][MAX_COLS];
+		for (int i = 0; i < fc.size(); i++) {
+			CaixaMovimentoItem item = fc.get(i);
+			values[0][i] = df.format(item.getCredito());
+			values[1][i] = "-" + df.format(item.getDedito());
+			values[2][i] = df.format(item.getSaldo());
+		}
+		
+		for (int i = 0; i < MAX_ROWS; i++) {
+			sb.append("<tr").append(getStringAlternate(trTrue, trFalse, bw)).append(">");
+			sb.append("<td style=\"font-weight: bold; text-align: center; border: 1px solid #bdbdbd; background: ").append("#f4f4f4;"/*bgColors.get(i)*/).append("\">").append(tipos.get(i)).append("</td>");
+			
+			for (int j = 0; j < MAX_COLS; j++) {
+				String value = values[i][j];
+				sb.append("<td style=\"text-align: right; border: 1px solid #bdbdbd; padding-right: 5px; ").append(i == 2 ? "font-weight: bold; " : "").append("background: ").append(bgColors.get(i)).append(";").append("\">").append(value).append("</td>");
+			} //for j
+
+			sb.append("</tr>");
+		} // for
+		
+		
+		
+		sb.append(" </table>");
+		
+		return sb.toString();
+	}
+	
 	private String buildListaContasReceberHoje(ContasReceberHojeResumoCompleto cr) {
 		List<ContasReceberHojeResumo> crHojeList = cr.getContasReceberHojeResumo();
 		int count = crHojeList.size();
@@ -252,7 +314,7 @@ public class BillsNotifier {
 		}
 		else {
 			sb.append("<tr").append(getStringAlternate(trTrue, trFalse, bw)).append(">");
-			sb.append("<td colspan=\"4\" style=\"text-align: center; border: 1px solid #bdbdbd;\">").append("<strong>Ainda não há contas a receber para hoje :-(</strong>").append("</td>");
+			sb.append("<td colspan=\"4\" style=\"text-align: center; border: 1px solid #bdbdbd;\">").append("<strong>Ainda não há contas a receber para hoje :(</strong>").append("</td>");
 			sb.append("</tr>");
 		}
 		sb.append(" </table>");
@@ -262,7 +324,8 @@ public class BillsNotifier {
 	
 	private String buildNotificationBillsForUserMessage(SysUser user,
 			ContasPagarHojeResumoCompleto cp,
-			ContasReceberHojeResumoCompleto cr) {
+			ContasReceberHojeResumoCompleto cr,
+			List<CaixaMovimentoItem> fc) {
 		
 		ContasPagarSituacaoDoAnoSum cpResumoSum = cp.getContasPagarSituacaoDoAnoSum();
 		
@@ -295,7 +358,7 @@ public class BillsNotifier {
 		"      \r\n" + 
 		"      \r\n" + 
 		"      		<div style=\"display:table-row;background: #1e94d2;\">\r\n" + 
-		"			<div style=\"border:1px solid #d9d9d9; border-bottom: 0px; text-align:center;vertical-align:middle; display:table-cell; background:  #ff5722; width: 100%; color:#fff; padding-top: 5px; padding-bottom: 5px;\">Resumo de valores (em R$) das contas a pagar</div>\r\n" + 
+		"			<div style=\"border:1px solid #d9d9d9; border-bottom: 0px; text-align:center;vertical-align:middle; display:table-cell; background:  #ff5722; width: 100%; color:#fff; padding-top: 5px; padding-bottom: 5px;\">Resumo dos valores das contas a pagar (em R$)</div>\r\n" + 
 		"		</div>\r\n" + 
 		"      \r\n" + 
 		"      <div style=\"display:table-row;\">\r\n" + 
@@ -351,7 +414,7 @@ public class BillsNotifier {
 		"\r\n" + 
 		"\r\n" + 
 		"<div style=\"display:table-row;background: #1e94d2;\">\r\n" + 
-		"			<div style=\"border:1px solid #0586d3; border-bottom: 0px; text-align:center;vertical-align:middle; display:table-cell; background:  #1e94d2; width: 100%; color:#fff; padding-top: 5px; padding-bottom: 5px;\">Resumo de valores (em R$) das contas a receber</div>\r\n" + 
+		"			<div style=\"border:1px solid #0586d3; border-bottom: 0px; text-align:center;vertical-align:middle; display:table-cell; background:  #1e94d2; width: 100%; color:#fff; padding-top: 5px; padding-bottom: 5px;\">Resumo dos valores das contas a receber (em R$)</div>\r\n" + 
 		"		</div>\r\n" + 
 		"      \r\n" + 
 		"      <div style=\"display:table-row;\">\r\n" + 
@@ -388,8 +451,8 @@ public class BillsNotifier {
 		"        \r\n" + 
 		"        </div>\r\n" + 
 		"		</div>\r\n" + 
-		"      \r\n" + 
-		"            		<div style=\"display:table-row;background: #1e94d2;\">\r\n" + 
+		"      \r\n" + // Begin Contas a Receber de hoje
+		"       <div style=\"display:table-row;background: #1e94d2;\">\r\n" + 
 		"			<div style=\"border:1px solid #0586d3; border-bottom: 0px; text-align:center;vertical-align:middle; display:table-cell; background:  #1e94d2; width: 100%; color:#fff; padding-top: 5px; padding-bottom: 5px;\">Contas a Receber de hoje (" + todayStr + ")</div>\r\n" + 
 		"		</div>\r\n" + 
 		"      \r\n" + 
@@ -401,7 +464,23 @@ public class BillsNotifier {
 		
 		"        \r\n" + 
 		"        </div>\r\n" + 
+		"	</div>\r\n" + 
+		"\r\n" + 
+		
+		"      \r\n" + // Begin Resumo do Fluxo de Caixa
+		"       <div style=\"display:table-row;background: #1e94d2;\">\r\n" + 
+		"			<div style=\"border:1px solid #0586d3; border-bottom: 0px; text-align:center;vertical-align:middle; display:table-cell; background: #008000; width: 100%; color:#fff; padding-top: 5px; padding-bottom: 5px;\">Resumo das movimentações do caixa (em R$)</div>\r\n" + 
 		"		</div>\r\n" + 
+		"      \r\n" + 
+		"      <div style=\"display:table-row;\">\r\n" + 
+		"			<div style=\"border:1px solid #d9d9d9; border-top:0px; text-align:center;vertical-align:middle; display:table-cell; background:  #fff; width: 100%; padding-top: 20px; padding-bottom: 20px\">\r\n" + 
+		"              "
+		
+		+ buildListaFluxoCaixaResumoMovimentacoes(fc) +
+		
+		"        \r\n" + 
+		"        </div>\r\n" + 
+		"	</div>\r\n" + 
 		"\r\n" + 
 		"\r\n" + 
 		"      \r\n" + 
@@ -467,6 +546,29 @@ public class BillsNotifier {
 		log.info("Result at getContasReceberHojeResumoCompleto for tenant: {} and user: {}, result: {}", tenant,  username, result);
 		
 		log.info("DONE getContasReceberHojeResumoCompleto for tenant: {} and user: {}...", tenant,  username);
+		return result;
+	}
+	
+	
+	private List<CaixaMovimentoItem> getFluxoCaixaResumoMovimentacoes(SysUser userAndTenant) {
+		String tenant = userAndTenant.getTenant().getName();
+		String username = userAndTenant.getEmail();
+		
+		String url = HTTP + FINANCEIRO_FLUXOCAIXA_SERVICE + "/" + DASHBOARD + "/getFluxoCaixaResumoMovimentacoes";
+		
+		log.info("Starting getFluxoCaixaResumoMovimentacoes for tenant: {} and user: {}, URL: {}...", tenant,  username, url);
+		
+		HttpEntity<String> httpEntity = buildHttpHeaders(tenant, username);
+		
+		ResponseEntity<List<CaixaMovimentoItem>> response = restTemplate.exchange(url, HttpMethod.GET, httpEntity,
+				new ParameterizedTypeReference<List<CaixaMovimentoItem>>() {
+		});
+		
+		List<CaixaMovimentoItem> result = response.getBody();
+		
+		log.info("Result at getFluxoCaixaResumoMovimentacoes for tenant: {} and user: {}, result: {}", tenant,  username, result);
+		
+		log.info("DONE getFluxoCaixaResumoMovimentacoes for tenant: {} and user: {}...", tenant,  username);
 		return result;
 	}
 	
