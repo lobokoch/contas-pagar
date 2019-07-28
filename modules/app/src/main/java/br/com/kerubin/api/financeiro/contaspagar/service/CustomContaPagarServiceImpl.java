@@ -5,7 +5,9 @@ import static br.com.kerubin.api.servicecore.util.CoreUtils.isNotEmpty;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -59,7 +61,17 @@ public class CustomContaPagarServiceImpl extends ContaPagarServiceImpl {
 		Page<ContaPagarEntity> result = super.list(contaPagarListFilter, pageable);
 		
 		if (isNotEmpty(result)) {
-			result.forEach(item -> decoratePlanoContas(item.getPlanoContas()));
+			Map<UUID, PlanoContaEntity> planosVisitados = new HashMap<>();
+			result.forEach(item -> {
+				PlanoContaEntity planoContas = item.getPlanoContas();
+				if (isNotEmpty(planoContas)) {
+					UUID id = planoContas.getId();
+					if (!planosVisitados.containsKey(id)) {
+						decoratePlanoContas(item.getPlanoContas());
+						planosVisitados.put(id, planoContas);
+					}
+				}
+			});
 		}
 		
 		return result;

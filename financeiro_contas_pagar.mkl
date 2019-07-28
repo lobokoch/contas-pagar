@@ -386,7 +386,7 @@ service contas_pagar { //xxx
 		default
 		
 		CONTA_BANCARIA
-		label: "Débito em conta"
+		label: "Conta bancária"
 		
 		CARTAO_CREDITO
 		label: "Cartão de crédito"
