@@ -195,7 +195,7 @@ service contas_pagar { //xxx
 	@label("Fornecedor")
 	entity Fornecedor {		
 		
-		tipoPessoa: TipoPessoa?
+		tipoPessoa: TipoPessoa
 		
 		nome: string
 		label: "Nome"
