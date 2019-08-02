@@ -9,10 +9,11 @@ INSERT INTO bandeira_cartao (id,nome_bandeira) VALUES
 ,('e871ca10-3b4f-4868-bf0c-b8bc797a1532','Hipercard')
 ,('569b41ee-92fd-4a7d-9225-f9de22f23f73','Maestro')
 ,('b55ea84a-7563-4b3a-8ed2-52c32591edc2','MasterCard')
-;
+ON CONFLICT ON CONSTRAINT pk_bandeira_cartao_id DO NOTHING;
+
 INSERT INTO bandeira_cartao (id,nome_bandeira) VALUES 
 ('43baf344-996a-4a21-aa95-bfee47822068','Sodexo')
 ,('4666c584-51ff-47c9-82b7-b13b622afab2','Ticket')
 ,('1f4abbdb-1757-4654-882b-2927ad14a2a6','Visa')
 ,('9a47ebd5-c508-409d-a4d4-6c46ef18f2f9','VR Benefícios')
-;
+ON CONFLICT ON CONSTRAINT pk_bandeira_cartao_id DO NOTHING;

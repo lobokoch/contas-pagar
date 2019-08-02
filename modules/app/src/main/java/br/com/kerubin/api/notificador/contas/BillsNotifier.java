@@ -45,6 +45,7 @@ public class BillsNotifier {
 	
 	private static final String TIME_ZONE = "America/Sao_Paulo";
 	private static final int CONTA_MAX_ITEMS = 5;
+	private static final int MAX_RETRIES = 5;
 	
 	public static final String FINANCEIRO_CONTASPAGAR_SERVICE = "financeiro-contaspagar";
 	public static final String FINANCEIRO_CONTASRECEBER_SERVICE = "financeiro-contasreceber";
@@ -65,20 +66,55 @@ public class BillsNotifier {
 	// @Scheduled(fixedDelay = 1000 * 20)
 	@Scheduled(cron = "0 0 0 * * *", zone = TIME_ZONE)
 	public void executeNotifyUsersAboutTheBills() {
-		loadUsersWithTenants();
+		tryToNotifyUsersAboutTheBills();
+	}
+	
+	private void tryToNotifyUsersAboutTheBills() {
+		int attempts = 0;
+		boolean success = false;
+		
+		log.info("STARTING notifications for users about the BILLS...");
+		
+		log.info("Starting loading users...");
+		while(!success && attempts < MAX_RETRIES) {
+			attempts++;
+			try {
+				loadUsersWithTenants();
+				success = true;
+			} catch (Exception e) {
+				log.error("Attempts to load users from tenats with fails: " + attempts, e);
+			}
+		} // while
+		
+		log.info("{} attempts to load users from tenant with final result: {}.", attempts, ifThen(success, "SUCCESS", "FAIL"));
+		if (!success) {
+			log.warn("*** Skipping notifyUsersAboutTheBills due fail at loadUsersWithTenants. ***");
+			return;
+		}
+		
+		log.info("Starting notification for users about the BILLS...");
 		notifyUsersAboutTheBills();
+		log.info("DONE notification for users about the BILLS.");
 	}
 	
 	private void loadUsersWithTenants() {		
 		String url = HTTP + SECURITY_AUTHORIZATION_SERVICE + "/" + "entities/sysUser" + "/listActiveUsers";
 		
+		log.info("Loading users from: {}...", url);
+		
 		ResponseEntity<List<SysUser>> response = restTemplate.exchange(url, HttpMethod.GET, null,
 				new ParameterizedTypeReference<List<SysUser>>() {
 		});
+		
 		users = response.getBody();
+		int userCount = isNotEmpty(users) ? users.size() : 0;
+		
+		log.info("Loaded {} users from: {}.", userCount, url);
 	}
 
 	private void notifyUsersAboutTheBills() {
+		log.info("Starting ALL users notification about bills...");
+		
 		if (isEmpty(users)) {
 			log.warn("Users list is null or empty at notifyUsersAboutTheBills.");
 			return;
@@ -93,6 +129,7 @@ public class BillsNotifier {
 			notifyBillsForTenant(userAndTenant);
 		});
 
+		log.info("DONE ALL users notification about bills.");
 	}
 
 	private void notifyBillsForTenant(SysUser userAndTenant) {
@@ -110,6 +147,7 @@ public class BillsNotifier {
 		
 		log.info("Starting notification for tenant: {}...", tenant);
 		
+		// TODO: isso aqui deve ser multi thread.
 		ContasPagarHojeResumoCompleto contasPagarHojeResumoCompleto = getContasPagarHojeResumoCompleto(userAndTenant);
 		
 		ContasReceberHojeResumoCompleto contasReceberHojeResumoCompleto = getContasReceberHojeResumoCompleto(userAndTenant);
@@ -509,37 +547,89 @@ public class BillsNotifier {
 	private ContasPagarHojeResumoCompleto getContasPagarHojeResumoCompleto(SysUser userAndTenant) {
 		String tenant = userAndTenant.getTenant().getName();
 		String username = userAndTenant.getEmail();
-		
-		log.info("Starting getContasPagarHojeResumoCompleto for tenant: {} and user: {}...", tenant,  username);
 		String url = HTTP + FINANCEIRO_CONTASPAGAR_SERVICE + "/" + DASHBOARD + "/getContasPagarHojeResumoCompleto";
 		
+		String logMsg = "Tenant: " + tenant + ", username: " + username + ", URL: " + url;
+		
+		log.info("Starting getContasPagarHojeResumoCompleto for: {}...", logMsg);
+		
         HttpEntity<String> httpEntity = buildHttpHeaders(tenant, username);
-
-		ResponseEntity<ContasPagarHojeResumoCompleto> response = restTemplate.exchange(url, HttpMethod.GET, httpEntity,
-				new ParameterizedTypeReference<ContasPagarHojeResumoCompleto>() {
+        ResponseEntity<ContasPagarHojeResumoCompleto> response = null;
+        
+        int attempts = 0;
+		boolean success = false;
+		while (!success && attempts < MAX_RETRIES) {
+			attempts++;
+			try {
+				log.info("Trying {} attempts getting data from: {}...", attempts, logMsg);
+				
+				response = restTemplate.exchange(url, HttpMethod.GET, httpEntity,
+						new ParameterizedTypeReference<ContasPagarHojeResumoCompleto>() {
 				});
+				
+				success = true;
+				
+			} catch (Exception e) {
+				log.error(attempts + " errors getting data from: " + logMsg, e);
+			}
+		} // while
+		
+		if (!success) {
+			log.warn("FAIL with " + attempts + " attempts getting data from: " + logMsg);
+			return null;
+		}
+		
+		log.info("SUCCESS with " + attempts + " attempts getting data from: " + logMsg);
 		
 		ContasPagarHojeResumoCompleto result = response.getBody();
 		
 		log.info("Result at getContasPagarHojeResumoCompleto for tenant: {} and user: {}, result: {}", tenant,  username, result);
 		
-		log.info("DONE getContasPagarHojeResumoCompleto for tenant: {} and user: {}...", tenant,  username);
+		log.info("DONE with SUCCESS getContasPagarHojeResumoCompleto for tenant: {} and user: {}...", tenant,  username);
 		return result;
 	}
 	
 	private ContasReceberHojeResumoCompleto getContasReceberHojeResumoCompleto(SysUser userAndTenant) {
 		String tenant = userAndTenant.getTenant().getName();
 		String username = userAndTenant.getEmail();
-		
-		log.info("Starting getContasReceberHojeResumoCompleto for tenant: {} and user: {}...", tenant,  username);
-		
 		String url = HTTP + FINANCEIRO_CONTASRECEBER_SERVICE + "/" + DASHBOARD + "/getContasReceberHojeResumoCompleto";
+		
+		String logMsg = "Tenant: " + tenant + ", username: " + username + ", URL: " + url;
+		
+		log.info("Starting getContasReceberHojeResumoCompleto from: {}...", logMsg);
+		
 		
 		HttpEntity<String> httpEntity = buildHttpHeaders(tenant, username);
         
-		ResponseEntity<ContasReceberHojeResumoCompleto> response = restTemplate.exchange(url, HttpMethod.GET, httpEntity,
-				new ParameterizedTypeReference<ContasReceberHojeResumoCompleto>() {
-		});
+		
+		//////////////
+		ResponseEntity<ContasReceberHojeResumoCompleto> response = null;
+		int attempts = 0;
+		boolean success = false;
+		while (!success && attempts < MAX_RETRIES) {
+			attempts++;
+			try {
+				log.info("Trying {} attempts getting data from: {}...", attempts, logMsg);
+				
+				response = restTemplate.exchange(url, HttpMethod.GET, httpEntity,
+						new ParameterizedTypeReference<ContasReceberHojeResumoCompleto>() {
+				});
+				
+				success = true;
+				
+			} catch (Exception e) {
+				log.error(attempts + " errors getting data from: " + logMsg, e);
+			}
+		} // while
+		
+		if (!success) {
+			log.warn("FAIL with " + attempts + " attempts getting data from: " + logMsg);
+			return null;
+		}
+		
+		log.info("SUCCESS with " + attempts + " attempts getting data from: " + logMsg);
+		//////////////
+		
 		
 		ContasReceberHojeResumoCompleto result = response.getBody();
 		
@@ -553,16 +643,41 @@ public class BillsNotifier {
 	private List<CaixaMovimentoItem> getFluxoCaixaResumoMovimentacoes(SysUser userAndTenant) {
 		String tenant = userAndTenant.getTenant().getName();
 		String username = userAndTenant.getEmail();
-		
 		String url = HTTP + FINANCEIRO_FLUXOCAIXA_SERVICE + "/" + DASHBOARD + "/getFluxoCaixaResumoMovimentacoes";
 		
-		log.info("Starting getFluxoCaixaResumoMovimentacoes for tenant: {} and user: {}, URL: {}...", tenant,  username, url);
+		String logMsg = "Tenant: " + tenant + ", username: " + username + ", URL: " + url;
+		
+		log.info("Starting getFluxoCaixaResumoMovimentacoes from: {}...", logMsg);
 		
 		HttpEntity<String> httpEntity = buildHttpHeaders(tenant, username);
 		
-		ResponseEntity<List<CaixaMovimentoItem>> response = restTemplate.exchange(url, HttpMethod.GET, httpEntity,
-				new ParameterizedTypeReference<List<CaixaMovimentoItem>>() {
-		});
+		//////////////
+		ResponseEntity<List<CaixaMovimentoItem>> response = null;
+		int attempts = 0;
+		boolean success = false;
+		while (!success && attempts < MAX_RETRIES) {
+			attempts++;
+			try {
+				log.info("Trying {} attempts getting data from: {}...", attempts, logMsg);
+				
+				response = restTemplate.exchange(url, HttpMethod.GET, httpEntity,
+						new ParameterizedTypeReference<List<CaixaMovimentoItem>>() {
+				});
+				
+				success = true;
+				
+			} catch (Exception e) {
+				log.error(attempts + " errors getting data from: " + logMsg, e);
+			}
+		} // while
+		
+		if (!success) {
+			log.warn("FAIL with " + attempts + " attempts getting data from: " + logMsg);
+			return null;
+		}
+		
+		log.info("SUCCESS with " + attempts + " attempts getting data from: " + logMsg);
+		//////////////
 		
 		List<CaixaMovimentoItem> result = response.getBody();
 		

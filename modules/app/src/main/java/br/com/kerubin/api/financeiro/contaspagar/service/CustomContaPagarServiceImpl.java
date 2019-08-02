@@ -1,5 +1,6 @@
 package br.com.kerubin.api.financeiro.contaspagar.service;
 
+import static br.com.kerubin.api.servicecore.util.CoreUtils.isEmpty;
 import static br.com.kerubin.api.servicecore.util.CoreUtils.isNotEmpty;
 
 import java.util.ArrayList;
@@ -41,7 +42,9 @@ import br.com.kerubin.api.messaging.core.DomainEntityEventsPublisher;
 import br.com.kerubin.api.messaging.core.DomainEvent;
 import br.com.kerubin.api.messaging.core.DomainEventEnvelope;
 import br.com.kerubin.api.messaging.core.DomainEventEnvelopeBuilder;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @Primary
 @Service
 public class CustomContaPagarServiceImpl extends ContaPagarServiceImpl {
@@ -182,6 +185,40 @@ public class CustomContaPagarServiceImpl extends ContaPagarServiceImpl {
 	
 	@Transactional
 	@Override
+	public ContaPagarEntity create(ContaPagarEntity contaPagarEntity) {
+		ContaPagarEntity entity = super.create(contaPagarEntity);
+		
+		if (isNotEmpty(entity.getDataPagamento())) {
+			publishEventContaRecebida(entity);
+		}
+		
+		return entity;
+	}
+	
+	@Transactional
+	@Override
+	public ContaPagarEntity update(UUID id, ContaPagarEntity contaPagarEntity) {
+		ContaPagarEntity beforeUpdateEntity = read(id);
+		beforeUpdateEntity = beforeUpdateEntity.clone();
+		
+		ContaPagarEntity entity = super.update(id, contaPagarEntity);
+		
+		if (isNotEmpty(beforeUpdateEntity.getDataPagamento()) && isEmpty(entity.getDataPagamento())) { // Estornou
+			if (isEmpty(entity.getValorPago())) {
+				entity.setValorPago(beforeUpdateEntity.getValorPago());
+			}
+			publishEventContaEstornada(entity);
+		}
+		else if (isEmpty(beforeUpdateEntity.getDataPagamento()) && isNotEmpty(entity.getDataPagamento())) { // Pagou
+			publishEventContaRecebida(entity);
+		}
+		
+		return entity;
+		
+	}
+	
+	@Transactional
+	@Override
 	public void actionBaixarContaComUmClique(UUID id) {
 		// Baixa a conta
 		super.actionBaixarContaComUmClique(id);
@@ -190,10 +227,9 @@ public class CustomContaPagarServiceImpl extends ContaPagarServiceImpl {
 		ContaPagarEntity entity = getContaPagarEntity(id);
 		
 		// Publica a mensagem de conta paga
-		if (entity.getDataPagamento() != null) {
-			publishEvent(entity, ContaPagarEvent.CONTA_PAGAR_CONTAPAGA);
+		if (isNotEmpty(entity.getDataPagamento())) {
+			publishEventContaRecebida(entity);
 		}
-		
 	}
 	
 	@Transactional
@@ -206,31 +242,49 @@ public class CustomContaPagarServiceImpl extends ContaPagarServiceImpl {
 		super.actionEstornarPagamentoContaComUmClique(id);
 		
 		// Publica o estorno
+		publishEventContaEstornada(entity);
+	}
+	
+	private void publishEventContaRecebida(ContaPagarEntity entity) {
+		// Publica a mensagem de conta recebida
+		if (entity.getDataPagamento() != null) {
+			publishEvent(entity, ContaPagarEvent.CONTA_PAGAR_CONTAPAGA);
+		}
+	}
+	
+	private void publishEventContaEstornada(ContaPagarEntity entity) {
+		// Pública estorno
 		publishEvent(entity, ContaPagarEvent.CONTA_PAGAR_CONTAESTORNADA);
 	}
 	
 	protected void publishEvent(ContaPagarEntity entity, String eventName) {
-		DomainEvent event = new ContaPagarEvent(entity.getId(), 
-			entity.getPlanoContas() != null ? entity.getPlanoContas().getId() : null, 
-			entity.getDescricao(), 
-			entity.getFormaPagamento(), 
-			entity.getContaBancaria() != null ? entity.getContaBancaria().getId() : null, 
-			entity.getCartaoCredito() != null ? entity.getCartaoCredito().getId() : null, 
-			entity.getDataPagamento(), 
-			entity.getValorPago(), 
-			entity.getFornecedor() != null ? entity.getFornecedor().getId() : null, 
-			entity.getNumDocumento());
+		try {
+			DomainEvent event = new ContaPagarEvent(entity.getId(), 
+				entity.getPlanoContas() != null ? entity.getPlanoContas().getId() : null, 
+				entity.getDescricao(), 
+				entity.getFormaPagamento(), 
+				entity.getContaBancaria() != null ? entity.getContaBancaria().getId() : null, 
+				entity.getCartaoCredito() != null ? entity.getCartaoCredito().getId() : null, 
+				entity.getDataPagamento(), 
+				entity.getValorPago(), 
+				entity.getFornecedor() != null ? entity.getFornecedor().getId() : null, 
+				entity.getNumDocumento());
+			
+			DomainEventEnvelope<DomainEvent> envelope = DomainEventEnvelopeBuilder
+					.getBuilder(eventName, event)
+					.domain(FinanceiroContasPagarConstants.DOMAIN)
+					.service(FinanceiroContasPagarConstants.SERVICE)
+					.key(ENTITY_KEY)
+					.tenant(ServiceContext.getTenant())
+					.user(ServiceContext.getUser())
+					.build();
+			
+			publisher.publish(envelope);
+		}
+		catch (Exception e) {
+			log.error("Error publishing event: " + eventName + ", entity: " + entity);
+		}
 		
-		DomainEventEnvelope<DomainEvent> envelope = DomainEventEnvelopeBuilder
-				.getBuilder(eventName, event)
-				.domain(FinanceiroContasPagarConstants.DOMAIN)
-				.service(FinanceiroContasPagarConstants.SERVICE)
-				.key(ENTITY_KEY)
-				.tenant(ServiceContext.getTenant())
-				.user(ServiceContext.getUser())
-				.build();
-		
-		publisher.publish(envelope);
 	}
 
 }

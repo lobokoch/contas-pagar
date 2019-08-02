@@ -6,4 +6,5 @@ INSERT INTO banco (id,numero,nome) VALUES
 ,('8a7edb5f-8759-40a7-af74-64cb7efc9e93','085','CECRED')
 ,('8af69c3c-57c2-4ed5-bd77-f8124301eb29','652','Itaú Unibanco Holding S.A.')
 ,('425410bb-d594-4837-88fa-eb90536a02a6','260','Nubank')
-;
+ON CONFLICT ON CONSTRAINT pk_banco_id DO NOTHING;
+
