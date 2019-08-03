@@ -2,7 +2,7 @@
 domain financeiro
 
 @label("Contas a pagar")
-service contas_pagar { //xxx
+service contas_pagar { //xxxx
 	
 	config {
 		groupId: "br.com.kerubin.api"
@@ -175,12 +175,20 @@ service contas_pagar { //xxx
 			with(grid.actions)
 			.apply(dataPagamento = today, valorPago = valor)
 			.when(dataPagamento.isNull)
-			.action(name: baixarContaComUmClique button(tooltip: "Baixar conta com um clique" icon: "pi pi-arrow-down"))
+			//.action(name: baixarContaComDataPagamentoHoje button(tooltip: "Baixar a conta com a data de pagamento igual a data de hoje" icon: "pi pi-arrow-down"))
+			.action(name: baixarContaComDataPagamentoHoje button(tooltip: "Baixar a conta com a data de pagamento igual a data de hoje" icon: "pi pi-clock"))
+			
+			with(grid.actions)
+			.apply(dataPagamento = dataVencimento, valorPago = valor)
+			.when(dataPagamento.isNull and dataVencimento.isBefore(today))
+			//.action(name: baixarContaComDataPagamentoIgualDataVenciento button(tooltip: "Baixar a conta com a data de pagamento igual a data de vencimento" icon: "pi pi-angle-double-down"))
+			.action(name: baixarContaComDataPagamentoIgualDataVenciento button(tooltip: "Baixar a conta com a data de pagamento igual a data de vencimento" icon: "pi pi-calendar"))
 			
 			with(grid.actions)
 			.apply(dataPagamento = null, valorPago = null)
 			.when(dataPagamento.isNotNull)
-			.action(name: estornarPagamentoContaComUmClique button(tooltip: "Estornar pagamento com um clique" icon: "pi pi-arrow-up"))
+			//.action(name: estornarPagamentoContaComUmClique button(tooltip: "Estornar o pagamento da conta" icon: "pi pi-arrow-up"))
+			.action(name: estornarPagamentoContaComUmClique button(tooltip: "Estornar o pagamento da conta" icon: "pi pi-undo"))
 			
 			with(form)
 				.apply(makeCopies(title: "Gerar cópias da conta" referenceField: dataVencimento grouperField: agrupador))

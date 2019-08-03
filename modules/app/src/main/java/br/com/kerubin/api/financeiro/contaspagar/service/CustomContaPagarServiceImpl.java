@@ -6,9 +6,7 @@ import static br.com.kerubin.api.servicecore.util.CoreUtils.isNotEmpty;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -17,8 +15,6 @@ import javax.persistence.PersistenceContext;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Primary;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -31,11 +27,9 @@ import com.querydsl.jpa.impl.JPAQueryFactory;
 import br.com.kerubin.api.database.core.ServiceContext;
 import br.com.kerubin.api.financeiro.contaspagar.FinanceiroContasPagarConstants;
 import br.com.kerubin.api.financeiro.contaspagar.entity.contapagar.ContaPagarEntity;
-import br.com.kerubin.api.financeiro.contaspagar.entity.contapagar.ContaPagarListFilter;
 import br.com.kerubin.api.financeiro.contaspagar.entity.contapagar.ContaPagarServiceImpl;
 import br.com.kerubin.api.financeiro.contaspagar.entity.planoconta.PlanoContaAutoComplete;
 import br.com.kerubin.api.financeiro.contaspagar.entity.planoconta.PlanoContaAutoCompleteImpl;
-import br.com.kerubin.api.financeiro.contaspagar.entity.planoconta.PlanoContaEntity;
 import br.com.kerubin.api.financeiro.contaspagar.entity.planoconta.QPlanoContaEntity;
 import br.com.kerubin.api.financeiro.contaspagar.event.ContaPagarEvent;
 import br.com.kerubin.api.messaging.core.DomainEntityEventsPublisher;
@@ -57,49 +51,6 @@ public class CustomContaPagarServiceImpl extends ContaPagarServiceImpl {
 	
 	@PersistenceContext
 	private EntityManager em;
-	
-	@Transactional(readOnly = true)
-	@Override
-	public Page<ContaPagarEntity> list(ContaPagarListFilter contaPagarListFilter, Pageable pageable) {
-		Page<ContaPagarEntity> result = super.list(contaPagarListFilter, pageable);
-		
-		if (isNotEmpty(result)) {
-			Map<UUID, PlanoContaEntity> planosVisitados = new HashMap<>();
-			result.forEach(item -> {
-				PlanoContaEntity planoContas = item.getPlanoContas();
-				if (isNotEmpty(planoContas)) {
-					UUID id = planoContas.getId();
-					if (!planosVisitados.containsKey(id)) {
-						decoratePlanoContas(item.getPlanoContas());
-						planosVisitados.put(id, planoContas);
-					}
-				}
-			});
-		}
-		
-		return result;
-	}
-	
-	@Transactional(readOnly = true)
-	@Override
-	public ContaPagarEntity read(UUID id) {
-		ContaPagarEntity result = super.read(id);
-		if (isNotEmpty(result)) {
-			decoratePlanoContas(result.getPlanoContas());
-		}
-		return result;
-	}
-	
-	private void decoratePlanoContas(PlanoContaEntity planoContas) {
-		if (isNotEmpty(planoContas)) { // Adjusts the field descricao of plano de contas and plano de contas pai.
-			String descricao = planoContas.getCodigo() + " - " + planoContas.getDescricao();
-			PlanoContaEntity planoContasPai = planoContas.getPlanoContaPai();
-			if (isNotEmpty(planoContasPai)) {
-				descricao = planoContasPai.getCodigo() + " - " + planoContasPai.getDescricao() + " / " + descricao;
-			}
-			planoContas.setDescricao(descricao);
-		} 
-	}
 	
 	@Override
 	public Collection<PlanoContaAutoComplete> planoContaPlanoContasAutoComplete(String query) {
@@ -189,7 +140,7 @@ public class CustomContaPagarServiceImpl extends ContaPagarServiceImpl {
 		ContaPagarEntity entity = super.create(contaPagarEntity);
 		
 		if (isNotEmpty(entity.getDataPagamento())) {
-			publishEventContaRecebida(entity);
+			publishEventContaPaga(entity);
 		}
 		
 		return entity;
@@ -210,7 +161,7 @@ public class CustomContaPagarServiceImpl extends ContaPagarServiceImpl {
 			publishEventContaEstornada(entity);
 		}
 		else if (isEmpty(beforeUpdateEntity.getDataPagamento()) && isNotEmpty(entity.getDataPagamento())) { // Pagou
-			publishEventContaRecebida(entity);
+			publishEventContaPaga(entity);
 		}
 		
 		return entity;
@@ -219,16 +170,32 @@ public class CustomContaPagarServiceImpl extends ContaPagarServiceImpl {
 	
 	@Transactional
 	@Override
-	public void actionBaixarContaComUmClique(UUID id) {
+	public void actionBaixarContaComDataPagamentoHoje(java.util.UUID id) {
 		// Baixa a conta
-		super.actionBaixarContaComUmClique(id);
+		super.actionBaixarContaComDataPagamentoHoje(id);
 		
+		// Publica mensagem que a conta foi paga.
+		publicarContaPaga(id);
+	}
+	
+	
+	@Transactional
+	@Override
+	public void actionBaixarContaComDataPagamentoIgualDataVenciento(UUID id) {
+		// Baixa a conta
+		super.actionBaixarContaComDataPagamentoIgualDataVenciento(id);
+		
+		// Publica mensagem que a conta foi paga.
+		publicarContaPaga(id);
+	}
+	
+	private void publicarContaPaga(UUID id) {
 		// Busca a conta atualziada
 		ContaPagarEntity entity = getContaPagarEntity(id);
 		
 		// Publica a mensagem de conta paga
 		if (isNotEmpty(entity.getDataPagamento())) {
-			publishEventContaRecebida(entity);
+			publishEventContaPaga(entity);
 		}
 	}
 	
@@ -245,11 +212,9 @@ public class CustomContaPagarServiceImpl extends ContaPagarServiceImpl {
 		publishEventContaEstornada(entity);
 	}
 	
-	private void publishEventContaRecebida(ContaPagarEntity entity) {
-		// Publica a mensagem de conta recebida
-		if (entity.getDataPagamento() != null) {
-			publishEvent(entity, ContaPagarEvent.CONTA_PAGAR_CONTAPAGA);
-		}
+	private void publishEventContaPaga(ContaPagarEntity entity) {
+		// Publica a mensagem de conta paga
+		publishEvent(entity, ContaPagarEvent.CONTA_PAGAR_CONTAPAGA);
 	}
 	
 	private void publishEventContaEstornada(ContaPagarEntity entity) {
