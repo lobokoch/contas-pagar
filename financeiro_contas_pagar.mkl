@@ -171,19 +171,19 @@ service contas_pagar { //xxxx
 		
 			with(grid.sumRow.lastCell).apply((valor - valorPago)) // xx
 			
-			
+			// Action: Baixar conta com data de pagamento igual a data de hoje
 			with(grid.actions)
 			.apply(dataPagamento = today, valorPago = valor)
 			.when(dataPagamento.isNull)
-			//.action(name: baixarContaComDataPagamentoHoje button(tooltip: "Baixar a conta com a data de pagamento igual a data de hoje" icon: "pi pi-arrow-down"))
 			.action(name: baixarContaComDataPagamentoHoje button(tooltip: "Baixar a conta com a data de pagamento igual a data de hoje" icon: "pi pi-clock"))
 			
+			// Action: Baixar conta com data de pagamento igual a data de vencimento
 			with(grid.actions)
 			.apply(dataPagamento = dataVencimento, valorPago = valor)
 			.when(dataPagamento.isNull and dataVencimento.isBefore(today))
-			//.action(name: baixarContaComDataPagamentoIgualDataVenciento button(tooltip: "Baixar a conta com a data de pagamento igual a data de vencimento" icon: "pi pi-angle-double-down"))
 			.action(name: baixarContaComDataPagamentoIgualDataVenciento button(tooltip: "Baixar a conta com a data de pagamento igual a data de vencimento" icon: "pi pi-calendar"))
 			
+			// Action: Estorna conta baixada
 			with(grid.actions)
 			.apply(dataPagamento = null, valorPago = null)
 			.when(dataPagamento.isNotNull)
