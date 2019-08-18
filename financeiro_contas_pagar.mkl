@@ -34,7 +34,7 @@ service contas_pagar { //xxxx
 	
 	@auditing
 	@baseRepository
-	@label("Contas a pagar")
+	@label("Contas a pagar") ///
 	//@publishEvents(events=[updated])
 	entity ContaPagar {
 		
@@ -412,7 +412,7 @@ service contas_pagar { //xxxx
 		label: "Outros"
 	}
 	
-	// From Plano de Contas //
+	// From Plano de Contas ///
 	@label("Tipo da receita/despesa")
 	enum TipoReceitaDespesa {
 		VARIAVEL

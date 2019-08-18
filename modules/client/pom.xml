@@ -18,6 +18,10 @@
     		<artifactId>spring-boot-starter-web</artifactId>
     	</dependency>
     	<dependency>
+		    <groupId>br.com.kerubin.api</groupId>
+		    <artifactId>service-core</artifactId>
+		</dependency>
+    	<dependency>
     		<groupId>br.com.kerubin.api</groupId>
     		<artifactId>messaging-core</artifactId>
     	</dependency>

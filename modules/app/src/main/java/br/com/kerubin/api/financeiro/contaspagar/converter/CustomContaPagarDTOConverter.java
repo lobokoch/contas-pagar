@@ -13,12 +13,12 @@ import br.com.kerubin.api.financeiro.contaspagar.entity.planoconta.PlanoContaEnt
 @Primary
 @Component
 public class CustomContaPagarDTOConverter extends ContaPagarDTOConverter {
+	private static final String SEPARATOR = " - ";
 	
 	@Override
 	public ContaPagar convertEntityToDto(ContaPagarEntity entity) {
 		ContaPagar result = super.convertEntityToDto(entity);
 		
-		// TODO: usar cache no futuro.
 		PlanoContaEntity planoContas = entity.getPlanoContas();
 		if (isNotEmpty(planoContas)) {
 			String descricao = getPlanoContasDescricao(planoContas);
@@ -30,10 +30,16 @@ public class CustomContaPagarDTOConverter extends ContaPagarDTOConverter {
 	private String getPlanoContasDescricao(PlanoContaEntity planoContas) {
 		String descricao = "";
 		if (isNotEmpty(planoContas)) { // Adjusts the field descricao of plano de contas and plano de contas pai.
-			descricao = planoContas.getCodigo() + " - " + planoContas.getDescricao();
-			PlanoContaEntity planoContasPai = planoContas.getPlanoContaPai();
-			if (isNotEmpty(planoContasPai)) {
-				descricao = planoContasPai.getCodigo() + " - " + planoContasPai.getDescricao() + " / " + descricao;
+			
+			descricao = planoContas.getDescricao();
+			String token = planoContas.getCodigo() + SEPARATOR;
+			int index = descricao.lastIndexOf(token);
+			if (index == -1) { // Mount description
+				descricao = planoContas.getCodigo() + " - " + planoContas.getDescricao();
+				PlanoContaEntity planoContasPai = planoContas.getPlanoContaPai();
+				if (isNotEmpty(planoContasPai)) {
+					descricao = planoContasPai.getCodigo() + " - " + planoContasPai.getDescricao() + " / " + descricao;
+				}
 			}
 		} 
 		return descricao;

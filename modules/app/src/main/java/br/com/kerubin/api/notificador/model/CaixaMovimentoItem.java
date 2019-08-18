@@ -36,7 +36,7 @@ public class CaixaMovimentoItem {
 		this.credito = credito;
 		this.dedito = dedito;
 		
-		BigDecimal saldo = getSafeVal(credito).subtract(getSafeVal(dedito));
+		BigDecimal saldo = getSafeValue(credito).subtract(getSafeValue(dedito));
 		this.saldo = saldo;
 	}
 	
