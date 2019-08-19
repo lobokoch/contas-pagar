@@ -272,7 +272,7 @@ public class ContasPagarDashboardServiceImpl implements ContasPagarDashboardServ
 				qContaPagar.valor
 				))
 		.from(qContaPagar)
-		.where(dataVencimento.lt(today).and(dataPagamentoIsNull))
+		.where(dataVencimento.loe(today).and(dataPagamentoIsNull))
 		.orderBy(qContaPagar.valor.desc(), qContaPagar.dataVencimento.asc());
 		
 		List<ContasPagarHojeResumo> queryResult = projection.fetch();
