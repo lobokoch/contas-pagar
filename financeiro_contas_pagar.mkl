@@ -60,11 +60,13 @@ service contas_pagar { //xxxx
 		label: "Valor da conta"
 		sum(styleClass:"kb-conta-valor-apagar" label:"A")
 		web(styleClass: "ui-md-2")
+		listFilter(between: "Contas com valores de;até;" styleClass: "ui-md-3")
 		
 		formaPagamento: FormaPagamento
 		publishedInEvents
 		label: "Forma de pagamento"
 		web(styleClass: "ui-md-2")
+		listFilter(isEqualTo: "Forma de pagamento" styleClass: "ui-md-4")
 		//--
 				
 		
@@ -148,6 +150,8 @@ service contas_pagar { //xxxx
 		web(styleClass: "ui-md-4")
 		
 		rules {
+			with(grid.actions).apply(webActionsColumn{width: "14em"})
+			
 			with(contaBancaria).apply(styleClass:"hidden").when(formaPagamento.isNotEquals(FormaPagamento.CONTA_BANCARIA))
 			with(cartaoCredito).apply(styleClass:"hidden").when(formaPagamento.isNotEquals(FormaPagamento.CARTAO_CREDITO))
 			with(outrosDescricao).apply(styleClass:"hidden").when(formaPagamento.isEquals(FormaPagamento.CONTA_BANCARIA) or formaPagamento.isEquals(FormaPagamento.CARTAO_CREDITO) )
@@ -412,7 +416,7 @@ service contas_pagar { //xxxx
 		label: "Outros"
 	}
 	
-	// From Plano de Contas ///
+	// From Plano de Contas //
 	@label("Tipo da receita/despesa")
 	enum TipoReceitaDespesa {
 		VARIAVEL
