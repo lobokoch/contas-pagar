@@ -2,7 +2,7 @@
 domain financeiro
 
 @label("Contas a pagar")
-service contas_pagar { //xxxx
+service contas_pagar { //xx
 	
 	config {
 		groupId: "br.com.kerubin.api"
