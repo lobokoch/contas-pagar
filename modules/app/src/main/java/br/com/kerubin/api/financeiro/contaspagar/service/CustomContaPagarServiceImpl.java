@@ -44,7 +44,9 @@ import lombok.extern.slf4j.Slf4j;
 public class CustomContaPagarServiceImpl extends ContaPagarServiceImpl {
 	
 	private static final String ENTITY_KEY = "entity.ContaPagar";
-	private static final UUID PLANO_CONTA_DESPESA_ID = UUID.fromString("5cd7d81e-7e69-4c26-bf2f-12ad2e286fc5");
+	// private static final UUID PLANO_CONTA_DESPESA_ID = UUID.fromString("5cd7d81e-7e69-4c26-bf2f-12ad2e286fc5");
+	
+	private static final String EMPTY_PLANO_CONTA_PAI_DESC =  " -  / ";
 	
 	@Autowired
 	private DomainEntityEventsPublisher publisher;
@@ -98,14 +100,8 @@ public class CustomContaPagarServiceImpl extends ContaPagarServiceImpl {
 			} // for
 		}
 		
-		if (items.size() > 0) {
-			PlanoContaAutoComplete plano = items.get(0);
-			if (PLANO_CONTA_DESPESA_ID.equals(plano.getId())) { // "descricao": "- / 1-DESPESAS"
-				((PlanoContaAutoCompleteImpl) plano).setDescricao(plano.getDescricao().replace(" -  / ", ""));
-			}
-		}
-		
 		items = items.stream()
+				.peek(it -> it.setDescricao(it.getDescricao().replace(EMPTY_PLANO_CONTA_PAI_DESC, "")))
 				.sorted(Comparator.comparingInt(this::codigoToInt))
 				.collect(Collectors.toList());
 		
