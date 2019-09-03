@@ -185,11 +185,11 @@ INSERT INTO plano_conta (id,codigo,descricao,tipo_financeiro,tipo_receita_despes
 ,('238b6101-dd5d-4b99-9967-1edf9dbb6f4b','1.19.7','Completo','DESPESA',NULL,'25b25559-6221-4215-96e3-13dd28f1830c',true)
 ON CONFLICT ON CONSTRAINT pk_plano_conta_id DO NOTHING;
 
-INSERT INTO plano_conta (id,codigo,descricao,tipo_financeiro,tipo_receita_despesa,plano_conta_pai,ativo,created_by,created_date,last_modified_by,last_modified_date) VALUES 
-('ebb32268-5a82-4da6-8db5-2b3843097cf5','1.1.18','Acessórios','DESPESA',NULL,'4d405422-53e1-48ad-9335-f57cece3563a',true,'lobokoch@gmail.com','2019-07-25 20:58:05.513','lobokoch@gmail.com','2019-07-25 20:58:05.513')
-,('1824cff8-ceea-41e4-85f9-31fac02d8a79','1.1.19','Produtos Limpeza','DESPESA',NULL,'4d405422-53e1-48ad-9335-f57cece3563a',true,'lobokoch@gmail.com','2019-08-10 10:11:55.164','lobokoch@gmail.com','2019-08-10 10:11:55.164')
-,('07fa03bd-7c7f-4b0e-9a33-ab584e776d17','1.17.3','Presentes','DESPESA',NULL,'361736d5-d8c3-44e9-a71e-c28cf8dede6f',true,'lobokoch@gmail.com','2019-07-25 21:00:13.889','lobokoch@gmail.com','2019-07-25 21:00:13.889')
-,('ffd33323-f1af-4d67-b105-2327e6511a5a','1.19.8','Higiene Pessoal','DESPESA',NULL,'25b25559-6221-4215-96e3-13dd28f1830c',true,'lobokoch@gmail.com','2019-07-25 20:56:21.884','lobokoch@gmail.com','2019-07-25 20:56:21.884')
-,('87057271-2858-445a-9ebe-fd08684bb487','1.3.7','Dentista','DESPESA',NULL,'b2389da7-e107-455a-a654-e27ce5b91150',true,'lobokoch@gmail.com','2019-08-06 20:10:24.436','lobokoch@gmail.com','2019-08-06 20:10:24.436')
+INSERT INTO plano_conta (id,codigo,descricao,tipo_financeiro,tipo_receita_despesa,plano_conta_pai,ativo) VALUES 
+('ebb32268-5a82-4da6-8db5-2b3843097cf5','1.1.18','Acessórios','DESPESA',NULL,'4d405422-53e1-48ad-9335-f57cece3563a',true)
+,('1824cff8-ceea-41e4-85f9-31fac02d8a79','1.1.19','Produtos Limpeza','DESPESA',NULL,'4d405422-53e1-48ad-9335-f57cece3563a',true)
+,('07fa03bd-7c7f-4b0e-9a33-ab584e776d17','1.17.3','Presentes','DESPESA',NULL,'361736d5-d8c3-44e9-a71e-c28cf8dede6f',true)
+,('ffd33323-f1af-4d67-b105-2327e6511a5a','1.19.8','Higiene Pessoal','DESPESA',NULL,'25b25559-6221-4215-96e3-13dd28f1830c',true)
+,('87057271-2858-445a-9ebe-fd08684bb487','1.3.7','Dentista','DESPESA',NULL,'b2389da7-e107-455a-a654-e27ce5b91150',true)
 ON CONFLICT ON CONSTRAINT pk_plano_conta_id DO NOTHING;
 
