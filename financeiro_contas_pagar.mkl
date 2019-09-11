@@ -149,7 +149,12 @@ service contas_pagar { //xx
 		grid(hidden) 
 		web(styleClass: "ui-md-4")
 		
-		rules {
+		rules { ///
+			with(valorPago)
+				.apply(equation(valor - valorDesconto + valorMulta + valorJuros + valorAcrescimos))
+				.when(dataPagamento.isNotNull)
+				
+			
 			with(grid.actions).apply(webActionsColumn{width: "14em"})
 			
 			with(contaBancaria).apply(styleClass:"hidden").when(formaPagamento.isNotEquals(FormaPagamento.CONTA_BANCARIA))
@@ -173,7 +178,7 @@ service contas_pagar { //xx
 			//Destaca as contas já pagas.
 			with(grid.rows).apply(styleClass: "kb-conta-paga"  label: "Conta paga").when(dataPagamento.isNotNull)
 		
-			with(grid.sumRow.lastCell).apply((valor - valorPago)) // xx
+			with(grid.sumRow.lastCell).apply(equation(valor - valorPago)) // xx
 			
 			// Action: Baixar conta com data de pagamento igual a data de hoje
 			with(grid.actions)
