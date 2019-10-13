@@ -1,8 +1,9 @@
 @label("Financeiro")
 domain financeiro
 
+@enableDoc
 @label("Contas a pagar")
-service contas_pagar { //xx
+service contas_pagar { //xxxx
 	
 	config {
 		groupId: "br.com.kerubin.api"
@@ -31,10 +32,9 @@ service contas_pagar { //xx
 		version: "1.0.0" 
 	}
 	
-	
 	@auditing
 	@baseRepository
-	@label("Contas a pagar") ///
+	@label("Contas a pagar") //
 	//@publishEvents(events=[updated])
 	entity ContaPagar {
 		
@@ -205,6 +205,7 @@ service contas_pagar { //xx
 			
 		}
 		
+				
 	}
 	
 	@externalEntity

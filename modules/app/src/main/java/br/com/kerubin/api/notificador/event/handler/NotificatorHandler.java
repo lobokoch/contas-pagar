@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.RestController;
 import br.com.kerubin.api.notificador.contas.BillsNotifier;
 
 @RestController
-@RequestMapping("notificator")
+@RequestMapping("financeiro/contas_pagar/notificator")
 public class NotificatorHandler {
 	
 	@Inject

@@ -47,10 +47,10 @@ public class BillsNotifier {
 	private static final int CONTA_MAX_ITEMS = 5;
 	private static final int MAX_RETRIES = 5;
 	
-	public static final String FINANCEIRO_CONTASPAGAR_SERVICE = "financeiro-contaspagar";
-	public static final String FINANCEIRO_CONTASRECEBER_SERVICE = "financeiro-contasreceber";
-	public static final String FINANCEIRO_FLUXOCAIXA_SERVICE = "financeiro-fluxocaixa";
-	public static final String SECURITY_AUTHORIZATION_SERVICE = "security-authorization";
+	public static final String FINANCEIRO_CONTASPAGAR_SERVICE = "financeiro-contaspagar/financeiro/contas_pagar/";
+	public static final String FINANCEIRO_CONTASRECEBER_SERVICE = "financeiro-contasreceber/financeiro/contas_receber/";
+	public static final String FINANCEIRO_FLUXOCAIXA_SERVICE = "financeiro-fluxocaixa/financeiro/fluxo_caixa/";
+	public static final String SECURITY_AUTHORIZATION_SERVICE = "security-authorization/security/authorization/";
 	public static final String HTTP = "http://";
 	public static final String DASHBOARD = "dashboard";
 	public static final String KERUBIN_LINK = "<span style=\"color: #1e94d2; font-weight: bold;\"><a href=\"#\">Kerubin</a></span>";

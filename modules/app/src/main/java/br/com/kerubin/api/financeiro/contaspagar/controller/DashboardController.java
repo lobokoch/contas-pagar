@@ -15,7 +15,7 @@ import br.com.kerubin.api.financeiro.contaspagar.model.MonthlySumContasPagar;
 import br.com.kerubin.api.financeiro.contaspagar.service.ContasPagarDashboardService;
 
 @RestController
-@RequestMapping("dashboard")
+@RequestMapping("financeiro/contas_pagar/dashboard")
 public class DashboardController {
 	
 	@Inject

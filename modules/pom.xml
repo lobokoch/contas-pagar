@@ -37,6 +37,7 @@
 		<financeiro.planocontas.client.version>1.0.0</financeiro.planocontas.client.version>
 		<cadastros.banco.client.version>1.0.0</cadastros.banco.client.version>
 		<cadastros.fornecedor.client.version>1.0.0</cadastros.fornecedor.client.version>
+		<springfox.swagger2.version>2.9.2</springfox.swagger2.version>
 	</properties>
 	<modules>
 		<module>client</module>
@@ -140,6 +141,53 @@
 				<version>${cadastros.fornecedor.client.version}</version>
 			</dependency>
 			<!-- End Entity Dependencies -->
+			
+			<!-- Begin Springfox Swagger2 dependencies -->
+			<dependency>
+				<groupId>io.springfox</groupId>
+				<artifactId>springfox-swagger2</artifactId>
+				<version>${springfox.swagger2.version}</version>
+				<exclusions>
+					<exclusion>
+						<groupId>io.swagger</groupId>
+						<artifactId>swagger-annotations</artifactId>
+					</exclusion>
+					<exclusion>
+						<groupId>io.swagger</groupId>
+						<artifactId>swagger-models</artifactId>
+					</exclusion>
+				</exclusions>
+			</dependency>
+			<dependency>
+				<groupId>io.springfox</groupId>
+				<artifactId>springfox-swagger-ui</artifactId>
+				<version>${springfox.swagger2.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>io.springfox</groupId>
+				<artifactId>springfox-data-rest</artifactId>
+				<version>${springfox.swagger2.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>io.springfox</groupId>
+				<artifactId>springfox-bean-validators</artifactId>
+				<version>${springfox.swagger2.version}</version>
+			</dependency>
+			
+			<!-- Begin fix issue: https://github.com/springfox/springfox/issues/2265 -->
+			<dependency>
+				<groupId>io.swagger</groupId>
+				<artifactId>swagger-annotations</artifactId>
+				<version>1.5.21</version>
+			</dependency>
+			<dependency>
+				<groupId>io.swagger</groupId>
+				<artifactId>swagger-models</artifactId>
+				<version>1.5.21</version>
+			</dependency>
+			<!-- End fix issue: https://github.com/springfox/springfox/issues/2265 -->
+			
+			<!-- End Springfox Swagger2 dependencies -->
 		</dependencies>
 	</dependencyManagement>
 	<build>

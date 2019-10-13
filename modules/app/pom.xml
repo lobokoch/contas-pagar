@@ -9,7 +9,7 @@
 
 	<name>financeiro-contaspagar-app</name>
 	<description>Kerubin financeiro-contaspagar-app Service</description>
-	
+
 	<properties>
 		<docker.image.prefix>lobokoch</docker.image.prefix>
 		<dockerfile.maven.plugin.version>1.4.10</dockerfile.maven.plugin.version>
@@ -61,14 +61,42 @@
 			<groupId>org.apache.commons</groupId>
 			<artifactId>commons-lang3</artifactId>
 		</dependency>
+
+		<dependency>
+			<groupId>br.com.kerubin.api</groupId>
+			<artifactId>messaging-core</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>io.springfox</groupId>
+			<artifactId>springfox-swagger2</artifactId>
+		</dependency>
+		
+		<dependency>
+            <groupId>io.springfox</groupId>
+            <artifactId>springfox-swagger-ui</artifactId>
+        </dependency>
+
+		<dependency>
+			<groupId>io.springfox</groupId>
+			<artifactId>springfox-data-rest</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>io.springfox</groupId>
+			<artifactId>springfox-bean-validators</artifactId>
+		</dependency>
+
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-test</artifactId>
 			<scope>test</scope>
 		</dependency>
+
 		<dependency>
-			<groupId>br.com.kerubin.api</groupId>
-			<artifactId>messaging-core</artifactId>
+			<groupId>com.h2database</groupId>
+			<artifactId>h2</artifactId>
+			<scope>test</scope>
 		</dependency>
 	</dependencies>
 
@@ -89,7 +117,7 @@
 					</execution>
 				</executions>
 			</plugin>
-			
+
 			<!-- For Build and Publish Docker image -->
 			<!-- mvn clean package dockerfile:build -->
 			<!-- mvn dockerfile:push -->
@@ -100,10 +128,10 @@
 				<configuration>
 					<repository>${docker.image.prefix}/${project.artifactId}</repository>
 					<tag>${project.version}</tag>
-        			<useMavenSettingsForAuth>true</useMavenSettingsForAuth>
+					<useMavenSettingsForAuth>true</useMavenSettingsForAuth>
 				</configuration>
 			</plugin>
-			
+
 		</plugins>
 	</build>
 

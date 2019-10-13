@@ -25,6 +25,38 @@
     		<groupId>br.com.kerubin.api</groupId>
     		<artifactId>messaging-core</artifactId>
     	</dependency>
+    	<!-- End Entity Dependencies -->
+    					
+		<!-- Begin Springfox Swagger2 dependencies -->
+		<dependency>
+			<groupId>io.springfox</groupId>
+			<artifactId>springfox-swagger2</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>io.springfox</groupId>
+			<artifactId>springfox-swagger-ui</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>io.springfox</groupId>
+			<artifactId>springfox-data-rest</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>io.springfox</groupId>
+			<artifactId>springfox-bean-validators</artifactId>
+		</dependency>
+		
+		<!-- Begin fix issue: https://github.com/springfox/springfox/issues/2265 -->
+		<dependency>
+			<groupId>io.swagger</groupId>
+			<artifactId>swagger-annotations</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>io.swagger</groupId>
+			<artifactId>swagger-models</artifactId>
+		</dependency>
+		<!-- End fix issue: https://github.com/springfox/springfox/issues/2265 -->
+		
+		<!-- End Springfox Swagger2 dependencies -->
     </dependencies>
     <build>
         <defaultGoal>install</defaultGoal>
@@ -34,6 +66,8 @@
         	  <artifactId>build-helper-maven-plugin</artifactId>
         	  <version>${build.helper.maven.plugin.version}</version>
         	  <executions>
+        	    
+        	    <!-- src source folder -->
         	    <execution>
         	      <id>add-source</id>
         	      <phase>generate-sources</phase>
@@ -46,6 +80,22 @@
         	        </sources>
         	      </configuration>
         	    </execution>
+        	    
+        	    <!-- src test source folder -->
+        	    <execution>
+        	      <id>add-test-source</id>
+        	      <phase>generate-test-sources</phase>
+        	      <goals>
+        	        <goal>add-test-source</goal>
+        	      </goals>
+        	      <configuration>
+        	        <sources>
+        	          <source>src-gen/test/java/</source>
+        	          <source>src-gen/test/resources/</source>
+        	        </sources>
+        	      </configuration>
+        	    </execution>
+        	    
         	  </executions>
         	</plugin>
         	<plugin>
