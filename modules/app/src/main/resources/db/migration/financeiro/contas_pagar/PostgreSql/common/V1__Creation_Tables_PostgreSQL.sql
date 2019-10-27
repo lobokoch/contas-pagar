@@ -27,6 +27,8 @@ CREATE TABLE conta_pagar /* ContaPagar */  (
 	valor_pago DECIMAL /* valorPago */,
 	fornecedor UUID,
 	num_documento VARCHAR(255) /* numDocumento */,
+	via_conc_bancaria BOOLEAN DEFAULT false /* viaConcBancaria */,
+	num_doc_conc_bancaria VARCHAR(255) /* numDocConcBancaria */,
 	observacoes VARCHAR(1000),
 	agrupador VARCHAR(255),
 	created_by VARCHAR(255) /* createdBy */,
@@ -121,3 +123,5 @@ ALTER TABLE cartao_credito ADD CONSTRAINT fk_cartao_credito_banco FOREIGN KEY (b
 ALTER TABLE cartao_credito ADD CONSTRAINT fk_cartao_credito_bandeira_cartao FOREIGN KEY (bandeira_cartao) REFERENCES bandeira_cartao (id);
 ALTER TABLE plano_conta ADD CONSTRAINT fk_plano_conta_plano_conta_pai FOREIGN KEY (plano_conta_pai) REFERENCES plano_conta (id);
 
+
+/* INDEXES */
