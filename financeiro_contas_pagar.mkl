@@ -3,7 +3,7 @@ domain financeiro
 
 @enableDoc
 @label("Contas a pagar")
-service contas_pagar { //xxxx
+service contas_pagar { //xxx
 	
 	config {
 		groupId: "br.com.kerubin.api"
@@ -137,16 +137,18 @@ service contas_pagar { //xxxx
 		grid(hidden) 
 		web(styleClass: "ui-md-6")
 		
-		viaConcBancaria: boolean?
-		label: "Baixado via conc. banc."
-		grid(hidden)
-		web(styleClass: "ui-md-6")
 		
 		numDocConcBancaria: string? 
 		//publishedInEvents
-		label: "Documento da conc. banc."
+		label: "Doc. conc. banc."
 		grid(hidden) 
-		web(styleClass: "ui-md-6")
+		web(styleClass: "ui-md-4" readOnly)
+		listFilter(isNotNull: "Baixa via conciliação")
+		
+		HistConcBancaria: string?
+		label: "Histórico da conciliação bancária"
+		grid(hidden)
+		web(styleClass: "ui-md-8" readOnly)
 		
 		observacoes: string[1000]? 
 		label: "Observações"
@@ -171,6 +173,8 @@ service contas_pagar { //xxxx
 			with(contaBancaria).apply(styleClass:"hidden").when(formaPagamento.isNotEquals(FormaPagamento.CONTA_BANCARIA))
 			with(cartaoCredito).apply(styleClass:"hidden").when(formaPagamento.isNotEquals(FormaPagamento.CARTAO_CREDITO))
 			with(outrosDescricao).apply(styleClass:"hidden").when(formaPagamento.isEquals(FormaPagamento.CONTA_BANCARIA) or formaPagamento.isEquals(FormaPagamento.CARTAO_CREDITO) )
+			with(numDocConcBancaria).apply(styleClass:"hidden").when(numDocConcBancaria.isNull)
+			with(HistConcBancaria).apply(styleClass:"hidden").when(numDocConcBancaria.isNull)
 			
 			// Destaca o estado de vencimento das contas a pagar.kkkk
 			// Destaca as contas vencidas
@@ -244,6 +248,7 @@ service contas_pagar { //xxxx
 		label: "Número"
 		autoComplete
 		web(styleClass: "ui-md-4")
+		findBy
 		
 		nome: string 
 		label: "Nome"
@@ -301,6 +306,10 @@ service contas_pagar { //xxxx
 		
 		agencia: refers AgenciaBancaria manyToOne
 		web(styleClass: "ui-md-4")
+		 findBy( ////
+			custom: "findByNumeroContaAndAgenciaNumeroAgenciaAndAgenciaBancoNumero(String conta, String agencia, String banco)" 
+			documentation: "Busca a conta bancária, pelo número da conta, número da agência e número o banco."
+			)
 		
 		tipoContaBancaria: TipoContaBancaria
 		label: "Tipo da conta"

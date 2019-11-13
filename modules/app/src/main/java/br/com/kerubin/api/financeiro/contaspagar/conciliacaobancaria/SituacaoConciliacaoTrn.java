@@ -1,6 +1,6 @@
 /**********************************************************************************************
-Code generated with MKL Plug-in version: 26.0.4
-Code generated at time stamp: 2019-10-26T12:47:23.316
+Code generated with MKL Plug-in version: 30.0.0
+Code generated at time stamp: 2019-11-07T21:21:41.003
 Copyright: Kerubin - logokoch@gmail.com
 
 WARNING: DO NOT CHANGE THIS CODE BECAUSE THE CHANGES WILL BE LOST IN THE NEXT CODE GENERATION.
@@ -20,6 +20,7 @@ public enum SituacaoConciliacaoTrn {
 	CONCILIAR_CAIXA,
 	CONCILIADO_CAIXA,
 	CAIXA_BAIXADO_SEM_CONCILIACAO,
+	ERRO,
 	CANCELADO;
 }
 
