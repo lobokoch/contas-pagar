@@ -17,6 +17,8 @@ public class ConciliacaoTransacaoDTO {
 	
 	private java.util.UUID id;
 	
+	private String trnId;
+	
 	private java.time.LocalDate trnData;
 	
 	private String trnHistorico;

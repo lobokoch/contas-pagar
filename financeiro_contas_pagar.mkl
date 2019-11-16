@@ -137,18 +137,25 @@ service contas_pagar { //xxx
 		grid(hidden) 
 		web(styleClass: "ui-md-6")
 		
+		// Begin conciliação bancária
+		idConcBancaria: string? 
+		label: "Id. conc. banc."
+		grid(hidden) 
+		web(styleClass: "ui-md-4" readOnly)
+		listFilter(isNotNull: "Id. da baixa via conciliação")
 		
 		numDocConcBancaria: string? 
-		//publishedInEvents
 		label: "Doc. conc. banc."
 		grid(hidden) 
 		web(styleClass: "ui-md-4" readOnly)
-		listFilter(isNotNull: "Baixa via conciliação")
+		listFilter(isNotNull: "Doc. Baixa via conciliação")
 		
 		HistConcBancaria: string?
 		label: "Histórico da conciliação bancária"
 		grid(hidden)
-		web(styleClass: "ui-md-8" readOnly)
+		web(styleClass: "ui-md-4" readOnly)
+		listFilter(many: "Histórico da conciliação bancária")
+		// End conciliação bancária
 		
 		observacoes: string[1000]? 
 		label: "Observações"

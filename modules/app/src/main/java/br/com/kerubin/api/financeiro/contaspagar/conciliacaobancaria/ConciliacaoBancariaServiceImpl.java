@@ -58,7 +58,7 @@ public class ConciliacaoBancariaServiceImpl implements ConciliacaoBancariaServic
 			
 			BooleanBuilder filtroDados = new BooleanBuilder();
 			filtroDados
-			.and(qContaPagar.numDocConcBancaria.eq(transacao.getTrnDocumento()))
+			.and(qContaPagar.idConcBancaria.eq(transacao.getTrnId()))
 			.or(qContaPagar.valor.eq(transacao.getTrnValor()))
 			.or(qContaPagar.valorPago.eq(transacao.getTrnValor()));
 			
@@ -95,7 +95,7 @@ public class ConciliacaoBancariaServiceImpl implements ConciliacaoBancariaServic
 					
 					SituacaoConciliacaoTrn situacaoConciliacaoTrn = transacao.getSituacaoConciliacaoTrn(); // Valor atual é o default.
 					if (isNotEmpty(contaCandidata.getDataPagamento())) { // Já pagou, baixado.
-						if (isNotEmpty(contaCandidata.getNumDocConcBancaria())) { // Pagamento normal, sem conciliação
+						if (isNotEmpty(contaCandidata.getIdConcBancaria())) { // Pagamento normal, sem conciliação
 							situacaoConciliacaoTrn = SituacaoConciliacaoTrn.CONCILIADO_CONTAS_PAGAR;
 						}
 						else {
@@ -116,7 +116,7 @@ public class ConciliacaoBancariaServiceImpl implements ConciliacaoBancariaServic
 	}
 	
 	private boolean isConciliado(ContaPagarEntity conta, ConciliacaoTransacaoDTO transacao) {
-		boolean result = transacao.getTrnDocumento().equals(conta.getNumDocConcBancaria());
+		boolean result = transacao.getTrnId().equals(conta.getIdConcBancaria());
 		return result;
 	}
 	
@@ -164,7 +164,7 @@ public class ConciliacaoBancariaServiceImpl implements ConciliacaoBancariaServic
 		for (ConciliacaoTransacaoDTO transacao : transacoes) {
 			erroMsg = null;
 			String logHeader = MessageFormat.format("Conta id: {0}, doc: {1}, histórico: {2}", 
-					transacao.getId(), transacao.getTrnDocumento(), transacao.getTrnHistorico());
+					transacao.getId(), transacao.getTrnId(), transacao.getTrnHistorico());
 			
 			if (isEmpty(transacao.getTituloConciliadoId())) {
 				erroMsg = "Id do título está vazio para baixar conta via conciliação";
@@ -201,7 +201,7 @@ public class ConciliacaoBancariaServiceImpl implements ConciliacaoBancariaServic
 			
 			// Valida algumas coisas da conta
 			if (isNotEmpty(conta.getDataPagamento())) {
-				erroMsg = format("Conta já baixada em: {0}, doc: {1}", conta.getDataPagamento(), conta.getNumDocConcBancaria());
+				erroMsg = format("Conta já baixada em: {0}, doc: {1}", conta.getDataPagamento(), conta.getIdConcBancaria());
 				log.error(erroMsg + ": " + logHeader);
 				transacao.setConciliadoComErro(true);
 				transacao.setConciliadoMsg(erroMsg);
@@ -220,6 +220,7 @@ public class ConciliacaoBancariaServiceImpl implements ConciliacaoBancariaServic
 			conta.setValorPago(transacao.getTrnValor());
 			conta.setFormaPagamento(FormaPagamento.CONTA_BANCARIA);
 			conta.setContaBancaria(contaBancariaEntity);
+			conta.setIdConcBancaria(transacao.getTrnId());
 			conta.setNumDocConcBancaria(transacao.getTrnDocumento());
 			conta.setHistConcBancaria(transacao.getTrnHistorico());
 			

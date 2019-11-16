@@ -27,6 +27,7 @@ CREATE TABLE conta_pagar /* ContaPagar */  (
 	valor_pago DECIMAL /* valorPago */,
 	fornecedor UUID,
 	num_documento VARCHAR(255) /* numDocumento */,
+	id_conc_bancaria VARCHAR(255) /* idConcBancaria */,
 	num_doc_conc_bancaria VARCHAR(255) /* numDocConcBancaria */,
 	hist_conc_bancaria VARCHAR(255) /* HistConcBancaria */,
 	observacoes VARCHAR(1000),

@@ -186,12 +186,13 @@ public class AplicarConciliacaoBancariaServiceTest extends FinanceiroContasPagar
 				ContaPagarEntity::getValorPago,
 				ContaPagarEntity::getFormaPagamento,
 				ContaPagarEntity::getContaBancaria,
+				ContaPagarEntity::getIdConcBancaria,
 				ContaPagarEntity::getNumDocConcBancaria,
 				ContaPagarEntity::getHistConcBancaria
 				)
 		.contains(
-				tuple(t1.getTrnData(), t1.getTrnValor(), FormaPagamento.CONTA_BANCARIA, newContaBancariaConciliacao(), t1.getTrnDocumento(), t1.getTrnHistorico()),
-				tuple(t2.getTrnData(), t2.getTrnValor(), FormaPagamento.CONTA_BANCARIA, newContaBancariaConciliacao(), t2.getTrnDocumento(), t2.getTrnHistorico())
+				tuple(t1.getTrnData(), t1.getTrnValor(), FormaPagamento.CONTA_BANCARIA, newContaBancariaConciliacao(), t1.getTrnId(), t1.getTrnDocumento(), t1.getTrnHistorico()),
+				tuple(t2.getTrnData(), t2.getTrnValor(), FormaPagamento.CONTA_BANCARIA, newContaBancariaConciliacao(), t2.getTrnId(), t2.getTrnDocumento(), t2.getTrnHistorico())
 				);
 		
 	}
@@ -216,6 +217,7 @@ public class AplicarConciliacaoBancariaServiceTest extends FinanceiroContasPagar
 				.trnData(LocalDate.now().minusDays(1))
 				.tituloConciliadoId(unknownId)
 				.situacaoConciliacaoTrn(SituacaoConciliacaoTrn.CONCILIAR_CONTAS_PAGAR)
+				.trnId("00123")
 				.trnDocumento("00123")
 				.trnHistorico("Teste de conciliação 123")
 				.build();
@@ -229,6 +231,7 @@ public class AplicarConciliacaoBancariaServiceTest extends FinanceiroContasPagar
 				.trnData(LocalDate.now().minusDays(2))
 				.tituloConciliadoId(contaPagar2.getId())
 				.situacaoConciliacaoTrn(SituacaoConciliacaoTrn.CONCILIAR_CONTAS_PAGAR)
+				.trnId("00987")
 				.trnDocumento("00987")
 				.trnHistorico("Teste de conciliação 987")
 				.build();
@@ -263,12 +266,13 @@ public class AplicarConciliacaoBancariaServiceTest extends FinanceiroContasPagar
 				ContaPagarEntity::getValorPago,
 				ContaPagarEntity::getFormaPagamento,
 				ContaPagarEntity::getContaBancaria,
+				ContaPagarEntity::getIdConcBancaria,
 				ContaPagarEntity::getNumDocConcBancaria,
 				ContaPagarEntity::getHistConcBancaria
 				)
 		.contains(
-				tuple(null,            null,             FormaPagamento.CONTA_BANCARIA, newContaBancariaConciliacao(), null,                 null),
-				tuple(t2.getTrnData(), t2.getTrnValor(), FormaPagamento.CONTA_BANCARIA, newContaBancariaConciliacao(), t2.getTrnDocumento(), t2.getTrnHistorico())
+				tuple(null,            null,             FormaPagamento.CONTA_BANCARIA, newContaBancariaConciliacao(), null,          null,                 null),
+				tuple(t2.getTrnData(), t2.getTrnValor(), FormaPagamento.CONTA_BANCARIA, newContaBancariaConciliacao(), t2.getTrnId(), t2.getTrnDocumento(), t2.getTrnHistorico())
 				);
 		
 	}
@@ -292,6 +296,7 @@ public class AplicarConciliacaoBancariaServiceTest extends FinanceiroContasPagar
 				.trnData(LocalDate.now().minusDays(1))
 				.tituloConciliadoId(contaPagar1.getId())
 				.situacaoConciliacaoTrn(SituacaoConciliacaoTrn.CONCILIAR_CONTAS_PAGAR)
+				.trnId("00123")
 				.trnDocumento("00123")
 				.trnHistorico("Teste de conciliação 123")
 				.build();
@@ -305,6 +310,7 @@ public class AplicarConciliacaoBancariaServiceTest extends FinanceiroContasPagar
 				.trnData(LocalDate.now().minusDays(2))
 				.tituloConciliadoId(contaPagar2.getId())
 				.situacaoConciliacaoTrn(SituacaoConciliacaoTrn.CONCILIAR_CONTAS_PAGAR)
+				.trnId("00987")
 				.trnDocumento("00987")
 				.trnHistorico("Teste de conciliação 987")
 				.build();
@@ -338,12 +344,13 @@ public class AplicarConciliacaoBancariaServiceTest extends FinanceiroContasPagar
 				ContaPagarEntity::getValorPago,
 				ContaPagarEntity::getFormaPagamento,
 				ContaPagarEntity::getContaBancaria,
+				ContaPagarEntity::getIdConcBancaria,
 				ContaPagarEntity::getNumDocConcBancaria,
 				ContaPagarEntity::getHistConcBancaria
 				)
 		.contains(
-				tuple(null,            null,             FormaPagamento.CONTA_BANCARIA, newContaBancariaConciliacao(), null,                 null),
-				tuple(t2.getTrnData(), t2.getTrnValor(), FormaPagamento.CONTA_BANCARIA, newContaBancariaConciliacao(), t2.getTrnDocumento(), t2.getTrnHistorico())
+				tuple(null,            null,             FormaPagamento.CONTA_BANCARIA, newContaBancariaConciliacao(), null,          null,                 null),
+				tuple(t2.getTrnData(), t2.getTrnValor(), FormaPagamento.CONTA_BANCARIA, newContaBancariaConciliacao(), t2.getTrnId(), t2.getTrnDocumento(), t2.getTrnHistorico())
 				);
 	}
 	
@@ -366,6 +373,7 @@ public class AplicarConciliacaoBancariaServiceTest extends FinanceiroContasPagar
 				.trnData(null)
 				.tituloConciliadoId(contaPagar1.getId())
 				.situacaoConciliacaoTrn(SituacaoConciliacaoTrn.CONCILIAR_CONTAS_PAGAR)
+				.trnId("00123")
 				.trnDocumento("00123")
 				.trnHistorico("Teste de conciliação 123")
 				.build();
@@ -379,6 +387,7 @@ public class AplicarConciliacaoBancariaServiceTest extends FinanceiroContasPagar
 				.trnData(LocalDate.now().minusDays(2))
 				.tituloConciliadoId(contaPagar2.getId())
 				.situacaoConciliacaoTrn(SituacaoConciliacaoTrn.CONCILIAR_CONTAS_PAGAR)
+				.trnId("00987")
 				.trnDocumento("00987")
 				.trnHistorico("Teste de conciliação 987")
 				.build();
@@ -412,12 +421,13 @@ public class AplicarConciliacaoBancariaServiceTest extends FinanceiroContasPagar
 				ContaPagarEntity::getValorPago,
 				ContaPagarEntity::getFormaPagamento,
 				ContaPagarEntity::getContaBancaria,
+				ContaPagarEntity::getIdConcBancaria,
 				ContaPagarEntity::getNumDocConcBancaria,
 				ContaPagarEntity::getHistConcBancaria
 				)
 		.contains(
-				tuple(null,            null,             FormaPagamento.CONTA_BANCARIA, newContaBancariaConciliacao(), null,                 null),
-				tuple(t2.getTrnData(), t2.getTrnValor(), FormaPagamento.CONTA_BANCARIA, newContaBancariaConciliacao(), t2.getTrnDocumento(), t2.getTrnHistorico())
+				tuple(null,            null,             FormaPagamento.CONTA_BANCARIA, newContaBancariaConciliacao(), null,          null,                 null),
+				tuple(t2.getTrnData(), t2.getTrnValor(), FormaPagamento.CONTA_BANCARIA, newContaBancariaConciliacao(), t2.getTrnId(), t2.getTrnDocumento(), t2.getTrnHistorico())
 				);
 	}
 	
@@ -440,6 +450,7 @@ public class AplicarConciliacaoBancariaServiceTest extends FinanceiroContasPagar
 				.trnData(LocalDate.now())
 				.tituloConciliadoId(contaPagar1.getId())
 				.situacaoConciliacaoTrn(SituacaoConciliacaoTrn.CONCILIAR_CONTAS_PAGAR)
+				.trnId("00123")
 				.trnDocumento("00123")
 				.trnHistorico("Teste de conciliação 123")
 				.build();
@@ -453,6 +464,7 @@ public class AplicarConciliacaoBancariaServiceTest extends FinanceiroContasPagar
 				.trnData(LocalDate.now().minusDays(2))
 				.tituloConciliadoId(contaPagar2.getId())
 				.situacaoConciliacaoTrn(SituacaoConciliacaoTrn.CONCILIAR_CONTAS_PAGAR)
+				.trnId("00987")
 				.trnDocumento("00987")
 				.trnHistorico("Teste de conciliação 987")
 				.build();
@@ -486,12 +498,13 @@ public class AplicarConciliacaoBancariaServiceTest extends FinanceiroContasPagar
 				ContaPagarEntity::getValorPago,
 				ContaPagarEntity::getFormaPagamento,
 				ContaPagarEntity::getContaBancaria,
+				ContaPagarEntity::getIdConcBancaria,
 				ContaPagarEntity::getNumDocConcBancaria,
 				ContaPagarEntity::getHistConcBancaria
 				)
 		.contains(
-				tuple(null,            null,             FormaPagamento.CONTA_BANCARIA, newContaBancariaConciliacao(), null,                 null),
-				tuple(t2.getTrnData(), t2.getTrnValor(), FormaPagamento.CONTA_BANCARIA, newContaBancariaConciliacao(), t2.getTrnDocumento(), t2.getTrnHistorico())
+				tuple(null,            null,             FormaPagamento.CONTA_BANCARIA, newContaBancariaConciliacao(), null,          null,                 null),
+				tuple(t2.getTrnData(), t2.getTrnValor(), FormaPagamento.CONTA_BANCARIA, newContaBancariaConciliacao(), t2.getTrnId(), t2.getTrnDocumento(), t2.getTrnHistorico())
 				);
 	}
 	
@@ -500,6 +513,7 @@ public class AplicarConciliacaoBancariaServiceTest extends FinanceiroContasPagar
 		ContaPagarEntity contaPagar1 = newContaPagar1();
 		contaPagar1.setDataPagamento(LocalDate.now());
 		contaPagar1.setNumDocConcBancaria("012345");
+		contaPagar1.setIdConcBancaria("012345");
 		
 		ContaPagarEntity contaPagar2 = newContaPagar2();
 		
@@ -517,6 +531,7 @@ public class AplicarConciliacaoBancariaServiceTest extends FinanceiroContasPagar
 				.trnData(LocalDate.now())
 				.tituloConciliadoId(contaPagar1.getId())
 				.situacaoConciliacaoTrn(SituacaoConciliacaoTrn.CONCILIAR_CONTAS_PAGAR)
+				.trnId("00123")
 				.trnDocumento("00123")
 				.trnHistorico("Teste de conciliação 123")
 				.build();
@@ -530,6 +545,7 @@ public class AplicarConciliacaoBancariaServiceTest extends FinanceiroContasPagar
 				.trnData(LocalDate.now().minusDays(2))
 				.tituloConciliadoId(contaPagar2.getId())
 				.situacaoConciliacaoTrn(SituacaoConciliacaoTrn.CONCILIAR_CONTAS_PAGAR)
+				.trnId("00987")
 				.trnDocumento("00987")
 				.trnHistorico("Teste de conciliação 987")
 				.build();
@@ -563,12 +579,13 @@ public class AplicarConciliacaoBancariaServiceTest extends FinanceiroContasPagar
 				ContaPagarEntity::getValorPago,
 				ContaPagarEntity::getFormaPagamento,
 				ContaPagarEntity::getContaBancaria,
+				ContaPagarEntity::getIdConcBancaria,
 				ContaPagarEntity::getNumDocConcBancaria,
 				ContaPagarEntity::getHistConcBancaria
 				)
 		.contains(
-				tuple(LocalDate.now(), null,             FormaPagamento.CONTA_BANCARIA, newContaBancariaConciliacao(), "012345",             null),
-				tuple(t2.getTrnData(), t2.getTrnValor(), FormaPagamento.CONTA_BANCARIA, newContaBancariaConciliacao(), t2.getTrnDocumento(), t2.getTrnHistorico())
+				tuple(LocalDate.now(), null,             FormaPagamento.CONTA_BANCARIA, newContaBancariaConciliacao(), "012345",      "012345",             null),
+				tuple(t2.getTrnData(), t2.getTrnValor(), FormaPagamento.CONTA_BANCARIA, newContaBancariaConciliacao(), t2.getTrnId(), t2.getTrnDocumento(), t2.getTrnHistorico())
 				);
 	}
 	
@@ -592,6 +609,7 @@ public class AplicarConciliacaoBancariaServiceTest extends FinanceiroContasPagar
 				.trnData(LocalDate.now())
 				.tituloConciliadoId(contaPagar1.getId())
 				.situacaoConciliacaoTrn(SituacaoConciliacaoTrn.CONCILIAR_CONTAS_PAGAR)
+				.trnId("00123")
 				.trnDocumento("00123")
 				.trnHistorico("Teste de conciliação 123")
 				.build();
@@ -606,6 +624,7 @@ public class AplicarConciliacaoBancariaServiceTest extends FinanceiroContasPagar
 				.trnData(LocalDate.now().minusDays(2))
 				.tituloConciliadoId(contaPagar2.getId())
 				.situacaoConciliacaoTrn(SituacaoConciliacaoTrn.CONCILIAR_CONTAS_PAGAR)
+				.trnId("00987")
 				.trnDocumento("00987")
 				.trnHistorico("Teste de conciliação 987")
 				.build();
@@ -639,12 +658,13 @@ public class AplicarConciliacaoBancariaServiceTest extends FinanceiroContasPagar
 				ContaPagarEntity::getValorPago,
 				ContaPagarEntity::getFormaPagamento,
 				ContaPagarEntity::getContaBancaria,
+				ContaPagarEntity::getIdConcBancaria,
 				ContaPagarEntity::getNumDocConcBancaria,
 				ContaPagarEntity::getHistConcBancaria
 				)
 		.contains(
-				tuple(null,            null,             FormaPagamento.CONTA_BANCARIA, newContaBancariaConciliacao(), null,                 null),
-				tuple(t2.getTrnData(), t2.getTrnValor(), FormaPagamento.CONTA_BANCARIA, newContaBancariaConciliacao(), t2.getTrnDocumento(), t2.getTrnHistorico())
+				tuple(null,            null,             FormaPagamento.CONTA_BANCARIA, newContaBancariaConciliacao(), null,          null,                 null),
+				tuple(t2.getTrnData(), t2.getTrnValor(), FormaPagamento.CONTA_BANCARIA, newContaBancariaConciliacao(), t2.getTrnId(), t2.getTrnDocumento(), t2.getTrnHistorico())
 				);
 	}
 	
@@ -674,6 +694,7 @@ public class AplicarConciliacaoBancariaServiceTest extends FinanceiroContasPagar
 				.tituloConciliadoId(unknownId)
 				.tituloConciliadoDesc(tituloConciliadoDesc)
 				.situacaoConciliacaoTrn(SituacaoConciliacaoTrn.CONCILIAR_CONTAS_PAGAR)
+				.trnId("00123")
 				.trnDocumento("00123")
 				.trnHistorico("Teste de conciliação 123")
 				.build();
@@ -688,6 +709,7 @@ public class AplicarConciliacaoBancariaServiceTest extends FinanceiroContasPagar
 				.tituloConciliadoId(contaPagar2.getId())
 				.tituloConciliadoDesc(contaPagar2.getDescricao())
 				.situacaoConciliacaoTrn(SituacaoConciliacaoTrn.CONCILIAR_CONTAS_PAGAR)
+				.trnId("00987")
 				.trnDocumento("00987")
 				.trnHistorico("Teste de conciliação 987")
 				.build();
@@ -721,12 +743,13 @@ public class AplicarConciliacaoBancariaServiceTest extends FinanceiroContasPagar
 				ContaPagarEntity::getValorPago,
 				ContaPagarEntity::getFormaPagamento,
 				ContaPagarEntity::getContaBancaria,
+				ContaPagarEntity::getIdConcBancaria,
 				ContaPagarEntity::getNumDocConcBancaria,
 				ContaPagarEntity::getHistConcBancaria
 				)
 		.contains(
-				tuple(null, null, FormaPagamento.CONTA_BANCARIA, newContaBancariaConciliacao(), null, null),
-				tuple(null, null, FormaPagamento.CONTA_BANCARIA, newContaBancariaConciliacao(), null, null)
+				tuple(null, null, FormaPagamento.CONTA_BANCARIA, newContaBancariaConciliacao(), null, null, null),
+				tuple(null, null, FormaPagamento.CONTA_BANCARIA, newContaBancariaConciliacao(), null, null, null)
 				);
 		
 	}
