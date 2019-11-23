@@ -1,5 +1,7 @@
 package br.com.kerubin.api.financeiro.contaspagar.conciliacaobancaria;
 
+import java.util.List;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -31,25 +33,21 @@ public class ConciliacaoTransacaoDTO {
 	
 	private ConciliacaoBancariaLookupResult conciliacaoBancaria;
 	
-	private SituacaoConciliacaoTrn situacaoConciliacaoTrn;
-	
+	////
 	private java.util.UUID tituloConciliadoId;
-	
-	private String tituloConciliadoDesc;
-	
-	private java.time.LocalDate dataConciliacao;
+    
+    private String tituloConciliadoDesc;
+    
+    private SituacaoConciliacaoTrn situacaoConciliacaoTrn;    
+    
+    private java.time.LocalDate dataConciliacao;
+    
+    /////
+    private List<ConciliacaoTransacaoTituloDTO> conciliacaoTransacaoTitulosDTO;
 	
 	private Boolean conciliadoComErro;
 	
 	private String conciliadoMsg;
-	
-	private String createdBy;
-	
-	private java.time.LocalDateTime createdDate;
-	
-	private String lastModifiedBy;
-	
-	private java.time.LocalDateTime lastModifiedDate;
 	
 	public boolean isCredito() {
 		return TipoTransacao.CREDITO.equals(trnTipo);

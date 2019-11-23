@@ -96,6 +96,9 @@ service contas_pagar { //xxx
 		listFilter(isNotNull_isNull: "Pagas;Em aberto" default:"isNull") 
 		web(styleClass: "ui-md-2")
 		
+		//dataBaixa: date?
+		//label: "Data da baixa"
+		
 		valorDesconto: money? 
 		sum
 		label: "Descontos"
@@ -150,11 +153,13 @@ service contas_pagar { //xxx
 		web(styleClass: "ui-md-4" readOnly)
 		listFilter(isNotNull: "Doc. Baixa via conciliação")
 		
-		HistConcBancaria: string?
+		histConcBancaria: string?
 		label: "Histórico da conciliação bancária"
 		grid(hidden)
 		web(styleClass: "ui-md-4" readOnly)
 		listFilter(many: "Histórico da conciliação bancária")
+		
+		// dataConcBancaria: date?
 		// End conciliação bancária
 		
 		observacoes: string[1000]? 
@@ -181,7 +186,7 @@ service contas_pagar { //xxx
 			with(cartaoCredito).apply(styleClass:"hidden").when(formaPagamento.isNotEquals(FormaPagamento.CARTAO_CREDITO))
 			with(outrosDescricao).apply(styleClass:"hidden").when(formaPagamento.isEquals(FormaPagamento.CONTA_BANCARIA) or formaPagamento.isEquals(FormaPagamento.CARTAO_CREDITO) )
 			with(numDocConcBancaria).apply(styleClass:"hidden").when(numDocConcBancaria.isNull)
-			with(HistConcBancaria).apply(styleClass:"hidden").when(numDocConcBancaria.isNull)
+			with(histConcBancaria).apply(styleClass:"hidden").when(numDocConcBancaria.isNull)
 			
 			// Destaca o estado de vencimento das contas a pagar.kkkk
 			// Destaca as contas vencidas

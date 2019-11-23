@@ -8,6 +8,7 @@ import static br.com.kerubin.api.servicecore.util.CoreUtils.isNotEmpty;
 import java.text.MessageFormat;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import javax.inject.Inject;
 import javax.persistence.EntityManager;
@@ -59,8 +60,8 @@ public class ConciliacaoBancariaServiceImpl implements ConciliacaoBancariaServic
 			BooleanBuilder filtroDados = new BooleanBuilder();
 			filtroDados
 			.and(qContaPagar.idConcBancaria.eq(transacao.getTrnId()))
-			.or(qContaPagar.valor.eq(transacao.getTrnValor()))
-			.or(qContaPagar.valorPago.eq(transacao.getTrnValor()));
+			.or(qContaPagar.valor.eq(transacao.getTrnValor()));
+			//.or(qContaPagar.valorPago.eq(transacao.getTrnValor()));
 			
 			LocalDate from = transacao.getTrnData().minusDays(30);
 			LocalDate to = transacao.getTrnData().plusDays(30);
@@ -78,37 +79,64 @@ public class ConciliacaoBancariaServiceImpl implements ConciliacaoBancariaServic
 					.fetch();
 			
 			if (isNotEmpty(contas)) {
-				ContaPagarEntity contaCandidata = contas.stream().filter(conta -> isConciliado(conta, transacao)).findFirst().orElse(null);
 				
-				// Preferência para conta em aberto.
-				if (isEmpty(contaCandidata)) {
-					contaCandidata = contas.stream().filter(conta -> isEmAberto(conta, transacao)).findFirst().orElse(null);
-				}
+				// Trata a primeira conta encontrada, como a conta provável
+				ContaPagarEntity contaCandidata = contas.stream()
+						.filter(it -> isConciliado(it, transacao) || isEmAberto(it, transacao)/* || isPago(it, transacao)*/) // conta paga deixa pro else
+						.findFirst().orElse(contas.get(0));
 				
-				if (isEmpty(contaCandidata)) {
-					contaCandidata = contas.stream().filter(conta -> isPago(conta, transacao)).findFirst().orElse(null);
-				}
+				transacao.setTituloConciliadoId(contaCandidata.getId());
+				transacao.setTituloConciliadoDesc(contaCandidata.getDescricao());
 				
-				if (isNotEmpty(contaCandidata)) {
-					transacao.setTituloConciliadoId(contaCandidata.getId());
-					transacao.setTituloConciliadoDesc(contaCandidata.getDescricao());
-					
-					SituacaoConciliacaoTrn situacaoConciliacaoTrn = transacao.getSituacaoConciliacaoTrn(); // Valor atual é o default.
-					if (isNotEmpty(contaCandidata.getDataPagamento())) { // Já pagou, baixado.
-						if (isNotEmpty(contaCandidata.getIdConcBancaria())) { // Pagamento normal, sem conciliação
-							situacaoConciliacaoTrn = SituacaoConciliacaoTrn.CONCILIADO_CONTAS_PAGAR;
-						}
-						else {
-							situacaoConciliacaoTrn = SituacaoConciliacaoTrn.CONTAS_PAGAR_BAIXADO_SEM_CONCILIACAO;
-						}
+				SituacaoConciliacaoTrn situacaoConciliacaoTrn = transacao.getSituacaoConciliacaoTrn(); // Valor atual é o default.
+				if (isNotEmpty(contaCandidata.getDataPagamento())) { // Já pagou, baixado.
+					if (isNotEmpty(contaCandidata.getIdConcBancaria())) { // Pagamento normal, sem conciliação
+						situacaoConciliacaoTrn = SituacaoConciliacaoTrn.CONCILIADO_CONTAS_PAGAR;
 					}
 					else {
-						situacaoConciliacaoTrn = SituacaoConciliacaoTrn.CONCILIAR_CONTAS_PAGAR;
+						situacaoConciliacaoTrn = SituacaoConciliacaoTrn.CONTAS_PAGAR_BAIXADO_SEM_CONCILIACAO;
 					}
-					
-					transacao.setSituacaoConciliacaoTrn(situacaoConciliacaoTrn);
 				}
-			}
+				else {
+					situacaoConciliacaoTrn = SituacaoConciliacaoTrn.CONCILIAR_CONTAS_PAGAR;
+				}
+				transacao.setSituacaoConciliacaoTrn(situacaoConciliacaoTrn);
+				
+				// Caso tenha mais de um título, empacota eles junto para o usuário decidir qual é o título certo.
+				if (contas.size() > 0) {
+					
+					List<ConciliacaoTransacaoTituloDTO> titulos = contas.stream().map(it -> {
+						ConciliacaoTransacaoTituloDTO titulo = ConciliacaoTransacaoTituloDTO.builder()
+								.tituloConciliadoId(it.getId())
+								.tituloConciliadoDesc(it.getDescricao())
+								.tituloConciliadoDataVen(it.getDataVencimento())
+								.tituloConciliadoDataPag(it.getDataPagamento())
+								.build();
+						
+						// Situação do título
+						SituacaoConciliacaoTrn situacaoConciliacaoTrn2 = titulo.getSituacaoConciliacaoTrn(); // Valor atual é o default.
+						if (isNotEmpty(it.getDataPagamento())) { // Já pagou, baixado.
+							if (isNotEmpty(it.getIdConcBancaria())) { // Pagamento normal, sem conciliação
+								situacaoConciliacaoTrn2 = SituacaoConciliacaoTrn.CONCILIADO_CONTAS_PAGAR;
+							}
+							else {
+								situacaoConciliacaoTrn2 = SituacaoConciliacaoTrn.CONTAS_PAGAR_BAIXADO_SEM_CONCILIACAO;
+							}
+						}
+						else {
+							situacaoConciliacaoTrn2 = SituacaoConciliacaoTrn.CONCILIAR_CONTAS_PAGAR;
+						}
+						titulo.setSituacaoConciliacaoTrn(situacaoConciliacaoTrn2);
+						
+						return titulo;
+						
+					}).collect(Collectors.toList());
+					
+					transacao.setConciliacaoTransacaoTitulosDTO(titulos);
+					
+				} // if (contas.size() > 1)
+				
+			}//
 			
 		});
 		
@@ -120,12 +148,12 @@ public class ConciliacaoBancariaServiceImpl implements ConciliacaoBancariaServic
 		return result;
 	}
 	
-	private boolean isEmAberto(/*List<ContaPagarEntity> contas, */ContaPagarEntity conta, ConciliacaoTransacaoDTO transacao) {
+	private boolean isEmAberto(ContaPagarEntity conta, ConciliacaoTransacaoDTO transacao) {
 		boolean result = isEquals(transacao.getTrnValor(), conta.getValor()) && isEmpty(conta.getDataPagamento());
 		return result;
 	}
 	
-	private boolean isPago(/*List<ContaPagarEntity> contas, */ContaPagarEntity conta, ConciliacaoTransacaoDTO transacao) {
+	private boolean isPago(ContaPagarEntity conta, ConciliacaoTransacaoDTO transacao) {
 		boolean result = isEquals(transacao.getTrnValor(), conta.getValorPago()) && isNotEmpty(conta.getDataPagamento());
 		return result;
 	}
