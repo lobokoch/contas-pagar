@@ -4,10 +4,16 @@ import static br.com.kerubin.api.servicecore.util.CoreUtils.format;
 import static br.com.kerubin.api.servicecore.util.CoreUtils.isEmpty;
 import static br.com.kerubin.api.servicecore.util.CoreUtils.isEquals;
 import static br.com.kerubin.api.servicecore.util.CoreUtils.isNotEmpty;
+import static br.com.kerubin.api.servicecore.util.CoreUtils.getTokens;
 
 import java.text.MessageFormat;
 import java.time.LocalDate;
+import java.time.Period;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import javax.inject.Inject;
@@ -15,6 +21,7 @@ import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.jpa.impl.JPAQueryFactory;
@@ -44,6 +51,7 @@ public class ConciliacaoBancariaServiceImpl implements ConciliacaoBancariaServic
 	@Inject
 	private ContaBancariaRepository contaBancariaRepository;
 	
+	@Transactional(readOnly = true)
 	@Override
 	public ConciliacaoBancariaDTO verificarTransacoes(ConciliacaoBancariaDTO conciliacaoBancariaDTO) {
 		
@@ -55,19 +63,40 @@ public class ConciliacaoBancariaServiceImpl implements ConciliacaoBancariaServic
 		
 		QContaPagarEntity qContaPagar = QContaPagarEntity.contaPagarEntity;
 		
+		Map<String, ContaPagarEntity> lastVisitedList = new HashMap<>();
+		
 		conciliacaoBancariaDTO.getTransacoes().forEach(transacao -> {
+			
+			List<String> tokens = getTokens(transacao.getTrnHistorico());
+			BooleanBuilder filtroTokens = new BooleanBuilder();
+			if (isNotEmpty(tokens)) {
+				tokens.forEach(token -> filtroTokens.or(qContaPagar.descricao.containsIgnoreCase(token)));			
+			}
 			
 			BooleanBuilder filtroDados = new BooleanBuilder();
 			filtroDados
 			.and(qContaPagar.idConcBancaria.eq(transacao.getTrnId()))
-			.or(qContaPagar.valor.eq(transacao.getTrnValor()));
-			//.or(qContaPagar.valorPago.eq(transacao.getTrnValor()));
+			.or(qContaPagar.valor.eq(transacao.getTrnValor()))
+			.or(filtroTokens); // Faz match com os tokens do histórico do extrato com as descrições das contas.
 			
-			LocalDate from = transacao.getTrnData().minusDays(30);
-			LocalDate to = transacao.getTrnData().plusDays(30);
+			LocalDate dataToRef = transacao.getTrnData();
+			String key = getTrnKey(transacao);
+			ContaPagarEntity lastVisited = lastVisitedList.get(key);
+			boolean hasLastVisited = isNotEmpty(lastVisited);
+			boolean lastVisitedIsAfter = hasLastVisited && lastVisited.getDataVencimento().isAfter(dataToRef); // Se forem iguais, está valendo.
+			if (lastVisitedIsAfter) {
+				dataToRef = lastVisited.getDataVencimento();
+			}
+			
+			LocalDate from = transacao.getTrnData().minusMonths(1);
+			LocalDate to = dataToRef.plusMonths(1);
 			
 			BooleanBuilder filtroPerido = new BooleanBuilder();
-			filtroPerido.and(qContaPagar.dataVencimento.between(from, to)).or(qContaPagar.dataPagamento.between(from, to));
+			// A data da transação é igual a data de pagamento da conta
+			filtroPerido.and(qContaPagar.dataPagamento.eq(transacao.getTrnData()))
+			// A conta não está paga ainda e a data da transação está no intervalo do vencimento.
+			.or(qContaPagar.dataPagamento.isNull().and(qContaPagar.dataVencimento.between(from, to)));
+			// filtroPerido.and(qContaPagar.dataVencimento.between(from, to)).or(qContaPagar.dataPagamento.between(from, to));
 			
 			BooleanBuilder where = new BooleanBuilder();
 			where.and(filtroDados).and(filtroPerido);
@@ -80,10 +109,42 @@ public class ConciliacaoBancariaServiceImpl implements ConciliacaoBancariaServic
 			
 			if (isNotEmpty(contas)) {
 				
-				// Trata a primeira conta encontrada, como a conta provável
-				ContaPagarEntity contaCandidata = contas.stream()
-						.filter(it -> isConciliado(it, transacao) || isEmAberto(it, transacao)/* || isPago(it, transacao)*/) // conta paga deixa pro else
-						.findFirst().orElse(contas.get(0));
+				Comparator<ContaPagarEntity> comparator = Comparator.comparing(ContaPagarEntity::getDataVencimento);
+				ContaPagarEntity contaMaiorDataVencimento = contas.stream().max(comparator).get();
+				
+				ContaPagarEntity contaCandidata = null;
+				boolean temAlgumaContaComConciliacao = contas.stream().anyMatch(it -> isConciliado(it, transacao)); 
+				if (temAlgumaContaComConciliacao || !lastVisitedIsAfter) {
+					List<ContaPagarEntity> contasClone = new ArrayList<>(contas);
+					
+					// Tem alguma conta conciliada?
+					contaCandidata = contas.stream().filter(it -> isConciliado(it, transacao)).findFirst().orElse(null);
+					
+					// Tem alguma conta paga?
+					if (isEmpty(contaCandidata)) {
+						contaCandidata = contas.stream().filter(it -> isPago(it, transacao)).findFirst().orElse(null);
+					}
+					
+					// Tem alguma conta em aberto?
+					if (isEmpty(contaCandidata)) {
+						//if (hasLastVisited) { // Não deveria pegar a mais próxima e sim a última, pois a mais próxima já deve ter sido pega.
+						//	contaCandidata = contaMaiorDataVencimento;
+						//}
+						//else {
+							contaCandidata = contas.stream().filter(it -> isEmAberto(it, transacao, contasClone)).findFirst().orElse(null);
+						//}
+					}
+					
+					if (isEmpty(contaCandidata)) {
+						contaCandidata = contas.get(0);
+					}
+				}
+				else {
+					// Como tem contas em lastVisitedList, a de maior data encontrada é a candidata mais provável. Pagamentos antecipados.
+					contaCandidata = contaMaiorDataVencimento;
+				}
+				
+				lastVisitedList.put(key, contaMaiorDataVencimento);
 				
 				transacao.setTituloConciliadoId(contaCandidata.getId());
 				transacao.setTituloConciliadoDesc(contaCandidata.getDescricao());
@@ -102,8 +163,26 @@ public class ConciliacaoBancariaServiceImpl implements ConciliacaoBancariaServic
 				}
 				transacao.setSituacaoConciliacaoTrn(situacaoConciliacaoTrn);
 				
+				// Se já foi conciliado, remove as contas que não tem a ver com a conta que conciliou.
+				if (contas.size() > 1 && SituacaoConciliacaoTrn.CONCILIADO_CONTAS_PAGAR.equals(situacaoConciliacaoTrn)) {
+					contas.removeIf(it -> !it.getId().equals(transacao.getTituloConciliadoId()));
+				}
+				
+				// Se já foi baixada, e tiver contas com a data de pagamento igual a data da transação, deixa apenas essas contas. 
+				if (contas.size() > 1 && SituacaoConciliacaoTrn.CONTAS_PAGAR_BAIXADO_SEM_CONCILIACAO.equals(situacaoConciliacaoTrn)) {
+					List<ContaPagarEntity> contasCandidatas = contas
+							.stream()
+							.filter(it -> isNotEmpty(it.getDataPagamento()) && it.getDataPagamento().equals(transacao.getTrnData()))
+							.collect(Collectors.toList());
+					
+					if (!contasCandidatas.isEmpty()) {
+						contas.removeIf(it1 -> !contasCandidatas.stream().anyMatch(it2 -> it2.getId().equals(it1.getId())));
+					}
+					
+				}
+				
 				// Caso tenha mais de um título, empacota eles junto para o usuário decidir qual é o título certo.
-				if (contas.size() > 0) {
+				if (!contas.isEmpty()) {
 					
 					List<ConciliacaoTransacaoTituloDTO> titulos = contas.stream().map(it -> {
 						ConciliacaoTransacaoTituloDTO titulo = ConciliacaoTransacaoTituloDTO.builder()
@@ -134,7 +213,7 @@ public class ConciliacaoBancariaServiceImpl implements ConciliacaoBancariaServic
 					
 					transacao.setConciliacaoTransacaoTitulosDTO(titulos);
 					
-				} // if (contas.size() > 1)
+				} // if (!contas.isEmpty())
 				
 			}//
 			
@@ -143,21 +222,68 @@ public class ConciliacaoBancariaServiceImpl implements ConciliacaoBancariaServic
 		return conciliacaoBancariaDTO;
 	}
 	
+	private String getTrnKey(ConciliacaoTransacaoDTO transacao) {
+		String key = transacao.getTrnValor().toString() + "_" + transacao.getTrnHistorico().toLowerCase().replaceAll(" ", "_");
+		return key;
+	}
+	
 	private boolean isConciliado(ContaPagarEntity conta, ConciliacaoTransacaoDTO transacao) {
 		boolean result = transacao.getTrnId().equals(conta.getIdConcBancaria());
 		return result;
 	}
 	
-	private boolean isEmAberto(ContaPagarEntity conta, ConciliacaoTransacaoDTO transacao) {
-		boolean result = isEquals(transacao.getTrnValor(), conta.getValor()) && isEmpty(conta.getDataPagamento());
+	public boolean isEmAberto(ContaPagarEntity conta, ConciliacaoTransacaoDTO transacao, 
+			List<ContaPagarEntity> contas) {
+		ContaPagarEntity contaMaisPerto = getContaEmAbertoComDataVencimentoMaisPerto(transacao.getTrnData(), contas);
+		boolean result = isEquals(transacao.getTrnValor(), conta.getValor()) && //
+				isEmpty(conta.getDataPagamento()) && //
+				(isEmpty(contaMaisPerto) || conta.equals(contaMaisPerto));
 		return result;
 	}
 	
+	
+	
+	public ContaPagarEntity getContaEmAbertoComDataVencimentoMaisPerto(LocalDate dataRef, List<ContaPagarEntity> contas) {
+		if (isEmpty(contas)) {
+			return null;
+		}
+		
+		contas = contas.stream().filter(it -> isEmpty(it.getDataPagamento())).collect(Collectors.toList());
+		if (isEmpty(contas)) {
+			return null;
+		}
+		
+		ContaPagarEntity result = contas.get(0);
+		int dif = Math.abs(Period.between(dataRef, result.getDataVencimento()).getDays());
+		if (dif == 0) { // dataRef = dataVencimento, já retorna
+			return result;
+		}
+		
+		int minDif = dif;
+		for (ContaPagarEntity conta: contas) {
+			dif = Math.abs(Period.between(dataRef, conta.getDataVencimento()).getDays());
+			
+			if (dif == 0) { // dataRef = dataVencimento, já retorna
+				return result;
+			}
+			
+			if (dif < minDif) {
+				minDif = dif;
+				result = conta;
+			}
+		}
+		
+		return result;
+	}
+
 	private boolean isPago(ContaPagarEntity conta, ConciliacaoTransacaoDTO transacao) {
-		boolean result = isEquals(transacao.getTrnValor(), conta.getValorPago()) && isNotEmpty(conta.getDataPagamento());
+		boolean result = isEquals(transacao.getTrnValor(), conta.getValorPago()) && // Valor é igual e...
+				isNotEmpty(conta.getDataPagamento()) && 
+				transacao.getTrnData().equals(conta.getDataPagamento()); // a data da transação é igual a data de pagamento da conta.
 		return result;
 	}
 	
+	@Transactional
 	@Override
 	public ConciliacaoBancariaDTO aplicarConciliacaoBancaria(ConciliacaoBancariaDTO conciliacaoBancariaDTO) {
 		

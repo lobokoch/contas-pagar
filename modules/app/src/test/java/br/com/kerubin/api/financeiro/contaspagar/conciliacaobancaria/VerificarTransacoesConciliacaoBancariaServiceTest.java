@@ -15,6 +15,7 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 
@@ -325,7 +326,7 @@ public class VerificarTransacoesConciliacaoBancariaServiceTest extends Financeir
 				.trnData(LocalDate.of(2019, 10, 7))
 				.trnId("123")
 				.trnDocumento("123")
-				.trnHistorico("Teste 123")
+				.trnHistorico("bla")
 				.build();
 		
 		ConciliacaoTransacaoDTO t2 = ConciliacaoTransacaoDTO.builder()
@@ -335,7 +336,7 @@ public class VerificarTransacoesConciliacaoBancariaServiceTest extends Financeir
 				.trnData(LocalDate.of(2019, 7, 9))
 				.trnId("123")
 				.trnDocumento("123")
-				.trnHistorico("Teste 123")
+				.trnHistorico("ble")
 				.build();
 		
 		ConciliacaoTransacaoDTO t3 = ConciliacaoTransacaoDTO.builder()
@@ -345,7 +346,7 @@ public class VerificarTransacoesConciliacaoBancariaServiceTest extends Financeir
 				.trnData(LocalDate.of(2019, 8, 7))
 				.trnId("123")
 				.trnDocumento("123")
-				.trnHistorico("Teste 123")
+				.trnHistorico("bli")
 				.build();
 		
 		ConciliacaoTransacaoDTO t4 = ConciliacaoTransacaoDTO.builder()
@@ -355,7 +356,7 @@ public class VerificarTransacoesConciliacaoBancariaServiceTest extends Financeir
 				.trnData(LocalDate.of(2019, 9, 9))
 				.trnId("123")
 				.trnDocumento("123")
-				.trnHistorico("Teste 123")
+				.trnHistorico("blo")
 				.build();
 		
 		ConciliacaoTransacaoDTO t5 = ConciliacaoTransacaoDTO.builder()
@@ -365,7 +366,7 @@ public class VerificarTransacoesConciliacaoBancariaServiceTest extends Financeir
 				.trnData(LocalDate.of(2019, 10, 7))
 				.trnId("123")
 				.trnDocumento("123")
-				.trnHistorico("Teste 123")
+				.trnHistorico("blu")
 				.build();
 		
 		transacoes.add(t1);
@@ -494,6 +495,174 @@ public class VerificarTransacoesConciliacaoBancariaServiceTest extends Financeir
 				tuple(conta3.getId(), conta3.getDescricao(), SituacaoConciliacaoTrn.CONTAS_PAGAR_BAIXADO_SEM_CONCILIACAO),
 				tuple(conta5.getId(), conta5.getDescricao(), SituacaoConciliacaoTrn.CONCILIAR_CONTAS_PAGAR)
 				);
+	}
+	
+	@Test
+	public void testParcelasPagasAdiantadas() {
+		
+		int quantidade = 5;
+		LocalDate dataInicial = LocalDate.of(2019,10, 10);
+		List<ContaPagarEntity> contas = criarContaPagar(quantidade, dataInicial, VALOR);
+		assertThat(contas).hasSize(quantidade);
+		assertThat(contas.get(0).getDataVencimento()).isEqualTo(LocalDate.of(2019, 10, 10));
+		assertThat(contas.get(contas.size() - 1)
+				.getDataVencimento()).isEqualTo(LocalDate.of(2020, 02, 10));
+		
+		ConciliacaoBancariaDTO conciliacaoBancariaDTO = newConciliacaoBancariaDTO();
+		
+		List<ConciliacaoTransacaoDTO> transacoes = new ArrayList<>();
+		List<LocalDate> datas = Arrays.asList(LocalDate.of(2019, 10, 10), 
+				LocalDate.of(2019, 10, 10), 
+				LocalDate.of(2019, 10, 10),
+				LocalDate.of(2019, 10, 11),
+				LocalDate.of(2019, 10, 13)
+				);
+		
+		for (int i = 0; i < datas.size(); i++) {
+			ConciliacaoTransacaoDTO t = ConciliacaoTransacaoDTO.builder()
+					.id(UUID.randomUUID())
+					.trnValor(VALOR)
+					.trnTipo(TipoTransacao.DEBITO)
+					.trnData(datas.get(i))
+					.trnId("123")
+					.trnDocumento("123")
+					.trnHistorico("Teste 123")
+					.build();
+			
+			transacoes.add(t);
+		}
+		
+		
+		conciliacaoBancariaDTO.setTransacoes(transacoes);
+		
+		conciliacaoBancariaDTO = conciliacaoBancariaService.verificarTransacoes(conciliacaoBancariaDTO);
+		transacoes = conciliacaoBancariaDTO.getTransacoes();
+		
+		int i = 0;
+		ConciliacaoTransacaoDTO t0 = transacoes.get(i);
+		ConciliacaoTransacaoTituloDTO titulo = t0.getConciliacaoTransacaoTitulosDTO()
+				.stream()
+				.filter(it -> it.getTituloConciliadoId().equals(contas.get(0).getId())) // Um dos títulos tem que ser a contas a pagar.
+				.findFirst().orElse(null);
+		
+		assertThat(titulo.getTituloConciliadoDataVen()).isEqualTo(contas.get(i).getDataVencimento());
+		
+		i++;
+		ConciliacaoTransacaoDTO t1 = transacoes.get(i);
+		titulo = t1.getConciliacaoTransacaoTitulosDTO()
+			.stream()
+			.filter(it -> it.getTituloConciliadoId().equals(contas.get(1).getId())) // Um dos títulos tem que ser a contas a pagar.
+			.findFirst().orElse(null);
+		
+		assertThat(titulo.getTituloConciliadoDataVen()).isEqualTo(contas.get(i).getDataVencimento());
+		
+		i++;
+		ConciliacaoTransacaoDTO t2 = transacoes.get(i);
+		titulo = t2.getConciliacaoTransacaoTitulosDTO()
+				.stream()
+				.filter(it -> it.getTituloConciliadoId().equals(contas.get(2).getId())) // Um dos títulos tem que ser a contas a pagar.
+				.findFirst().orElse(null);
+		
+		assertThat(titulo.getTituloConciliadoDataVen()).isEqualTo(contas.get(i).getDataVencimento());
+		
+		i++;
+		ConciliacaoTransacaoDTO t3 = transacoes.get(i);
+		titulo = t3.getConciliacaoTransacaoTitulosDTO()
+				.stream()
+				.filter(it -> it.getTituloConciliadoId().equals(contas.get(3).getId())) // Um dos títulos tem que ser a contas a pagar.
+				.findFirst().orElse(null);
+		
+		assertThat(titulo.getTituloConciliadoDataVen()).isEqualTo(contas.get(i).getDataVencimento());
+		
+		i++;
+		ConciliacaoTransacaoDTO t4 = transacoes.get(i);
+		titulo = t4.getConciliacaoTransacaoTitulosDTO()
+				.stream()
+				.filter(it -> it.getTituloConciliadoId().equals(contas.get(4).getId())) // Um dos títulos tem que ser a contas a pagar.
+				.findFirst().orElse(null);
+		
+		assertThat(titulo.getTituloConciliadoDataVen()).isEqualTo(contas.get(i).getDataVencimento());
+		
+	}
+	
+	@Test
+	public void testAcharParcelasPelaDescricao() {
+		
+		int quantidade = 5;
+		LocalDate dataInicial = LocalDate.of(2019,10, 10);
+		List<ContaPagarEntity> contas = criarContaPagar(quantidade, dataInicial, VALOR);
+		assertThat(contas).hasSize(quantidade);
+		assertThat(contas.get(0).getDataVencimento()).isEqualTo(LocalDate.of(2019, 10, 10));
+		assertThat(contas.get(contas.size() - 1)
+				.getDataVencimento()).isEqualTo(LocalDate.of(2020, 02, 10));
+		
+		
+		contas.get(0).setValor(new BigDecimal("100"));
+		contas.get(0).setDescricao("Luz");
+		
+		contas.get(1).setValor(new BigDecimal("300"));
+		contas.get(1).setDescricao("Corte de cabelo Márcio no Shoping Park Europeu");
+		
+		contas.get(2).setValor(new BigDecimal("200"));
+		contas.get(2).setDescricao("Compra no supermercado Giassi");
+		
+		contas.get(3).setValor(new BigDecimal("400"));
+		contas.get(3).setDescricao("Assinatura da Sky");
+		
+		contas.get(4).setValor(new BigDecimal("500"));
+		contas.get(4).setDescricao("Colégio Mateus - Bom Jesus");
+		em.flush();
+		
+		
+		ConciliacaoBancariaDTO conciliacaoBancariaDTO = newConciliacaoBancariaDTO();
+		
+		List<ConciliacaoTransacaoDTO> transacoes = new ArrayList<>();
+		
+		for (int i = 0; i < contas.size(); i++) {
+			ConciliacaoTransacaoDTO t = ConciliacaoTransacaoDTO.builder()
+					.id(UUID.randomUUID())
+					.trnValor(VALOR)
+					.trnTipo(TipoTransacao.DEBITO)
+					.trnData(contas.get(i).getDataVencimento())
+					.trnId("123")
+					.trnDocumento("123")
+					.trnHistorico("Teste 123")
+					.build();
+			
+			transacoes.add(t);
+		}
+		
+		transacoes.get(0).setTrnHistorico("Conta de Luz Bradesco C-celesc Distr./sc");
+		transacoes.get(1).setTrnHistorico("Visa Electron Barbearia Park Europ");
+		transacoes.get(2).setTrnHistorico("Visa Electron Giassi Supermerca");
+		transacoes.get(3).setTrnHistorico("tv p/assinatura Sky-tv Assinatura*-118774910");
+		transacoes.get(4).setTrnHistorico("Pagto Cobranca Bom Jesus");
+		
+		conciliacaoBancariaDTO.setTransacoes(transacoes);
+		
+		conciliacaoBancariaDTO = conciliacaoBancariaService.verificarTransacoes(conciliacaoBancariaDTO);
+		transacoes = conciliacaoBancariaDTO.getTransacoes();
+		
+		assertThat(transacoes.get(0).getConciliacaoTransacaoTitulosDTO()).hasSize(1)
+		.extracting(ConciliacaoTransacaoTituloDTO::getTituloConciliadoId)
+		.contains(contas.get(0).getId());
+		
+		assertThat(transacoes.get(1).getConciliacaoTransacaoTitulosDTO()).hasSize(1)
+		.extracting(ConciliacaoTransacaoTituloDTO::getTituloConciliadoId)
+		.contains(contas.get(1).getId());
+		
+		assertThat(transacoes.get(2).getConciliacaoTransacaoTitulosDTO()).hasSize(1)
+		.extracting(ConciliacaoTransacaoTituloDTO::getTituloConciliadoId)
+		.contains(contas.get(2).getId());
+		
+		assertThat(transacoes.get(3).getConciliacaoTransacaoTitulosDTO()).hasSize(1)
+		.extracting(ConciliacaoTransacaoTituloDTO::getTituloConciliadoId)
+		.contains(contas.get(3).getId());
+		
+		assertThat(transacoes.get(4).getConciliacaoTransacaoTitulosDTO()).hasSize(1)
+		.extracting(ConciliacaoTransacaoTituloDTO::getTituloConciliadoId)
+		.contains(contas.get(4).getId());		
+		
 	}
 	
 	
