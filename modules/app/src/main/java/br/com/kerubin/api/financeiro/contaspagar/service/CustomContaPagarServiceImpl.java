@@ -146,6 +146,8 @@ public class CustomContaPagarServiceImpl extends ContaPagarServiceImpl {
 	@Override
 	public ContaPagarEntity update(UUID id, ContaPagarEntity contaPagarEntity) {
 		ContaPagarEntity beforeUpdateEntity = read(id);
+		em.detach(beforeUpdateEntity);
+		
 		beforeUpdateEntity = beforeUpdateEntity.clone();
 		
 		ContaPagarEntity entity = super.update(id, contaPagarEntity);
@@ -243,7 +245,7 @@ public class CustomContaPagarServiceImpl extends ContaPagarServiceImpl {
 			publisher.publish(envelope);
 		}
 		catch (Exception e) {
-			log.error("Error publishing event: " + eventName + ", entity: " + entity);
+			log.error("ERROR PUBLISHING EVENT: " + eventName + ", entity: " + entity);
 		}
 		
 	}

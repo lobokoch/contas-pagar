@@ -1,11 +1,17 @@
 package br.com.kerubin.api.financeiro.contaspagar.conciliacaobancaria;
 
 import static br.com.kerubin.api.servicecore.util.CoreUtils.format;
+import static br.com.kerubin.api.servicecore.util.CoreUtils.formatMoney;
 import static br.com.kerubin.api.servicecore.util.CoreUtils.isEmpty;
 import static br.com.kerubin.api.servicecore.util.CoreUtils.isEquals;
 import static br.com.kerubin.api.servicecore.util.CoreUtils.isNotEmpty;
 import static br.com.kerubin.api.servicecore.util.CoreUtils.getTokens;
+import static br.com.kerubin.api.servicecore.util.CoreUtils.getDiff;
+import static br.com.kerubin.api.servicecore.util.CoreUtils.isZero;
+import static br.com.kerubin.api.servicecore.util.CoreUtils.isLt;
+import static br.com.kerubin.api.servicecore.util.CoreUtils.isGte;
 
+import java.math.BigDecimal;
 import java.text.MessageFormat;
 import java.time.LocalDate;
 import java.time.Period;
@@ -136,6 +142,11 @@ public class ConciliacaoBancariaServiceImpl implements ConciliacaoBancariaServic
 					}
 					
 					if (isEmpty(contaCandidata)) {
+						// Os títulos devem ter valores diferentes da transação, então procura a conta de valor mais próximo.
+						contaCandidata = getContaEmAbertoComValorMaisPerto(transacao.getTrnValor(), contasClone);
+					}
+					
+					if (isEmpty(contaCandidata)) {
 						contaCandidata = contas.get(0);
 					}
 				}
@@ -147,7 +158,7 @@ public class ConciliacaoBancariaServiceImpl implements ConciliacaoBancariaServic
 				lastVisitedList.put(key, contaMaiorDataVencimento);
 				
 				transacao.setTituloConciliadoId(contaCandidata.getId());
-				transacao.setTituloConciliadoDesc(contaCandidata.getDescricao());
+				transacao.setTituloConciliadoDesc(contaCandidata.getDescricao() + " (" + formatMoney(contaCandidata.getValor())  + ")");
 				
 				SituacaoConciliacaoTrn situacaoConciliacaoTrn = transacao.getSituacaoConciliacaoTrn(); // Valor atual é o default.
 				if (isNotEmpty(contaCandidata.getDataPagamento())) { // Já pagou, baixado.
@@ -162,6 +173,11 @@ public class ConciliacaoBancariaServiceImpl implements ConciliacaoBancariaServic
 					situacaoConciliacaoTrn = SituacaoConciliacaoTrn.CONCILIAR_CONTAS_PAGAR;
 				}
 				transacao.setSituacaoConciliacaoTrn(situacaoConciliacaoTrn);
+				
+				BigDecimal diff = getDiff(transacao.getTrnValor(), contaCandidata.getValor());
+				if (isGte(diff, transacao.getTrnValor().divide(BigDecimal.valueOf(2))) || isGte(diff, contaCandidata.getValor().divide(BigDecimal.valueOf(2)))) {
+					transacao.setConciliadoMsg("Valor da conta e o valor da transação possuem diferença maior ou igual a 50%");
+				}
 				
 				// Se já foi conciliado, remove as contas que não tem a ver com a conta que conciliou.
 				if (contas.size() > 1 && SituacaoConciliacaoTrn.CONCILIADO_CONTAS_PAGAR.equals(situacaoConciliacaoTrn)) {
@@ -187,7 +203,7 @@ public class ConciliacaoBancariaServiceImpl implements ConciliacaoBancariaServic
 					List<ConciliacaoTransacaoTituloDTO> titulos = contas.stream().map(it -> {
 						ConciliacaoTransacaoTituloDTO titulo = ConciliacaoTransacaoTituloDTO.builder()
 								.tituloConciliadoId(it.getId())
-								.tituloConciliadoDesc(it.getDescricao())
+								.tituloConciliadoDesc(it.getDescricao() + " (" + formatMoney(it.getValor())  + ")")
 								.tituloConciliadoDataVen(it.getDataVencimento())
 								.tituloConciliadoDataPag(it.getDataPagamento())
 								.build();
@@ -260,7 +276,8 @@ public class ConciliacaoBancariaServiceImpl implements ConciliacaoBancariaServic
 		}
 		
 		int minDif = dif;
-		for (ContaPagarEntity conta: contas) {
+		for (int i = 1; i < contas.size(); i++) {
+			ContaPagarEntity conta =  contas.get(i);
 			dif = Math.abs(Period.between(dataRef, conta.getDataVencimento()).getDays());
 			
 			if (dif == 0) { // dataRef = dataVencimento, já retorna
@@ -268,6 +285,40 @@ public class ConciliacaoBancariaServiceImpl implements ConciliacaoBancariaServic
 			}
 			
 			if (dif < minDif) {
+				minDif = dif;
+				result = conta;
+			}
+		}
+		
+		return result;
+	}
+	
+	public ContaPagarEntity getContaEmAbertoComValorMaisPerto(BigDecimal valorRef, List<ContaPagarEntity> contas) {
+		if (isEmpty(contas)) {
+			return null;
+		}
+		
+		contas = contas.stream().filter(it -> isEmpty(it.getDataPagamento())).collect(Collectors.toList());
+		if (isEmpty(contas)) {
+			return null;
+		}
+		
+		ContaPagarEntity result = contas.get(0);
+		BigDecimal dif = getDiff(result.getValor(), valorRef);
+		if (isZero(dif)) { // valorRef == valor, já retorna
+			return result;
+		}
+		
+		BigDecimal minDif = dif;
+		for (int i = 1; i < contas.size(); i++) {
+			ContaPagarEntity conta = contas.get(i);
+			dif = getDiff(conta.getValor(), valorRef);
+			
+			if (isZero(dif)) { // valorRef == valor, já retorna
+				return result;
+			}
+			
+			if (isLt(dif, minDif)) {
 				minDif = dif;
 				result = conta;
 			}
@@ -283,7 +334,7 @@ public class ConciliacaoBancariaServiceImpl implements ConciliacaoBancariaServic
 		return result;
 	}
 	
-	@Transactional
+	//@Transactional
 	@Override
 	public ConciliacaoBancariaDTO aplicarConciliacaoBancaria(ConciliacaoBancariaDTO conciliacaoBancariaDTO) {
 		
@@ -333,7 +384,7 @@ public class ConciliacaoBancariaServiceImpl implements ConciliacaoBancariaServic
 			}
 			
 			if (isEmpty(erroMsg) && !transacao.isDebito()) {
-				erroMsg = format("Tipo da transação deveria ser CRÉDITO mas é: {0}", transacao.getTrnTipo());
+				erroMsg = format("Tipo da transação deveria ser DÉDITO mas é: {0}", transacao.getTrnTipo());
 			}
 			
 			if (isNotEmpty(erroMsg)) {
@@ -364,10 +415,9 @@ public class ConciliacaoBancariaServiceImpl implements ConciliacaoBancariaServic
 			
 			if (!isEquals(conta.getValor(), transacao.getTrnValor())) {
 				erroMsg = format("Valor da conta: {0}, diverge do valor da transação de conciliação: {1}", conta.getValor(), transacao.getTrnValor());
-				log.error(erroMsg + ": " + logHeader);
-				transacao.setConciliadoComErro(true);
+				log.warn(erroMsg + ": " + logHeader);
+				transacao.setConciliadoComErro(false); // Não é um erro, só um warning.
 				transacao.setConciliadoMsg(erroMsg);
-				continue;
 			}
 			
 			conta.setDataPagamento(transacao.getTrnData());
@@ -379,19 +429,18 @@ public class ConciliacaoBancariaServiceImpl implements ConciliacaoBancariaServic
 			conta.setHistConcBancaria(transacao.getTrnHistorico());
 			
 			String obs = isNotEmpty(conta.getObservacoes()) ? conta.getObservacoes() : "";
-			obs = "*** Histórico baixa via conciliação bancária:" +  transacao.getTrnHistorico() + "\r\n" + obs;
+			obs = "*** Histórico: baixa via conciliação bancária:" +  transacao.getTrnHistorico() + "\r\n" + obs;
 			conta.setObservacoes(obs);
 			
 			try {
-				contaPagarService.update(conta.getId(), conta);
+				conta = contaPagarService.update(conta.getId(), conta);
 				
 				transacao.setConciliadoComErro(false);
-				transacao.setConciliadoMsg("Sucesso");
 				transacao.setSituacaoConciliacaoTrn(SituacaoConciliacaoTrn.CONCILIADO_CONTAS_PAGAR);
 				transacao.setDataConciliacao(LocalDate.now());
 				transacao.setTituloConciliadoDesc(conta.getDescricao());
 			} catch (Exception e) {
-				log.error("Erro ao baixar a conta a pagar via conciliação banácia:" + conta.getId(), e);
+				log.error("Erro ao baixar a conta a pagar via conciliação bancária:" + conta.getId(), e);
 				transacao.setConciliadoComErro(true);
 				transacao.setConciliadoMsg(e.getMessage());
 			}
