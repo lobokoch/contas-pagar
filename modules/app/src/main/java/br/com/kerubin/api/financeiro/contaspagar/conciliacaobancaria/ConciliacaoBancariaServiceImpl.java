@@ -2,14 +2,14 @@ package br.com.kerubin.api.financeiro.contaspagar.conciliacaobancaria;
 
 import static br.com.kerubin.api.servicecore.util.CoreUtils.format;
 import static br.com.kerubin.api.servicecore.util.CoreUtils.formatMoney;
+import static br.com.kerubin.api.servicecore.util.CoreUtils.getDiff;
+import static br.com.kerubin.api.servicecore.util.CoreUtils.getTokens;
 import static br.com.kerubin.api.servicecore.util.CoreUtils.isEmpty;
 import static br.com.kerubin.api.servicecore.util.CoreUtils.isEquals;
-import static br.com.kerubin.api.servicecore.util.CoreUtils.isNotEmpty;
-import static br.com.kerubin.api.servicecore.util.CoreUtils.getTokens;
-import static br.com.kerubin.api.servicecore.util.CoreUtils.getDiff;
-import static br.com.kerubin.api.servicecore.util.CoreUtils.isZero;
 import static br.com.kerubin.api.servicecore.util.CoreUtils.isLt;
-import static br.com.kerubin.api.servicecore.util.CoreUtils.isGte;
+import static br.com.kerubin.api.servicecore.util.CoreUtils.isNotEmpty;
+import static br.com.kerubin.api.servicecore.util.CoreUtils.isNotEquals;
+import static br.com.kerubin.api.servicecore.util.CoreUtils.isZero;
 
 import java.math.BigDecimal;
 import java.text.MessageFormat;
@@ -158,7 +158,13 @@ public class ConciliacaoBancariaServiceImpl implements ConciliacaoBancariaServic
 				lastVisitedList.put(key, contaMaiorDataVencimento);
 				
 				transacao.setTituloConciliadoId(contaCandidata.getId());
-				transacao.setTituloConciliadoDesc(contaCandidata.getDescricao() + " (" + formatMoney(contaCandidata.getValor())  + ")");
+				transacao.setTituloConciliadoDesc(contaCandidata.getDescricao());
+				
+				transacao.setTituloConciliadoValor(contaCandidata.getDataPagamento() == null ? contaCandidata.getValor() : contaCandidata.getValorPago());
+				transacao.setTituloConciliadoDataVen(contaCandidata.getDataVencimento());
+				transacao.setTituloConciliadoDataPag(contaCandidata.getDataPagamento());
+				PlanoContaDTO planoContas = contaCandidata.getPlanoContas() != null ? PlanoContaDTO.builder().id(contaCandidata.getPlanoContas().getId()).build() : null;
+				transacao.setTituloPlanoContas(planoContas);
 				
 				SituacaoConciliacaoTrn situacaoConciliacaoTrn = transacao.getSituacaoConciliacaoTrn(); // Valor atual é o default.
 				if (isNotEmpty(contaCandidata.getDataPagamento())) { // Já pagou, baixado.
@@ -174,10 +180,16 @@ public class ConciliacaoBancariaServiceImpl implements ConciliacaoBancariaServic
 				}
 				transacao.setSituacaoConciliacaoTrn(situacaoConciliacaoTrn);
 				
-				BigDecimal diff = getDiff(transacao.getTrnValor(), contaCandidata.getValor());
+				BigDecimal valor = contaCandidata.getValor();
+				if (isNotEquals(transacao.getTrnValor(), valor)) {
+					BigDecimal valDiff = getDiff(transacao.getTrnValor(), valor);
+					transacao.setConciliadoMsg(MessageFormat.format("Valor da transação e valor da conta são diferentes em: {0}", formatMoney(valDiff)));
+				}
+				
+				/*BigDecimal diff = getDiff(transacao.getTrnValor(), contaCandidata.getValor());
 				if (isGte(diff, transacao.getTrnValor().divide(BigDecimal.valueOf(2))) || isGte(diff, contaCandidata.getValor().divide(BigDecimal.valueOf(2)))) {
 					transacao.setConciliadoMsg("Valor da conta e o valor da transação possuem diferença maior ou igual a 50%");
-				}
+				}*/
 				
 				// Se já foi conciliado, remove as contas que não tem a ver com a conta que conciliou.
 				if (contas.size() > 1 && SituacaoConciliacaoTrn.CONCILIADO_CONTAS_PAGAR.equals(situacaoConciliacaoTrn)) {
@@ -201,11 +213,14 @@ public class ConciliacaoBancariaServiceImpl implements ConciliacaoBancariaServic
 				if (!contas.isEmpty()) {
 					
 					List<ConciliacaoTransacaoTituloDTO> titulos = contas.stream().map(it -> {
+						PlanoContaDTO planoContasTitulo = it.getPlanoContas() != null ? PlanoContaDTO.builder().id(it.getPlanoContas().getId()).build() : null;
 						ConciliacaoTransacaoTituloDTO titulo = ConciliacaoTransacaoTituloDTO.builder()
 								.tituloConciliadoId(it.getId())
-								.tituloConciliadoDesc(it.getDescricao() + " (" + formatMoney(it.getValor())  + ")")
+								.tituloConciliadoDesc(it.getDescricao())
+								.tituloConciliadoValor(isEmpty(it.getDataPagamento()) ? it.getValor() : it.getValorPago())
 								.tituloConciliadoDataVen(it.getDataVencimento())
 								.tituloConciliadoDataPag(it.getDataPagamento())
+								.tituloPlanoContas(planoContasTitulo)
 								.build();
 						
 						// Situação do título
