@@ -3,7 +3,7 @@ domain financeiro
 
 @enableDoc
 @label("Contas a pagar")
-service contas_pagar { //xxx
+service contas_pagar { //xxxxx
 	
 	config {
 		groupId: "br.com.kerubin.api"
@@ -59,7 +59,7 @@ service contas_pagar { //xxx
 		valor: money 
 		label: "Valor da conta"
 		sum(styleClass:"kb-conta-valor-apagar" label:"A")
-		web(styleClass: "ui-md-2")
+		web(styleClass: "ui-md-2") //
 		listFilter(between: "Contas com valores de;até;" styleClass: "ui-md-3")
 		
 		formaPagamento: FormaPagamento
@@ -130,7 +130,7 @@ service contas_pagar { //xxx
 		web(styleClass: "ui-md-2")
 		//--
 		
-		fornecedor: refers Fornecedor? manyToOne
+		fornecedor: refers Fornecedor? manyToOne ///
 		publishedInEvents
 		web(styleClass: "ui-md-6")
 		
@@ -140,27 +140,26 @@ service contas_pagar { //xxx
 		grid(hidden) 
 		web(styleClass: "ui-md-6")
 		
+		///////
 		// Begin conciliação bancária
 		idConcBancaria: string? 
-		label: "Id. conc. banc."
+		label: "Id da conciliação bancária"
 		grid(hidden) 
 		web(styleClass: "ui-md-4" readOnly)
-		listFilter(isNotNull: "Id. da baixa via conciliação")
-		
-		numDocConcBancaria: string? 
-		label: "Doc. conc. banc."
-		grid(hidden) 
-		web(styleClass: "ui-md-4" readOnly)
-		listFilter(isNotNull: "Doc. Baixa via conciliação")
+		listFilter(isNotNull: "Baixa via conc. banc." containerStyleClass: "ui-md-6")
 		
 		histConcBancaria: string?
 		label: "Histórico da conciliação bancária"
 		grid(hidden)
-		web(styleClass: "ui-md-4" readOnly)
-		listFilter(many: "Histórico da conciliação bancária")
+		web(styleClass: "ui-md-5" readOnly)
+		listFilter(many: "Histórico da conciliação bancária" containerStyleClass: "ui-md-6")
 		
-		// dataConcBancaria: date?
+		numDocConcBancaria: string? 
+		label: "Documento da conciliação bancária"
+		grid(hidden) 
+		web(styleClass: "ui-md-3" readOnly)
 		// End conciliação bancária
+		///////////
 		
 		observacoes: string[1000]? 
 		label: "Observações"
@@ -185,6 +184,8 @@ service contas_pagar { //xxx
 			with(contaBancaria).apply(styleClass:"hidden").when(formaPagamento.isNotEquals(FormaPagamento.CONTA_BANCARIA))
 			with(cartaoCredito).apply(styleClass:"hidden").when(formaPagamento.isNotEquals(FormaPagamento.CARTAO_CREDITO))
 			with(outrosDescricao).apply(styleClass:"hidden").when(formaPagamento.isEquals(FormaPagamento.CONTA_BANCARIA) or formaPagamento.isEquals(FormaPagamento.CARTAO_CREDITO) )
+			
+			with(idConcBancaria).apply(styleClass:"hidden").when(idConcBancaria.isNull)
 			with(numDocConcBancaria).apply(styleClass:"hidden").when(numDocConcBancaria.isNull)
 			with(histConcBancaria).apply(styleClass:"hidden").when(numDocConcBancaria.isNull)
 			

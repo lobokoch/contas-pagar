@@ -30,6 +30,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.querydsl.core.BooleanBuilder;
+import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 
 import br.com.kerubin.api.financeiro.contaspagar.FormaPagamento;
@@ -38,6 +39,7 @@ import br.com.kerubin.api.financeiro.contaspagar.entity.contabancaria.ContaBanca
 import br.com.kerubin.api.financeiro.contaspagar.entity.contapagar.ContaPagarEntity;
 import br.com.kerubin.api.financeiro.contaspagar.entity.contapagar.ContaPagarService;
 import br.com.kerubin.api.financeiro.contaspagar.entity.contapagar.QContaPagarEntity;
+import br.com.kerubin.api.financeiro.contaspagar.entity.fornecedor.QFornecedorEntity;
 import br.com.kerubin.api.financeiro.contaspagar.repository.ContaPagarRepository;
 import lombok.extern.slf4j.Slf4j;
 
@@ -68,22 +70,26 @@ public class ConciliacaoBancariaServiceImpl implements ConciliacaoBancariaServic
 		JPAQueryFactory query = new JPAQueryFactory(em);
 		
 		QContaPagarEntity qContaPagar = QContaPagarEntity.contaPagarEntity;
+		QFornecedorEntity qFornecedor = QFornecedorEntity.fornecedorEntity;
 		
 		Map<String, ContaPagarEntity> lastVisitedList = new HashMap<>();
 		
 		conciliacaoBancariaDTO.getTransacoes().forEach(transacao -> {
 			
 			List<String> tokens = getTokens(transacao.getTrnHistorico());
-			BooleanBuilder filtroTokens = new BooleanBuilder();
+			BooleanBuilder filtroDescricaoTokens = new BooleanBuilder();
+			BooleanBuilder filtroFornecedorTokens = new BooleanBuilder();
 			if (isNotEmpty(tokens)) {
-				tokens.forEach(token -> filtroTokens.or(qContaPagar.descricao.containsIgnoreCase(token)));			
+				tokens.forEach(token -> filtroDescricaoTokens.or(qContaPagar.descricao.containsIgnoreCase(token)));
+				tokens.forEach(token -> filtroFornecedorTokens.or(qContaPagar.fornecedor.nome.containsIgnoreCase(token)));
+				
 			}
 			
 			BooleanBuilder filtroDados = new BooleanBuilder();
 			filtroDados
 			.and(qContaPagar.idConcBancaria.eq(transacao.getTrnId()))
 			.or(qContaPagar.valor.eq(transacao.getTrnValor()))
-			.or(filtroTokens); // Faz match com os tokens do histórico do extrato com as descrições das contas.
+			.or(filtroDescricaoTokens); // Faz match com os tokens do histórico do extrato com as descrições das contas.
 			
 			LocalDate dataToRef = transacao.getTrnData();
 			String key = getTrnKey(transacao);
@@ -107,11 +113,13 @@ public class ConciliacaoBancariaServiceImpl implements ConciliacaoBancariaServic
 			BooleanBuilder where = new BooleanBuilder();
 			where.and(filtroDados).and(filtroPerido);
 			
-			List<ContaPagarEntity> contas = query
+			JPAQuery<ContaPagarEntity> q = query
 					.selectFrom(qContaPagar)
+					.leftJoin(qContaPagar.fornecedor, qFornecedor).on(filtroFornecedorTokens)
 					.where(where)
-					.orderBy(qContaPagar.dataVencimento.asc())
-					.fetch();
+					.orderBy(qContaPagar.dataVencimento.asc());
+			
+			List<ContaPagarEntity> contas = q.fetch();
 			
 			if (isNotEmpty(contas)) {
 				
