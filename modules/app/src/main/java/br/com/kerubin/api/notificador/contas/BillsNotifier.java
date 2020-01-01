@@ -4,10 +4,14 @@ import static br.com.kerubin.api.messaging.constants.MessagingConstants.HEADER_T
 import static br.com.kerubin.api.messaging.constants.MessagingConstants.HEADER_USER;
 
 import java.text.DecimalFormat;
+import java.time.Duration;
+import java.time.Instant;
 import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -31,7 +35,9 @@ import br.com.kerubin.api.notificador.model.ContasPagarSituacaoDoAnoSum;
 import br.com.kerubin.api.notificador.model.ContasReceberHojeResumo;
 import br.com.kerubin.api.notificador.model.ContasReceberHojeResumoCompleto;
 import br.com.kerubin.api.notificador.model.ContasReceberSituacaoDoAnoSum;
+import br.com.kerubin.api.notificador.model.FinanceiroResumoData;
 import br.com.kerubin.api.notificador.model.SysUser;
+import br.com.kerubin.api.servicecore.mail.MailInfo;
 import br.com.kerubin.api.servicecore.mail.MailSender;
 import br.com.kerubin.api.servicecore.util.BooleanWrapper;
 import lombok.extern.slf4j.Slf4j;
@@ -55,7 +61,7 @@ public class BillsNotifier {
 	public static final String DASHBOARD = "dashboard";
 	public static final String KERUBIN_LINK = "<span style=\"color: #1e94d2; font-weight: bold;\"><a href=\"#\">Kerubin</a></span>";
 	
-	private List<SysUser> users;
+	// private List<SysUser> users;
 
 	@Inject
 	private RestTemplate restTemplate;
@@ -65,11 +71,20 @@ public class BillsNotifier {
 
 	// @Scheduled(fixedDelay = 1000 * 20)
 	@Scheduled(cron = "0 0 0 * * *", zone = TIME_ZONE)
-	public void executeNotifyUsersAboutTheBills() {
-		tryToNotifyUsersAboutTheBills();
+	public UUID executeNotifyUsersAboutTheBills() {
+		UUID ticket = UUID.randomUUID();
+		tryToNotifyUsersAboutTheBillsAssync(ticket);
+		return ticket;
 	}
 	
-	private void tryToNotifyUsersAboutTheBills() {
+	private void tryToNotifyUsersAboutTheBillsAssync(UUID ticket) {
+		CompletableFuture
+			.supplyAsync(() -> loadUsersWithTenants())
+			.thenAccept(usersLoaded -> notifyUsersAboutTheBills(usersLoaded));
+		
+	}
+
+	/*private void tryToNotifyUsersAboutTheBills(UUID ticket) {
 		int attempts = 0;
 		boolean success = false;
 		
@@ -95,9 +110,9 @@ public class BillsNotifier {
 		log.info("Starting notification for users about the BILLS...");
 		notifyUsersAboutTheBills();
 		log.info("DONE notification for users about the BILLS.");
-	}
+	}*/
 	
-	private void loadUsersWithTenants() {		
+	private List<SysUser> loadUsersWithTenants() {		
 		String url = HTTP + SECURITY_AUTHORIZATION_SERVICE + "/" + "entities/sysUser" + "/listActiveUsers";
 		
 		log.info("Loading users from: {}...", url);
@@ -106,13 +121,15 @@ public class BillsNotifier {
 				new ParameterizedTypeReference<List<SysUser>>() {
 		});
 		
-		users = response.getBody();
+		List<SysUser> users = response.getBody();
 		int userCount = isNotEmpty(users) ? users.size() : 0;
 		
 		log.info("Loaded {} users from: {}.", userCount, url);
+		
+		return users;
 	}
 
-	private void notifyUsersAboutTheBills() {
+	private void notifyUsersAboutTheBills(List<SysUser> users) {
 		log.info("Starting ALL users notification about bills...");
 		
 		if (isEmpty(users)) {
@@ -124,15 +141,18 @@ public class BillsNotifier {
 				.filter(distinctByKey(user -> user.getTenant().getId()))
 				.collect(Collectors.toList());
 		
+		log.info("Will notifyUsersAboutTheBills for {} users.", users.size());
 		distinctUsers.forEach(userAndTenant -> {
 			log.info("Notifying bills for tenant: {}...", userAndTenant.getTenant().getName());
-			notifyBillsForTenant(userAndTenant);
+			notifyBillsForTenant(userAndTenant, users);
 		});
 
 		log.info("DONE ALL users notification about bills.");
 	}
 
-	private void notifyBillsForTenant(SysUser userAndTenant) {
+	private void notifyBillsForTenant(SysUser userAndTenant, List<SysUser> users) {
+		Instant startNotifyBillsForTenant = Instant.now();
+		
 		if (isEmpty(userAndTenant)) {
 			log.warn("Null or empty userAndTenant at notifyBillsForTenant.");
 			return;
@@ -147,25 +167,103 @@ public class BillsNotifier {
 		
 		log.info("Starting notification for tenant: {}...", tenant);
 		
-		// TODO: isso aqui deve ser multi thread.
-		ContasPagarHojeResumoCompleto contasPagarHojeResumoCompleto = getContasPagarHojeResumoCompleto(userAndTenant);
+		System.out.println("Starting completable futures ...");
+		Instant startCompletableFuture = Instant.now();
 		
-		ContasReceberHojeResumoCompleto contasReceberHojeResumoCompleto = getContasReceberHojeResumoCompleto(userAndTenant);
+		CompletableFuture<ContasPagarHojeResumoCompleto> contasPagarHojeResumoCompletoFuture = CompletableFuture.supplyAsync(() -> getContasPagarHojeResumoCompleto(userAndTenant));
 		
-		List<CaixaMovimentoItem> fluxoCaixaResumoMovimentacoes = getFluxoCaixaResumoMovimentacoes(userAndTenant);
+		CompletableFuture<ContasReceberHojeResumoCompleto> contasReceberHojeResumoCompletoFuture = CompletableFuture.supplyAsync(() -> getContasReceberHojeResumoCompleto(userAndTenant));
+		
+		CompletableFuture<List<CaixaMovimentoItem>> fluxoCaixaResumoMovimentacoesFuture = CompletableFuture.supplyAsync(() -> getFluxoCaixaResumoMovimentacoes(userAndTenant));
+		
+	    
+		FinanceiroResumoData financeiroResumoData = CompletableFuture.allOf(contasPagarHojeResumoCompletoFuture, 
+				contasReceberHojeResumoCompletoFuture, 
+				fluxoCaixaResumoMovimentacoesFuture)
+				.thenApply(ignored -> {
+					
+					System.out.println("CompletableFuture.allOf.thenApply Thread:" + Thread.currentThread().getName());
+					
+					return combineFinanceiroResumoData(
+						contasPagarHojeResumoCompletoFuture.join(),
+						contasReceberHojeResumoCompletoFuture.join(),
+						fluxoCaixaResumoMovimentacoesFuture.join());
+				}
+					).join();
+		
+		Instant finishCompletableFuture = Instant.now();
+		long timeElapsedCompletableFuture = Duration.between(startCompletableFuture, finishCompletableFuture).toMillis();
+		log.info("Time elapsed in CompletableFuture:{} sec.", timeElapsedCompletableFuture / 1000);
 		
 		// Filtra apenas pelos usuários do tenant para envio das informações.
 		List<SysUser> usersOfTenant = users.stream()
 				.filter(it -> it.getTenant().getId().equals(userAndTenant.getTenant().getId()))
 				.collect(Collectors.toList());
 		
-		usersOfTenant.forEach(user -> notifyBillsForUser(user, contasPagarHojeResumoCompleto, contasReceberHojeResumoCompleto, fluxoCaixaResumoMovimentacoes));
+		Instant startNotifyBillsForUser = Instant.now();
 		
+		notifyBillsForUser(usersOfTenant, 
+				financeiroResumoData.getContasPagarHojeResumoCompleto(), 
+				financeiroResumoData.getContasReceberHojeResumoCompleto(), 
+				financeiroResumoData.getCaixaMovimentoItens());
+		
+		/*usersOfTenant.forEach(user -> {
+			CompletableFuture.runAsync( () -> notifyBillsForUser(user, 
+				financeiroResumoData.getContasPagarHojeResumoCompleto(), 
+				financeiroResumoData.getContasReceberHojeResumoCompleto(), 
+				financeiroResumoData.getCaixaMovimentoItens()));
+			});*/
+		
+		Instant finishNotifyBillsForUser = Instant.now();
+		long timeElapsedNotifyBillsForUser = Duration.between(startNotifyBillsForUser, finishNotifyBillsForUser).toMillis();
+		log.info("Time elapsed in NotifyBillsForUser:{} sec.", timeElapsedNotifyBillsForUser / 1000);
+		
+		Instant finishNotifyBillsForTenant = Instant.now();
+		long timeElapsedNotifyBillsForTenant = Duration.between(startNotifyBillsForTenant, finishNotifyBillsForTenant).toMillis();
+		log.info("Time elapsed in notifyBillsForTenant:{} sec.", timeElapsedNotifyBillsForTenant / 1000);
 		
 		log.info("DONE notifyBillsForTenant for tenant: {}.", tenant);
 	}
 	
-	private void notifyBillsForUser(SysUser user, 
+	private void notifyBillsForUser(List<SysUser> users, 
+			ContasPagarHojeResumoCompleto contasPagarHojeResumoCompleto,
+			ContasReceberHojeResumoCompleto contasReceberHojeResumoCompleto,
+			List<CaixaMovimentoItem> fluxoCaixaResumoMovimentacoes) {
+		
+		
+		MailInfo from = new MailInfo(MailSender.EMAIL_FROM_DEFAULT);
+		List<MailInfo> recipients = users.stream().map(user -> new MailInfo(user.getEmail(), user.getName(), null)).collect(Collectors.toList());
+		
+		log.info("Notifying bills for users {} ...", recipients);
+		
+		//List<String> recipients = Arrays.asList(user.getEmail());
+		String subsject = "Kerubin - Resumo das contas";
+		String message = buildNotificationBillsForUserMessage(users, 
+				contasPagarHojeResumoCompleto, 
+				contasReceberHojeResumoCompleto,
+				fluxoCaixaResumoMovimentacoes);
+		
+		mailSender.sendMail(from, recipients, subsject, message);
+		
+		log.info("DONE notify bills for users {} ...", recipients);
+	}
+	
+	private FinanceiroResumoData combineFinanceiroResumoData(ContasPagarHojeResumoCompleto contasPagarHojeResumoCompleto, 
+			ContasReceberHojeResumoCompleto contasReceberHojeResumoCompleto,
+			List<CaixaMovimentoItem> caixaMovimentoItens
+			) {
+		
+		FinanceiroResumoData result = FinanceiroResumoData
+				.builder()
+				.contasPagarHojeResumoCompleto(contasPagarHojeResumoCompleto)
+				.contasReceberHojeResumoCompleto(contasReceberHojeResumoCompleto)
+				.caixaMovimentoItens(caixaMovimentoItens)
+				.build();
+		
+		return result;
+	}
+	
+	/*private void notifyBillsForUser_OLD(SysUser user, 
 			ContasPagarHojeResumoCompleto contasPagarHojeResumoCompleto,
 			ContasReceberHojeResumoCompleto contasReceberHojeResumoCompleto,
 			List<CaixaMovimentoItem> fluxoCaixaResumoMovimentacoes) {
@@ -182,7 +280,7 @@ public class BillsNotifier {
 		mailSender.sendMail(from, recipients, subsject, message);
 		
 		log.info("DONE notification bills for user name: {}, e-mail: {}, tenant: {} ...", user.getName(), user.getEmail(), user.getTenant());
-	}
+	}*/
 	
 	private String buildListaContasPagarHoje(ContasPagarHojeResumoCompleto cp) {
 		List<ContasPagarHojeResumo> cpHojeList = cp.getContasPagarHojeResumo();
@@ -237,7 +335,7 @@ public class BillsNotifier {
 		}
 		else {
 			sb.append("<tr").append(getStringAlternate(trTrue, trFalse, bw)).append(">");
-			sb.append("<td colspan=\"4\" style=\"text-align: center; border: 1px solid #bdbdbd;\">").append("<strong>Aproveite seu dia, não há contas pra pagar hoje ;-)</strong>").append("</td>");
+			sb.append("<td colspan=\"4\" style=\"text-align: center; border: 1px solid #bdbdbd;\">").append("<strong>Não há contas a pagar para hoje.</strong>").append("</td>");
 			sb.append("</tr>");
 		}
 		sb.append(" </table>");
@@ -352,7 +450,7 @@ public class BillsNotifier {
 		}
 		else {
 			sb.append("<tr").append(getStringAlternate(trTrue, trFalse, bw)).append(">");
-			sb.append("<td colspan=\"4\" style=\"text-align: center; border: 1px solid #bdbdbd;\">").append("<strong>Ainda não há contas a receber para hoje :(</strong>").append("</td>");
+			sb.append("<td colspan=\"4\" style=\"text-align: center; border: 1px solid #bdbdbd;\">").append("<strong>Não há contas a receber para hoje.</strong>").append("</td>");
 			sb.append("</tr>");
 		}
 		sb.append(" </table>");
@@ -360,7 +458,7 @@ public class BillsNotifier {
 		return sb.toString();
 	}
 	
-	private String buildNotificationBillsForUserMessage(SysUser user,
+	private String buildNotificationBillsForUserMessage(List<SysUser> users,
 			ContasPagarHojeResumoCompleto cp,
 			ContasReceberHojeResumoCompleto cr,
 			List<CaixaMovimentoItem> fc) {
@@ -383,6 +481,15 @@ public class BillsNotifier {
 		sb.append("</head>\r\n");
 		sb.append("<body>\r\n");
 		
+		StringBuilder saudacao = new StringBuilder("Olá, ");
+		if (users.size() == 1) {
+			SysUser user = users.get(0);
+			saudacao.append("<span style=\"color:#1e94d2;\">").append(getFirstName(user.getName())).append("</span>!<br>Segue o resumo financeiro das suas contas.");
+		}
+		else {
+			saudacao.append("segue o resumo financeiro das suas contas.");
+		}
+		
 		String html = "<div style=\"float: left; border: 1px solid #d9d9d9; background: #F7F7F7; margin: 0 auto; width:100%; font-family: Helvetica,Arial,sans-serif; padding-left: 5px; padding-right: 5px;\">\r\n" + 
 		"	<div style=\"height: 100%; display:table; max-width:800px; width:100%; margin: 0 auto; margin-top: 20px; margin-bottom: 20px;\">\r\n" + 
 		"		<div style=\"display:table-row;background: #1e94d2;\">\r\n" + 
@@ -390,7 +497,7 @@ public class BillsNotifier {
 		"		</div>\r\n" + 
 		"		<div style=\"display:table-row;\">\r\n" + 
 		"			<div style=\"border:1px solid #d9d9d9;text-align:center;vertical-align:middle; display:table-cell; background: #fff; width: 100%;  height: 60px; font-size: 1.5em; font-weight: bold; padding-top: 20px; padding-bottom: 20px;\">\r\n" + 
-		"              Olá, <span style=\"color:#1e94d2;\">" + getFirstName(user.getName()) + "</span>!<br>Segue o resumo das suas contas.\r\n" + 
+		"              " + saudacao.toString() + "\r\n" + 
 		"          </div>\r\n" + 
 		"		</div>\r\n" + 
 		"      \r\n" + 
@@ -545,11 +652,15 @@ public class BillsNotifier {
 	}
 
 	private ContasPagarHojeResumoCompleto getContasPagarHojeResumoCompleto(SysUser userAndTenant) {
+		
+		System.out.println("getContasPagarHojeResumoCompleto Thread:" + Thread.currentThread().getName());
+		
 		String tenant = userAndTenant.getTenant().getName();
 		String username = userAndTenant.getEmail();
 		String url = HTTP + FINANCEIRO_CONTASPAGAR_SERVICE + "/" + DASHBOARD + "/getContasPagarHojeResumoCompleto";
 		
 		String logMsg = "Tenant: " + tenant + ", username: " + username + ", URL: " + url;
+		
 		
 		log.info("Starting getContasPagarHojeResumoCompleto for: {}...", logMsg);
 		
@@ -590,6 +701,9 @@ public class BillsNotifier {
 	}
 	
 	private ContasReceberHojeResumoCompleto getContasReceberHojeResumoCompleto(SysUser userAndTenant) {
+		
+		System.out.println("getContasReceberHojeResumoCompleto Thread:" + Thread.currentThread().getName());
+		
 		String tenant = userAndTenant.getTenant().getName();
 		String username = userAndTenant.getEmail();
 		String url = HTTP + FINANCEIRO_CONTASRECEBER_SERVICE + "/" + DASHBOARD + "/getContasReceberHojeResumoCompleto";
@@ -641,6 +755,9 @@ public class BillsNotifier {
 	
 	
 	private List<CaixaMovimentoItem> getFluxoCaixaResumoMovimentacoes(SysUser userAndTenant) {
+		
+		System.out.println("getFluxoCaixaResumoMovimentacoes Thread:" + Thread.currentThread().getName());
+		
 		String tenant = userAndTenant.getTenant().getName();
 		String username = userAndTenant.getEmail();
 		String url = HTTP + FINANCEIRO_FLUXOCAIXA_SERVICE + "/" + DASHBOARD + "/getFluxoCaixaResumoMovimentacoes";
