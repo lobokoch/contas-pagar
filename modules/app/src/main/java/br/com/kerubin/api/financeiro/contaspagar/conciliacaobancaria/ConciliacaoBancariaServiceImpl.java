@@ -20,6 +20,7 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 import javax.inject.Inject;
@@ -40,6 +41,8 @@ import br.com.kerubin.api.financeiro.contaspagar.entity.contapagar.ContaPagarEnt
 import br.com.kerubin.api.financeiro.contaspagar.entity.contapagar.ContaPagarService;
 import br.com.kerubin.api.financeiro.contaspagar.entity.contapagar.QContaPagarEntity;
 import br.com.kerubin.api.financeiro.contaspagar.entity.fornecedor.QFornecedorEntity;
+import br.com.kerubin.api.financeiro.contaspagar.entity.planoconta.PlanoContaEntity;
+import br.com.kerubin.api.financeiro.contaspagar.entity.planoconta.PlanoContaService;
 import br.com.kerubin.api.financeiro.contaspagar.repository.ContaPagarRepository;
 import lombok.extern.slf4j.Slf4j;
 
@@ -58,6 +61,10 @@ public class ConciliacaoBancariaServiceImpl implements ConciliacaoBancariaServic
 	
 	@Inject
 	private ContaBancariaRepository contaBancariaRepository;
+	
+	@Inject
+	private PlanoContaService planoContaService;
+	
 	
 	@Transactional(readOnly = true)
 	@Override
@@ -82,14 +89,15 @@ public class ConciliacaoBancariaServiceImpl implements ConciliacaoBancariaServic
 			if (isNotEmpty(tokens)) {
 				tokens.forEach(token -> filtroDescricaoTokens.or(qContaPagar.descricao.containsIgnoreCase(token)));
 				tokens.forEach(token -> filtroFornecedorTokens.or(qContaPagar.fornecedor.nome.containsIgnoreCase(token)));
-				
 			}
 			
 			BooleanBuilder filtroDados = new BooleanBuilder();
 			filtroDados
 			.and(qContaPagar.idConcBancaria.eq(transacao.getTrnId()))
 			.or(qContaPagar.valor.eq(transacao.getTrnValor()))
-			.or(filtroDescricaoTokens); // Faz match com os tokens do histórico do extrato com as descrições das contas.
+			.or(filtroDescricaoTokens) // Faz match com os tokens do histórico do extrato com as descrições das contas.
+			.or(filtroFornecedorTokens); // Faz match com os tokens do nome do fornecedor.
+			
 			
 			LocalDate dataToRef = transacao.getTrnData();
 			String key = getTrnKey(transacao);
@@ -115,7 +123,7 @@ public class ConciliacaoBancariaServiceImpl implements ConciliacaoBancariaServic
 			
 			JPAQuery<ContaPagarEntity> q = query
 					.selectFrom(qContaPagar)
-					.leftJoin(qContaPagar.fornecedor, qFornecedor).on(filtroFornecedorTokens)
+					.leftJoin(qContaPagar.fornecedor, qFornecedor)
 					.where(where)
 					.orderBy(qContaPagar.dataVencimento.asc());
 			
@@ -445,6 +453,7 @@ public class ConciliacaoBancariaServiceImpl implements ConciliacaoBancariaServic
 			
 			conta.setDataPagamento(transacao.getTrnData());
 			conta.setValorPago(transacao.getTrnValor());
+			conta.setDescricao(transacao.getTituloConciliadoDesc());
 			conta.setFormaPagamento(FormaPagamento.CONTA_BANCARIA);
 			conta.setContaBancaria(contaBancariaEntity);
 			conta.setIdConcBancaria(transacao.getTrnId());
@@ -456,6 +465,15 @@ public class ConciliacaoBancariaServiceImpl implements ConciliacaoBancariaServic
 			conta.setObservacoes(obs);
 			
 			try {
+				
+				// Verifica se mudou o plano de contas pela tela de conciliação.
+				UUID contaPlanoContasId = isNotEmpty(conta.getPlanoContas()) ? conta.getPlanoContas().getId() : null; 
+				UUID dtoPlanoContasId = isNotEmpty(transacao.getTituloPlanoContas()) ? transacao.getTituloPlanoContas().getId() : null; 
+				if (isNotEmpty(contaPlanoContasId) && isNotEmpty(dtoPlanoContasId) && !contaPlanoContasId.equals(dtoPlanoContasId)) {
+					PlanoContaEntity planoContaEntity = planoContaService.read(dtoPlanoContasId);
+					conta.setPlanoContas(planoContaEntity);
+				}
+				
 				conta = contaPagarService.update(conta.getId(), conta);
 				
 				transacao.setConciliadoComErro(false);

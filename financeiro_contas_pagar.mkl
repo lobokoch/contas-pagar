@@ -3,7 +3,7 @@ domain financeiro
 
 @enableDoc
 @label("Contas a pagar")
-service contas_pagar { //xxxxx
+service contas_pagar { //xxxx
 	
 	config {
 		groupId: "br.com.kerubin.api"
@@ -54,13 +54,14 @@ service contas_pagar { //xxxxx
 		label: "Vencimento"
 		listFilter(between: "Vencimento de;Até;Intervalo de tempo")  
 		web(styleClass: "ui-md-2")
-		sort: asc
+		sort(order: asc position: 0)
 		
 		valor: money 
 		label: "Valor da conta"
 		sum(styleClass:"kb-conta-valor-apagar" label:"A")
 		web(styleClass: "ui-md-2") //
 		listFilter(between: "Contas com valores de;até;" styleClass: "ui-md-3")
+		sort(order: desc position: 1)
 		
 		formaPagamento: FormaPagamento
 		publishedInEvents
@@ -397,7 +398,7 @@ service contas_pagar { //xxxxx
 		
 		codigo: string
 		label: "Código"
-		autoComplete(data sort:asc)
+		autoComplete(data sort)
 		web(styleClass: "ui-md-2")
 		listFilter(many: "Códigos")
 		
