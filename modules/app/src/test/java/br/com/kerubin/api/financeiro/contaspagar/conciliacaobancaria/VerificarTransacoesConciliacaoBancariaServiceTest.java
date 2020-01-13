@@ -57,8 +57,12 @@ import br.com.kerubin.api.financeiro.contaspagar.entity.fornecedor.FornecedorEnt
 import br.com.kerubin.api.financeiro.contaspagar.entity.fornecedor.FornecedorLookupResult;
 import br.com.kerubin.api.financeiro.contaspagar.entity.fornecedor.FornecedorRepository;
 import br.com.kerubin.api.financeiro.contaspagar.entity.planoconta.PlanoContaEntity;
+import br.com.kerubin.api.financeiro.contaspagar.entity.planoconta.PlanoContaListFilterPredicate;
+import br.com.kerubin.api.financeiro.contaspagar.entity.planoconta.PlanoContaListFilterPredicateImpl;
 import br.com.kerubin.api.financeiro.contaspagar.entity.planoconta.PlanoContaLookupResult;
 import br.com.kerubin.api.financeiro.contaspagar.entity.planoconta.PlanoContaRepository;
+import br.com.kerubin.api.financeiro.contaspagar.entity.planoconta.PlanoContaService;
+import br.com.kerubin.api.financeiro.contaspagar.entity.planoconta.PlanoContaServiceImpl;
 import br.com.kerubin.api.messaging.core.DomainEntityEventsPublisher;
 
 
@@ -91,6 +95,16 @@ public class VerificarTransacoesConciliacaoBancariaServiceTest extends Financeir
 		@Bean
 		public ConciliacaoBancariaService conciliacaoBancariaService() {
 			return new ConciliacaoBancariaServiceImpl();
+		}
+		
+		@Bean
+		public PlanoContaService planoContaService() {
+			return new PlanoContaServiceImpl(); 
+		}
+		
+		@Bean
+		public PlanoContaListFilterPredicate planoContaListFilterPredicate() {
+			return new PlanoContaListFilterPredicateImpl();
 		}
 		
 	}
