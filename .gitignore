@@ -3,6 +3,4 @@
 .settings/
 target/
 bin/
-**/src-gen/
-/modules/server/
-/modules/client/
+web/

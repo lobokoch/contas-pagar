@@ -1,0 +1,201 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <artifactId>financeiro-contaspagar-server</artifactId>
+    <packaging>jar</packaging>
+    <parent>
+        <groupId>br.com.kerubin.api</groupId>
+        <artifactId>financeiro-contaspagar-parent</artifactId>
+        <version>1.0.0</version>
+    </parent>
+    <dependencies>
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>financeiro-contaspagar-client</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-jpa</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-web</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.postgresql</groupId>
+            <artifactId>postgresql</artifactId>
+            <scope>runtime</scope>
+        </dependency>
+        <dependency>
+          <groupId>com.querydsl</groupId>
+          <artifactId>querydsl-core</artifactId>
+        </dependency>
+        <dependency>
+          <groupId>com.querydsl</groupId>
+          <artifactId>querydsl-apt</artifactId>
+        </dependency>
+        <dependency>
+          <groupId>com.querydsl</groupId>
+          <artifactId>querydsl-jpa</artifactId>
+        </dependency>
+        <dependency>
+		    <groupId>org.apache.commons</groupId>
+		    <artifactId>commons-lang3</artifactId>
+		</dependency>
+        <dependency>
+		    <groupId>br.com.kerubin.api</groupId>
+		    <artifactId>database-core</artifactId>
+		</dependency>
+        <dependency>
+		    <groupId>br.com.kerubin.api</groupId>
+		    <artifactId>service-core</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.projectlombok</groupId>
+			<artifactId>lombok</artifactId>
+			<scope>provided</scope>
+		</dependency>
+        <dependency>
+        	<groupId>br.com.kerubin.api</groupId>
+        	<artifactId>messaging-core</artifactId>
+        </dependency>
+		<!-- Begin Entity Dependencies -->
+		<dependency>
+			<groupId>br.com.kerubin.api</groupId>
+			<artifactId>financeiro-planocontas-client</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>br.com.kerubin.api</groupId>
+			<artifactId>cadastros-banco-client</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>br.com.kerubin.api</groupId>
+			<artifactId>cadastros-fornecedor-client</artifactId>
+		</dependency>
+		<!-- End Entity Dependencies -->
+		
+		<!-- Begin Springfox Swagger2 dependencies -->
+		<dependency>
+			<groupId>io.springfox</groupId>
+			<artifactId>springfox-swagger2</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>io.springfox</groupId>
+			<artifactId>springfox-swagger-ui</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>io.springfox</groupId>
+			<artifactId>springfox-data-rest</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>io.springfox</groupId>
+			<artifactId>springfox-bean-validators</artifactId>
+		</dependency>
+		
+		<!-- Begin fix issue: https://github.com/springfox/springfox/issues/2265 -->
+		<dependency>
+			<groupId>io.swagger</groupId>
+			<artifactId>swagger-annotations</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>io.swagger</groupId>
+			<artifactId>swagger-models</artifactId>
+		</dependency>
+		<!-- End fix issue: https://github.com/springfox/springfox/issues/2265 -->
+		
+		<!-- End Springfox Swagger2 dependencies -->
+		
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-test</artifactId>
+			<scope>test</scope>
+		</dependency>
+		
+		<dependency>
+			<groupId>com.h2database</groupId>
+			<artifactId>h2</artifactId>
+			<scope>test</scope>
+		</dependency>
+				
+    </dependencies>
+    <build>
+        <plugins>
+        	
+        	<!-- Preserves some necessary resources for tests -->
+        	<plugin>
+        		<artifactId>maven-clean-plugin</artifactId>
+        		<version>3.1.0</version>
+        		<configuration>
+        			<excludeDefaultDirectories>true</excludeDefaultDirectories>
+        			<filesets>
+        				<fileset>
+        					<directory>target</directory>
+        					<includes>
+        						<include>**</include>
+        					</includes>
+        					<excludes>
+        						<exclude>**/*.properties</exclude>
+        						<exclude>**/*.sql</exclude>
+        					</excludes>
+        				</fileset>
+        			</filesets>
+        		</configuration>
+        	</plugin>
+        	
+        	<plugin>
+        	  <groupId>org.codehaus.mojo</groupId>
+        	  <artifactId>build-helper-maven-plugin</artifactId>
+        	  <version>${build.helper.maven.plugin.version}</version>
+        	  <executions>
+        	    
+        	    <!-- src source folder -->
+        	    <execution>
+        	      <id>add-source</id>
+        	      <phase>generate-sources</phase>
+        	      <goals>
+        	        <goal>add-source</goal>
+        	      </goals>
+        	      <configuration>
+        	        <sources>
+        	          <source>src-gen/main/java/</source>
+        	        </sources>
+        	      </configuration>
+        	    </execution>
+        	    
+        	    <!-- src test source folder -->
+        	    <execution>
+        	      <id>add-test-source</id>
+        	      <phase>generate-test-sources</phase>
+        	      <goals>
+        	        <goal>add-test-source</goal>
+        	      </goals>
+        	      <configuration>
+        	        <sources>
+        	          <source>src-gen/test/java/</source>
+        	          <source>src-gen/test/resources/</source>
+        	        </sources>
+        	      </configuration>
+        	    </execution>
+        	    
+        	  </executions>
+        	</plugin>
+        	<plugin>
+        	  <groupId>com.mysema.maven</groupId>
+        	  <artifactId>apt-maven-plugin</artifactId>
+        	  <version>${apt.maven.plugin.version}</version>
+        	  <executions>
+        	    <execution>
+        	      <goals>
+        	        <goal>process</goal>
+        	      </goals>
+        	      <configuration>
+        	          <outputDirectory>target/generated-sources/java</outputDirectory>
+        	          <processor>com.querydsl.apt.jpa.JPAAnnotationProcessor</processor>
+        	      </configuration>
+        	    </execution>
+        	  </executions>
+        	</plugin>
+        </plugins>
+      </build>
+</project>
