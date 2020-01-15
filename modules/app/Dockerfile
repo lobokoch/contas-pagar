@@ -1,4 +1,4 @@
-FROM openjdk:8-jdk-alpine
+FROM adoptopenjdk/openjdk8-openj9:latest
 VOLUME /tmp
-COPY target/*.jar financeiro-contaspagar-app.jar
-ENTRYPOINT ["java","-jar","/financeiro-contaspagar-app.jar"]
+COPY target/*.jar service-discovery.jar
+ENTRYPOINT ["java", "-Xshareclasses:name=kerubin", "-jar", "/service-discovery.jar"]
