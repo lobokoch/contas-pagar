@@ -2,8 +2,17 @@ package br.com.kerubin.api.notificador.contas;
 
 import static br.com.kerubin.api.messaging.constants.MessagingConstants.HEADER_TENANT;
 import static br.com.kerubin.api.messaging.constants.MessagingConstants.HEADER_USER;
+import static br.com.kerubin.api.servicecore.mail.MailUtils.EMAIL_KERUBIN_NOTIFICADOR;
+import static br.com.kerubin.api.servicecore.mail.MailUtils.EMAIL_KERUBIN_NOTIFICADOR_APP_PWD;
+import static br.com.kerubin.api.servicecore.mail.MailUtils.EMAIL_KERUBIN_NOTIFICADOR_PERSONAL;
+import static br.com.kerubin.api.servicecore.util.CoreUtils.formatDate;
+import static br.com.kerubin.api.servicecore.util.CoreUtils.getFirstName;
+import static br.com.kerubin.api.servicecore.util.CoreUtils.getStringAlternate;
+import static br.com.kerubin.api.servicecore.util.CoreUtils.isEmpty;
+import static br.com.kerubin.api.servicecore.util.CoreUtils.isNotEmpty;
 
 import java.text.DecimalFormat;
+import java.text.MessageFormat;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDate;
@@ -28,6 +37,7 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 
+import br.com.kerubin.api.financeiro.contaspagar.ServiceConfig;
 import br.com.kerubin.api.notificador.model.CaixaMovimentoItem;
 import br.com.kerubin.api.notificador.model.ContasPagarHojeResumo;
 import br.com.kerubin.api.notificador.model.ContasPagarHojeResumoCompleto;
@@ -41,9 +51,6 @@ import br.com.kerubin.api.servicecore.mail.MailInfo;
 import br.com.kerubin.api.servicecore.mail.MailSender;
 import br.com.kerubin.api.servicecore.util.BooleanWrapper;
 import lombok.extern.slf4j.Slf4j;
-
-
-import static br.com.kerubin.api.servicecore.util.CoreUtils.*;
 
 @Slf4j
 @Component
@@ -59,7 +66,7 @@ public class BillsNotifier {
 	public static final String SECURITY_AUTHORIZATION_SERVICE = "security-authorization/security/authorization/";
 	public static final String HTTP = "http://";
 	public static final String DASHBOARD = "dashboard";
-	public static final String KERUBIN_LINK = "<span style=\"color: #1e94d2; font-weight: bold;\"><a href=\"#\">Kerubin</a></span>";
+	private static final String KERUBIN_LINK = "<span style=\"color: #1e94d2; font-weight: bold;\"><a href=\"{0}\">Kerubin</a></span>";
 	
 	// private List<SysUser> users;
 
@@ -68,6 +75,14 @@ public class BillsNotifier {
 	
 	@Inject
 	private MailSender mailSender;
+	
+	@Inject
+	private ServiceConfig serviceConfig;
+	
+	private String getKerubinLink() {
+		return MessageFormat.format(KERUBIN_LINK, serviceConfig.getAllowOrigin());
+	}
+	
 
 	// @Scheduled(fixedDelay = 1000 * 20)
 	@Scheduled(cron = "0 0 0 * * *", zone = TIME_ZONE)
@@ -231,7 +246,7 @@ public class BillsNotifier {
 			List<CaixaMovimentoItem> fluxoCaixaResumoMovimentacoes) {
 		
 		
-		MailInfo from = new MailInfo(MailSender.EMAIL_FROM_DEFAULT);
+		MailInfo from = new MailInfo(EMAIL_KERUBIN_NOTIFICADOR, EMAIL_KERUBIN_NOTIFICADOR_PERSONAL, EMAIL_KERUBIN_NOTIFICADOR_APP_PWD);
 		List<MailInfo> recipients = users.stream().map(user -> new MailInfo(user.getEmail(), user.getName(), null)).collect(Collectors.toList());
 		
 		log.info("Notifying bills for users {} ...", recipients);
@@ -323,7 +338,7 @@ public class BillsNotifier {
 					.append(count - CONTA_MAX_ITEMS)
 					.append(" contas.")
 					.append(" Para detalhes acesso o ")
-					.append(KERUBIN_LINK)					
+					.append(getKerubinLink())					
 					.append("</th>");
 				sb.append("</tr>");
 			}
@@ -437,7 +452,7 @@ public class BillsNotifier {
 				.append(count - CONTA_MAX_ITEMS)
 				.append(" contas.")
 				.append(" Para detalhes acesso o ")
-				.append(KERUBIN_LINK)					
+				.append(getKerubinLink())					
 				.append("</th>");
 				
 				sb.append("</tr>");
@@ -631,7 +646,7 @@ public class BillsNotifier {
 		"      \r\n" + 
 		"      <div style=\"display:table-row;\">\r\n" + 
 		"			<div style=\"border:1px solid #d9d9d9; border-top: 0px; text-align:center;vertical-align:middle; display:table-cell; background:  #fff; width: 100%; padding-top: 20px; padding-bottom: 20px;\">\r\n" + 
-		"              <p>Para mais detalhes, acesse o " + KERUBIN_LINK + ".</p>\r\n" + 
+		"              <p>Para mais detalhes, acesse o " + getKerubinLink() + ".</p>\r\n" + 
 		"             Abraços,<br>Equipe Kerubin\r\n" + 
 		"        </div>\r\n" + 
 		"		</div>\r\n" + 
@@ -817,5 +832,5 @@ public class BillsNotifier {
 		Map<Object, Boolean> map = new ConcurrentHashMap<>();
 		return t -> map.putIfAbsent(keyExtractor.apply(t), Boolean.TRUE) == null;
 	}
-
+	
 }
