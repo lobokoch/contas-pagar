@@ -1,4 +1,4 @@
 kerubin:
     web:
-        allow-origin: ${ALLOW_ORIGIN:http://www.kerubin.com.br}
-        enable-https: ${ENABLE_HTTPS:false}
+        allow-origin: ${ALLOW_ORIGIN:https://www.kerubin.com.br}
+        enable-https: ${ENABLE_HTTPS:true}
