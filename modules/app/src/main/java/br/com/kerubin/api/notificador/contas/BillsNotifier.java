@@ -5,12 +5,9 @@ import static br.com.kerubin.api.messaging.constants.MessagingConstants.HEADER_U
 import static br.com.kerubin.api.servicecore.mail.MailUtils.EMAIL_KERUBIN_NOTIFICADOR;
 import static br.com.kerubin.api.servicecore.mail.MailUtils.EMAIL_KERUBIN_NOTIFICADOR_APP_PWD;
 import static br.com.kerubin.api.servicecore.mail.MailUtils.EMAIL_KERUBIN_NOTIFICADOR_PERSONAL;
-import static br.com.kerubin.api.servicecore.util.CoreUtils.formatDate;
-import static br.com.kerubin.api.servicecore.util.CoreUtils.getFirstName;
-import static br.com.kerubin.api.servicecore.util.CoreUtils.getStringAlternate;
-import static br.com.kerubin.api.servicecore.util.CoreUtils.isEmpty;
-import static br.com.kerubin.api.servicecore.util.CoreUtils.isNotEmpty;
+import static br.com.kerubin.api.servicecore.util.CoreUtils.*;
 
+import java.math.BigDecimal;
 import java.text.DecimalFormat;
 import java.text.MessageFormat;
 import java.time.Duration;
@@ -67,6 +64,7 @@ public class BillsNotifier {
 	public static final String HTTP = "http://";
 	public static final String DASHBOARD = "dashboard";
 	private static final String KERUBIN_LINK = "<span style=\"color: #1e94d2; font-weight: bold;\"><a href=\"{0}\">Kerubin</a></span>";
+	private static final DecimalFormat DF_MONEY_DEFAULT = new DecimalFormat("#,###,###,##0.00");
 	
 	// private List<SysUser> users;
 
@@ -316,7 +314,6 @@ public class BillsNotifier {
 		}
 		
 		StringBuilder sb = new StringBuilder();
-		DecimalFormat df = new DecimalFormat("#,###,###,##0.00");
 		
 		BooleanWrapper bw = new BooleanWrapper(true);
 		String trTrue = " style=\"height:25px; background: #f4f4f4;\"";
@@ -336,7 +333,7 @@ public class BillsNotifier {
 				sb.append("<td style=\"text-align: center; border: 1px solid #bdbdbd;\">").append(conta.getDescricao()).append("</td>");
 				sb.append("<td style=\"text-align: center; border: 1px solid #bdbdbd;\">").append(formatDate(conta.getDataVencimento())).append("</td>");
 				sb.append("<td style=\"text-align: center; border: 1px solid #bdbdbd;\">").append(conta.getDiasEmAtraso()).append("</td>");
-				sb.append("<td style=\"text-align: right; border: 1px solid #bdbdbd; padding-right: 5px;\">").append(df.format(conta.getValor())).append("</td>");
+				sb.append("<td style=\"text-align: right; border: 1px solid #bdbdbd; padding-right: 5px;\">").append(format(conta.getValor())).append("</td>");
 				sb.append("</tr>");
 				
 			} // for
@@ -355,7 +352,7 @@ public class BillsNotifier {
 			
 			sb.append("<tr").append(getStringAlternate(trTrue, trFalse, bw)).append(">");
 			sb.append("<th colspan=\"3\" style=\"text-align: right; padding-right: 5px; border: 1px solid #bdbdbd;\">").append("Total").append("</th>");
-			sb.append("<th style=\"text-align: right; border: 1px solid #bdbdbd; padding-right: 5px;\">").append(df.format(cp.getContasPagarHojeResumoSum())).append("</th>");
+			sb.append("<th style=\"text-align: right; border: 1px solid #bdbdbd; padding-right: 5px;\">").append(format(cp.getContasPagarHojeResumoSum())).append("</th>");
 			sb.append("</tr>");
 		}
 		else {
@@ -370,7 +367,6 @@ public class BillsNotifier {
 	
 	private String buildListaFluxoCaixaResumoMovimentacoes(List<CaixaMovimentoItem> fc) {
 		StringBuilder sb = new StringBuilder();
-		DecimalFormat df = new DecimalFormat("#,###,###,##0.00");
 		
 		BooleanWrapper bw = new BooleanWrapper(true);
 		String trTrue = " style=\"height:25px; background: #f4f4f4;\"";
@@ -396,9 +392,9 @@ public class BillsNotifier {
 		String[][] values = new String[MAX_ROWS][MAX_COLS];
 		for (int i = 0; i < fc.size(); i++) {
 			CaixaMovimentoItem item = fc.get(i);
-			values[0][i] = df.format(item.getCredito());
-			values[1][i] = "-" + df.format(item.getDedito());
-			values[2][i] = df.format(item.getSaldo());
+			values[0][i] = format(item.getCredito());
+			values[1][i] = "-" + format(item.getDedito());
+			values[2][i] = format(item.getSaldo());
 		}
 		
 		for (int i = 0; i < MAX_ROWS; i++) {
@@ -429,7 +425,6 @@ public class BillsNotifier {
 		}
 		
 		StringBuilder sb = new StringBuilder();
-		DecimalFormat df = new DecimalFormat("#,###,###,##0.00");
 		
 		BooleanWrapper bw = new BooleanWrapper(true);
 		String trTrue = " style=\"height:25px; background: #f4f4f4;\"";
@@ -449,7 +444,7 @@ public class BillsNotifier {
 				sb.append("<td style=\"text-align: center; border: 1px solid #bdbdbd;\">").append(conta.getDescricao()).append("</td>");
 				sb.append("<td style=\"text-align: center; border: 1px solid #bdbdbd;\">").append(formatDate(conta.getDataVencimento())).append("</td>");
 				sb.append("<td style=\"text-align: center; border: 1px solid #bdbdbd;\">").append(conta.getDiasEmAtraso()).append("</td>");
-				sb.append("<td style=\"text-align: right; border: 1px solid #bdbdbd; padding-right: 5px;\">").append(df.format(conta.getValor())).append("</td>");
+				sb.append("<td style=\"text-align: right; border: 1px solid #bdbdbd; padding-right: 5px;\">").append(format(conta.getValor())).append("</td>");
 				sb.append("</tr>");
 				
 			} // for
@@ -470,7 +465,7 @@ public class BillsNotifier {
 			
 			sb.append("<tr").append(getStringAlternate(trTrue, trFalse, bw)).append(">");
 			sb.append("<th colspan=\"3\" style=\"text-align: right; padding-right: 5px; border: 1px solid #bdbdbd;\">").append("Total").append("</th>");
-			sb.append("<th style=\"text-align: right; padding-right: 5px; border: 1px solid #bdbdbd;\">").append(df.format(cr.getContasReceberHojeResumoSum())).append("</th>");
+			sb.append("<th style=\"text-align: right; padding-right: 5px; border: 1px solid #bdbdbd;\">").append(format(cr.getContasReceberHojeResumoSum())).append("</th>");
 			sb.append("</tr>");
 		}
 		else {
@@ -492,7 +487,6 @@ public class BillsNotifier {
 		
 		ContasReceberSituacaoDoAnoSum crResumoSum = cr.getContasReceberSituacaoDoAnoSum();
 		
-		DecimalFormat df = new DecimalFormat("#,###,###,##0.00");
 		String todayStr = formatDate(LocalDate.now());
 		
 		StringBuilder sb = new StringBuilder();
@@ -538,27 +532,27 @@ public class BillsNotifier {
 		"                \r\n" + 
 		"                	<tr style=\"background:#fc7f8b; height:25px; height: 30px;\">\r\n" + 
 		"                      	<td style=\"text-align: right; padding-right: 5px;\">Em atraso:</td>\r\n" + 
-		"                        <td style=\"text-align: right; padding-right: 5px;\">" + df.format(cpResumoSum.getValorVencido()) + "</td>\r\n" + 
+		"                        <td style=\"text-align: right; padding-right: 5px;\">" + format(cpResumoSum.getValorVencido()) + "</td>\r\n" + 
 		"                	</tr>\r\n" + 
 		"                \r\n" + 
 		"                	<tr style=\"background:#fdbf8f; height:25px; height: 30px;\">\r\n" + 
 		"                      	<td style=\"text-align: right;  padding-right: 5px;\">A pagar hoje:</td>\r\n" + 
-		"                        <td style=\"text-align: right; padding-right: 5px;\">" + df.format(cpResumoSum.getValorVenceHoje()) + "</td>\r\n" + 
+		"                        <td style=\"text-align: right; padding-right: 5px;\">" + format(cpResumoSum.getValorVenceHoje()) + "</td>\r\n" + 
 		"                	</tr>\r\n" + 
 		"                \r\n" + 
 		"                	<tr style=\"background:#feffaa; height:25px; height: 30px;\">\r\n" + 
 		"                      	<td style=\"text-align: right;  padding-right: 5px;\">A pagar amanhã:</td>\r\n" + 
-		"                        <td style=\"text-align: right; padding-right: 5px;\">" + df.format(cpResumoSum.getValorVenceAmanha()) + "</td>\r\n" + 
+		"                        <td style=\"text-align: right; padding-right: 5px;\">" + format(cpResumoSum.getValorVenceAmanha()) + "</td>\r\n" + 
 		"                	</tr>\r\n" + 
 		"                \r\n" + 
 		"                	<tr style=\"background:#dfdfdf; height:25px; height: 30px;\">\r\n" + 
 		"                      	<td style=\"text-align: right;  padding-right: 5px;\">A pagar nos próximos 7 dias:</td>\r\n" + 
-		"                        <td style=\"text-align: right; padding-right: 5px;\">" + df.format(cpResumoSum.getValorVenceProximos7Dias()) + "</td>\r\n" + 
+		"                        <td style=\"text-align: right; padding-right: 5px;\">" + format(cpResumoSum.getValorVenceProximos7Dias()) + "</td>\r\n" + 
 		"                	</tr>\r\n" + 
 		"                \r\n" + 
 		"                	<tr style=\"background:#a8eca5; height:25px; height: 30px;\">\r\n" + 
 		"                      	<td style=\"text-align: right;  padding-right: 5px;\">Pago este mês:</td>\r\n" + 
-		"                        <td style=\"text-align: right; padding-right: 5px;\">" + df.format(cpResumoSum.getValorPagoMesAtual()) + "</td>\r\n" + 
+		"                        <td style=\"text-align: right; padding-right: 5px;\">" + format(cpResumoSum.getValorPagoMesAtual()) + "</td>\r\n" + 
 		"                	</tr>\r\n" + 
 		"                \r\n" + 
 		"              </table>              \r\n" + 
@@ -594,27 +588,27 @@ public class BillsNotifier {
 		"                \r\n" + 
 		"                	<tr style=\"background:#fc7f8b; height:25px; height: 30px;\">\r\n" + 
 		"                      	<td style=\"text-align: right; padding-right: 5px;\">Em atraso:</td>\r\n" + 
-		"                        <td style=\"text-align: right; padding-right: 5px;\">" + df.format(crResumoSum.getValorVencido()) + "</td>\r\n" + 
+		"                        <td style=\"text-align: right; padding-right: 5px;\">" + format(crResumoSum.getValorVencido()) + "</td>\r\n" + 
 		"                	</tr>\r\n" + 
 		"                \r\n" + 
 		"                	<tr style=\"background:#fdbf8f; height:25px; height: 30px;\">\r\n" + 
 		"                      	<td style=\"text-align: right;  padding-right: 5px;\">A receber hoje:</td>\r\n" + 
-		"                        <td style=\"text-align: right; padding-right: 5px;\">" + df.format(crResumoSum.getValorVenceHoje()) + "</td>\r\n" + 
+		"                        <td style=\"text-align: right; padding-right: 5px;\">" + format(crResumoSum.getValorVenceHoje()) + "</td>\r\n" + 
 		"                	</tr>\r\n" + 
 		"                \r\n" + 
 		"                	<tr style=\"background:#feffaa; height:25px; height: 30px;\">\r\n" + 
 		"                      	<td style=\"text-align: right;  padding-right: 5px;\">A receber amanhã:</td>\r\n" + 
-		"                        <td style=\"text-align: right; padding-right: 5px;\">" + df.format(crResumoSum.getValorVenceAmanha()) + "</td>\r\n" + 
+		"                        <td style=\"text-align: right; padding-right: 5px;\">" + format(crResumoSum.getValorVenceAmanha()) + "</td>\r\n" + 
 		"                	</tr>\r\n" + 
 		"                \r\n" + 
 		"                	<tr style=\"background:#dfdfdf; height:25px; height: 30px;\">\r\n" + 
 		"                      	<td style=\"text-align: right;  padding-right: 5px;\">A receber nos próximos 7 dias:</td>\r\n" + 
-		"                        <td style=\"text-align: right; padding-right: 5px;\">" + df.format(crResumoSum.getValorVenceProximos7Dias()) + "</td>\r\n" + 
+		"                        <td style=\"text-align: right; padding-right: 5px;\">" + format(crResumoSum.getValorVenceProximos7Dias()) + "</td>\r\n" + 
 		"                	</tr>\r\n" + 
 		"                \r\n" + 
 		"                	<tr style=\"background:#a8eca5; height:25px; height: 30px;\">\r\n" + 
 		"                      	<td style=\"text-align: right;  padding-right: 5px;\">Recebido este mês:</td>\r\n" + 
-		"                        <td style=\"text-align: right; padding-right: 5px;\">" + df.format(crResumoSum.getValorPagoMesAtual()) + "</td>\r\n" + 
+		"                        <td style=\"text-align: right; padding-right: 5px;\">" + format(crResumoSum.getValorPagoMesAtual()) + "</td>\r\n" + 
 		"                	</tr>\r\n" + 
 		"                \r\n" + 
 		"              </table>\r\n" + 
@@ -841,6 +835,10 @@ public class BillsNotifier {
 	public static <T> Predicate<T> distinctByKey(Function<? super T, Object> keyExtractor) {
 		Map<Object, Boolean> map = new ConcurrentHashMap<>();
 		return t -> map.putIfAbsent(keyExtractor.apply(t), Boolean.TRUE) == null;
+	}
+	
+	public String format(BigDecimal value) {
+		return DF_MONEY_DEFAULT.format(getSafeValue(value));
 	}
 	
 }
