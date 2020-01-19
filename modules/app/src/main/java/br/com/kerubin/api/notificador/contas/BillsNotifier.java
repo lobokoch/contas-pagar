@@ -197,8 +197,6 @@ public class BillsNotifier {
 				fluxoCaixaResumoMovimentacoesFuture)
 				.thenApply(ignored -> {
 					
-					System.out.println("CompletableFuture.allOf.thenApply Thread:" + Thread.currentThread().getName());
-					
 					return combineFinanceiroResumoData(
 						contasPagarHojeResumoCompletoFuture.join(),
 						contasReceberHojeResumoCompletoFuture.join(),
@@ -253,12 +251,24 @@ public class BillsNotifier {
 		
 		//List<String> recipients = Arrays.asList(user.getEmail());
 		String subsject = "Kerubin - Resumo das contas";
-		String message = buildNotificationBillsForUserMessage(users, 
-				contasPagarHojeResumoCompleto, 
-				contasReceberHojeResumoCompleto,
-				fluxoCaixaResumoMovimentacoes);
+		String message = null;
+		try {
+			message = buildNotificationBillsForUserMessage(users, 
+					contasPagarHojeResumoCompleto, 
+					contasReceberHojeResumoCompleto,
+					fluxoCaixaResumoMovimentacoes);
+		} catch(Exception e) {
+			log.error(MessageFormat.format("Erro ao gerar mensagem para enviado notificação de contas para: {0}. Erro: {1}", recipients, e.getMessage()), e);
+		}
 		
-		mailSender.sendMail(from, recipients, subsject, message);
+		if (isNotEmpty(message)) {
+			try {
+				mailSender.sendMail(from, recipients, subsject, message);
+			} catch (Exception e) {
+				log.error(MessageFormat.format("Erro enviado e-mail de notificação de contas para: {0}. Erro: {1}", recipients, e.getMessage()), e);
+			}
+		}
+		
 		
 		log.info("DONE notify bills for users {} ...", recipients);
 	}
