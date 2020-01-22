@@ -1,6 +1,6 @@
 /**********************************************************************************************
 Code generated with MKL Plug-in version: 47.8.0
-Code generated at time stamp: 2020-01-13T08:12:17.669
+Code generated at time stamp: 2020-01-22T06:59:30.300
 Copyright: Kerubin - logokoch@gmail.com
 
 WARNING: DO NOT CHANGE THIS CODE BECAUSE THE CHANGES WILL BE LOST IN THE NEXT CODE GENERATION.
@@ -82,6 +82,7 @@ public class FornecedorServiceTest extends FinanceiroContasPagarBaseEntityTest {
 		fornecedor.setTipoPessoa(TipoPessoa.PESSOA_JURIDICA);
 		fornecedor.setNome(generateRandomString(255));
 		fornecedor.setCnpjCPF(generateRandomString(255));
+		fornecedor.setAtivo(true);
 		fornecedor.setDeleted(false);
 		FornecedorEntity fornecedorEntity = fornecedorService.create(fornecedorDTOConverter.convertDtoToEntity(fornecedor));
 		em.flush();
@@ -145,6 +146,7 @@ public class FornecedorServiceTest extends FinanceiroContasPagarBaseEntityTest {
 		fornecedor.setTipoPessoa(TipoPessoa.PESSOA_JURIDICA);
 		fornecedor.setNome(generateRandomString(255));
 		fornecedor.setCnpjCPF(generateRandomString(255));
+		fornecedor.setAtivo(true);
 		fornecedor.setDeleted(false);
 		FornecedorEntity fornecedorEntity = fornecedorService.update(id, fornecedorDTOConverter.convertDtoToEntity(fornecedor));
 		em.flush();
@@ -386,6 +388,7 @@ public class FornecedorServiceTest extends FinanceiroContasPagarBaseEntityTest {
 		fornecedorEntity.setTipoPessoa(TipoPessoa.PESSOA_JURIDICA);
 		fornecedorEntity.setNome(generateRandomString(255));
 		fornecedorEntity.setCnpjCPF(generateRandomString(255));
+		fornecedorEntity.setAtivo(true);
 		fornecedorEntity.setDeleted(false);
 		
 		fornecedorEntity = em.persistAndFlush(fornecedorEntity);

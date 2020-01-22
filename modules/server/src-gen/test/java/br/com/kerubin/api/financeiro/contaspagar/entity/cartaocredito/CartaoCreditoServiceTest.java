@@ -1,6 +1,6 @@
 /**********************************************************************************************
 Code generated with MKL Plug-in version: 47.8.0
-Code generated at time stamp: 2020-01-13T08:12:17.669
+Code generated at time stamp: 2020-01-22T06:59:30.300
 Copyright: Kerubin - logokoch@gmail.com
 
 WARNING: DO NOT CHANGE THIS CODE BECAUSE THE CHANGES WILL BE LOST IN THE NEXT CODE GENERATION.
@@ -95,7 +95,7 @@ public class CartaoCreditoServiceTest extends FinanceiroContasPagarBaseEntityTes
 		cartaoCredito.setNomeTitular(generateRandomString(255));
 		cartaoCredito.setNumeroCartao(generateRandomString(50));
 		cartaoCredito.setValidade(getNextDate());
-		cartaoCredito.setValorLimite(new java.math.BigDecimal("30161.30017"));
+		cartaoCredito.setValorLimite(new java.math.BigDecimal("7603.6446"));
 		
 		BandeiraCartaoEntity bandeiraCartaoEntityParam = newBandeiraCartaoEntity();
 		BandeiraCartaoLookupResult bandeiraCartao = newBandeiraCartaoLookupResult(bandeiraCartaoEntityParam);
@@ -197,7 +197,7 @@ public class CartaoCreditoServiceTest extends FinanceiroContasPagarBaseEntityTes
 		cartaoCredito.setNomeTitular(generateRandomString(255));
 		cartaoCredito.setNumeroCartao(generateRandomString(50));
 		cartaoCredito.setValidade(getNextDate());
-		cartaoCredito.setValorLimite(new java.math.BigDecimal("21069.29051"));
+		cartaoCredito.setValorLimite(new java.math.BigDecimal("15631.17629"));
 		
 		BandeiraCartaoEntity bandeiraCartaoEntityParam = newBandeiraCartaoEntity();
 		BandeiraCartaoLookupResult bandeiraCartao = newBandeiraCartaoLookupResult(bandeiraCartaoEntityParam);
@@ -413,7 +413,7 @@ public class CartaoCreditoServiceTest extends FinanceiroContasPagarBaseEntityTes
 		cartaoCreditoEntity.setNomeTitular(generateRandomString(255));
 		cartaoCreditoEntity.setNumeroCartao(generateRandomString(50));
 		cartaoCreditoEntity.setValidade(getNextDate());
-		cartaoCreditoEntity.setValorLimite(new java.math.BigDecimal("13680.17554"));
+		cartaoCreditoEntity.setValorLimite(new java.math.BigDecimal("19734.22093"));
 		cartaoCreditoEntity.setBandeiraCartao(newBandeiraCartaoEntity());
 		cartaoCreditoEntity.setAtivo(true);
 		cartaoCreditoEntity.setDeleted(false);

@@ -251,6 +251,10 @@ service contas_pagar { //xxxx
 		cnpjCPF: string?
 		label: "Documento (CNPJ/CPF)"
 		
+		ativo: boolean default: true optional
+		label: "Ativo"
+		
+		
 	}
 	
 	@externalEntity

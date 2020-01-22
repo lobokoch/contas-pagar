@@ -1,6 +1,6 @@
 /**********************************************************************************************
 Code generated with MKL Plug-in version: 47.8.0
-Code generated at time stamp: 2020-01-13T08:12:17.669
+Code generated at time stamp: 2020-01-22T06:59:30.300
 Copyright: Kerubin - logokoch@gmail.com
 
 WARNING: DO NOT CHANGE THIS CODE BECAUSE THE CHANGES WILL BE LOST IN THE NEXT CODE GENERATION.
@@ -41,6 +41,9 @@ public class FornecedorEntity  {
 	@Column(name="cnpj_cpf")
 	private String cnpjCPF;
 	
+	@Column(name="ativo")
+	private Boolean ativo = true;
+	
 	@Column(name="deleted")
 	private Boolean deleted = false;
 	
@@ -58,6 +61,10 @@ public class FornecedorEntity  {
 	
 	public String getCnpjCPF() {
 		return cnpjCPF;
+	}
+	
+	public Boolean getAtivo() {
+		return ativo;
 	}
 	
 	public Boolean getDeleted() {
@@ -80,6 +87,10 @@ public class FornecedorEntity  {
 		this.cnpjCPF = cnpjCPF != null ? cnpjCPF.trim() : cnpjCPF; // Chamadas REST fazem trim.
 	}
 	
+	public void setAtivo(Boolean ativo) {
+		this.ativo = ativo;
+	}
+	
 	public void setDeleted(Boolean deleted) {
 		this.deleted = deleted;
 	}
@@ -90,6 +101,7 @@ public class FornecedorEntity  {
 			this.setTipoPessoa(source.getTipoPessoa());
 			this.setNome(source.getNome());
 			this.setCnpjCPF(source.getCnpjCPF());
+			this.setAtivo(source.getAtivo());
 			this.setDeleted(source.getDeleted());
 		}
 	}
@@ -110,6 +122,7 @@ public class FornecedorEntity  {
 		theClone.setTipoPessoa(this.getTipoPessoa());
 		theClone.setNome(this.getNome());
 		theClone.setCnpjCPF(this.getCnpjCPF());
+		theClone.setAtivo(this.getAtivo());
 		theClone.setDeleted(this.getDeleted());
 		
 		return theClone;

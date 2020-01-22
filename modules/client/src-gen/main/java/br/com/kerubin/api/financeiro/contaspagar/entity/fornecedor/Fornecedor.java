@@ -1,6 +1,6 @@
 /**********************************************************************************************
 Code generated with MKL Plug-in version: 47.8.0
-Code generated at time stamp: 2020-01-13T08:12:17.669
+Code generated at time stamp: 2020-01-22T06:59:30.300
 Copyright: Kerubin - logokoch@gmail.com
 
 WARNING: DO NOT CHANGE THIS CODE BECAUSE THE CHANGES WILL BE LOST IN THE NEXT CODE GENERATION.
@@ -35,7 +35,10 @@ public class Fornecedor {
 	@ApiModelProperty(notes = "Documento (CNPJ/CPF)", position = 3)
 	private String cnpjCPF;
 	
-	@ApiModelProperty(notes = "inativo", position = 4)
+	@ApiModelProperty(notes = "Ativo", position = 4)
+	private Boolean ativo = true;
+	
+	@ApiModelProperty(notes = "inativo", position = 5)
 	private Boolean deleted = false;
 	
 	
@@ -60,6 +63,10 @@ public class Fornecedor {
 		return cnpjCPF;
 	}
 	
+	public Boolean getAtivo() {
+		return ativo;
+	}
+	
 	public Boolean getDeleted() {
 		return deleted;
 	}
@@ -78,6 +85,10 @@ public class Fornecedor {
 	
 	public void setCnpjCPF(String cnpjCPF) {
 		this.cnpjCPF = cnpjCPF;
+	}
+	
+	public void setAtivo(Boolean ativo) {
+		this.ativo = ativo;
 	}
 	
 	public void setDeleted(Boolean deleted) {

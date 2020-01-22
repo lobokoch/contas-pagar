@@ -1,6 +1,6 @@
 /**********************************************************************************************
 Code generated with MKL Plug-in version: 47.8.0
-Code generated at time stamp: 2020-01-13T08:12:17.669
+Code generated at time stamp: 2020-01-22T06:59:30.300
 Copyright: Kerubin - logokoch@gmail.com
 
 WARNING: DO NOT CHANGE THIS CODE BECAUSE THE CHANGES WILL BE LOST IN THE NEXT CODE GENERATION.
@@ -85,7 +85,7 @@ public class PlanoContaServiceTest extends FinanceiroContasPagarBaseEntityTest {
 		planoConta.setId(java.util.UUID.randomUUID());
 		planoConta.setCodigo(generateRandomString(255));
 		planoConta.setDescricao(generateRandomString(255));
-		planoConta.setTipoFinanceiro(TipoPlanoContaFinanceiro.RECEITA);
+		planoConta.setTipoFinanceiro(TipoPlanoContaFinanceiro.DESPESA);
 		planoConta.setTipoReceitaDespesa(TipoReceitaDespesa.VARIAVEL);
 		
 		PlanoContaEntity planoContaEntityParam = newPlanoContaEntity();
@@ -198,7 +198,7 @@ public class PlanoContaServiceTest extends FinanceiroContasPagarBaseEntityTest {
 		
 		planoConta.setCodigo(generateRandomString(255));
 		planoConta.setDescricao(generateRandomString(255));
-		planoConta.setTipoFinanceiro(TipoPlanoContaFinanceiro.DESPESA);
+		planoConta.setTipoFinanceiro(TipoPlanoContaFinanceiro.RECEITA);
 		planoConta.setAtivo(true);
 		PlanoContaEntity planoContaEntity = planoContaService.update(id, planoContaDTOConverter.convertDtoToEntity(planoConta));
 		em.flush();
