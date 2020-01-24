@@ -5,10 +5,14 @@ import static br.com.kerubin.api.messaging.constants.MessagingConstants.HEADER_U
 import static br.com.kerubin.api.servicecore.mail.MailUtils.EMAIL_KERUBIN_NOTIFICADOR;
 import static br.com.kerubin.api.servicecore.mail.MailUtils.EMAIL_KERUBIN_NOTIFICADOR_APP_PWD;
 import static br.com.kerubin.api.servicecore.mail.MailUtils.EMAIL_KERUBIN_NOTIFICADOR_PERSONAL;
-import static br.com.kerubin.api.servicecore.util.CoreUtils.*;
+import static br.com.kerubin.api.servicecore.util.CoreUtils.formatDate;
+import static br.com.kerubin.api.servicecore.util.CoreUtils.formatNumber;
+import static br.com.kerubin.api.servicecore.util.CoreUtils.getFirstName;
+import static br.com.kerubin.api.servicecore.util.CoreUtils.getStringAlternate;
+import static br.com.kerubin.api.servicecore.util.CoreUtils.isEmpty;
+import static br.com.kerubin.api.servicecore.util.CoreUtils.isNotEmpty;
 
 import java.math.BigDecimal;
-import java.text.DecimalFormat;
 import java.text.MessageFormat;
 import java.time.Duration;
 import java.time.Instant;
@@ -64,10 +68,7 @@ public class BillsNotifier {
 	public static final String HTTP = "http://";
 	public static final String DASHBOARD = "dashboard";
 	private static final String KERUBIN_LINK = "<span style=\"color: #1e94d2; font-weight: bold;\"><a href=\"{0}\">Kerubin</a></span>";
-	private static final DecimalFormat DF_MONEY_DEFAULT = new DecimalFormat("#,###,###,##0.00");
 	
-	// private List<SysUser> users;
-
 	@Inject
 	private RestTemplate restTemplate;
 	
@@ -97,34 +98,6 @@ public class BillsNotifier {
 		
 	}
 
-	/*private void tryToNotifyUsersAboutTheBills(UUID ticket) {
-		int attempts = 0;
-		boolean success = false;
-		
-		log.info("STARTING notifications for users about the BILLS...");
-		
-		log.info("Starting loading users...");
-		while(!success && attempts < MAX_RETRIES) {
-			attempts++;
-			try {
-				loadUsersWithTenants();
-				success = true;
-			} catch (Exception e) {
-				log.error("Attempts to load users from tenats with fails: " + attempts, e);
-			}
-		} // while
-		
-		log.info("{} attempts to load users from tenant with final result: {}.", attempts, ifThen(success, "SUCCESS", "FAIL"));
-		if (!success) {
-			log.warn("*** Skipping notifyUsersAboutTheBills due fail at loadUsersWithTenants. ***");
-			return;
-		}
-		
-		log.info("Starting notification for users about the BILLS...");
-		notifyUsersAboutTheBills();
-		log.info("DONE notification for users about the BILLS.");
-	}*/
-	
 	private List<SysUser> loadUsersWithTenants() {		
 		String url = HTTP + SECURITY_AUTHORIZATION_SERVICE + "/" + "entities/sysUser" + "/listActiveUsers";
 		
@@ -838,7 +811,7 @@ public class BillsNotifier {
 	}
 	
 	public String format(BigDecimal value) {
-		return DF_MONEY_DEFAULT.format(getSafeValue(value));
+		return formatNumber(value);
 	}
 	
 }

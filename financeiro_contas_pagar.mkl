@@ -94,8 +94,8 @@ service contas_pagar { //xxxx
 		dataPagamento: date? 
 		publishedInEvents
 		label: "Data pagamento"
-		listFilter(isNotNull_isNull: "Pagas;Em aberto" default:"isNull") 
-		web(styleClass: "ui-md-2")
+		listFilter(isNotNull_isNull: "Pagas;Em aberto" default:"isNull" /*styleClass: "ui-md-4"*/ containerStyleClass: "ui-md-4") 
+		web(styleClass: "ui-md-2") //xxx
 		
 		//dataBaixa: date?
 		//label: "Data da baixa"
@@ -147,7 +147,7 @@ service contas_pagar { //xxxx
 		label: "Id da conciliação bancária"
 		grid(hidden) 
 		web(styleClass: "ui-md-4" readOnly)
-		listFilter(isNotNull: "Baixa via conc. banc." containerStyleClass: "ui-md-6")
+		listFilter(isNotNull: "Baixa via conc. banc." containerStyleClass: "ui-md-4")
 		
 		histConcBancaria: string?
 		label: "Histórico da conciliação bancária"
@@ -170,7 +170,7 @@ service contas_pagar { //xxxx
 		
 		agrupador: string ? 
 		label: "Identificador para agrupamento da conta"
-		listFilter(many: "Agrupador:")
+		listFilter(many: "Agrupador:" containerStyleClass: "ui-md-6")
 		grid(hidden) 
 		web(styleClass: "ui-md-4")
 		
