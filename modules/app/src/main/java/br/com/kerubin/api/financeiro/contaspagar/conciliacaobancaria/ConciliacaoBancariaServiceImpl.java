@@ -16,6 +16,7 @@ import java.text.MessageFormat;
 import java.time.LocalDate;
 import java.time.Period;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
@@ -128,6 +129,8 @@ public class ConciliacaoBancariaServiceImpl implements ConciliacaoBancariaServic
 					.orderBy(qContaPagar.dataVencimento.asc());
 			
 			List<ContaPagarEntity> contas = q.fetch();
+			
+			contas = discardNotStartsWithTokens(contas, tokens);
 			
 			if (isNotEmpty(contas)) {
 				
@@ -269,6 +272,23 @@ public class ConciliacaoBancariaServiceImpl implements ConciliacaoBancariaServic
 		return conciliacaoBancariaDTO;
 	}
 	
+	// Discard not starting words
+	@Override
+	public List<ContaPagarEntity> discardNotStartsWithTokens(List<ContaPagarEntity> contas, List<String> tokens) {
+		List<ContaPagarEntity> result = contas.stream().filter(conta -> {
+			List<String> descricaoTokens = getTokens(conta.getDescricao());
+			List<String> nomeTokens = isNotEmpty(conta.getFornecedor()) ? getTokens(conta.getFornecedor().getNome()) : Collections.emptyList();
+			boolean match = tokens.stream().anyMatch(it1 -> descricaoTokens.stream().anyMatch(it2 -> it2.startsWith(it1)));
+			match = match || tokens.stream().anyMatch(it1 -> nomeTokens.stream().anyMatch(it2 -> it2.startsWith(it1)));
+			return match;
+		})
+		//.sorted(Comparator.comparing(ContaPagarEntity::getDataVencimento)/*.reversed()*/)
+		.collect(Collectors.toList());
+		
+		
+		return result;		
+	}
+
 	private String getTrnKey(ConciliacaoTransacaoDTO transacao) {
 		String key = transacao.getTrnValor().toString() + "_" + transacao.getTrnHistorico().toLowerCase().replaceAll(" ", "_");
 		return key;
