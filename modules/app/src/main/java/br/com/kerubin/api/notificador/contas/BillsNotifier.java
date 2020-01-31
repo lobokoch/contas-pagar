@@ -84,7 +84,9 @@ public class BillsNotifier {
 	
 
 	// @Scheduled(fixedDelay = 1000 * 20)
-	@Scheduled(cron = "0 0 0 * * *", zone = TIME_ZONE)
+	// second, minute, hour, day of month, monthand day of week. e.g. "0 * * * * MON-FRI"
+	// Executa as 1 da manhã e ao meio dia, todos os dias.
+	@Scheduled(cron = "0 0 1,12 * * *", zone = TIME_ZONE)
 	public UUID executeNotifyUsersAboutTheBills() {
 		UUID ticket = UUID.randomUUID();
 		tryToNotifyUsersAboutTheBillsAssync(ticket);
@@ -221,7 +223,7 @@ public class BillsNotifier {
 		log.info("Notifying bills for users {} ...", recipients);
 		
 		//List<String> recipients = Arrays.asList(user.getEmail());
-		String subsject = "Kerubin - Resumo das contas";
+		String subsject = "Confira seus compromissos financeiros para hoje";
 		String message = null;
 		try {
 			message = buildNotificationBillsForUserMessage(users, 
@@ -296,7 +298,7 @@ public class BillsNotifier {
 		sb.append("<tr").append(getStringAlternate(trTrue, trFalse, bw)).append(">");
 		sb.append("<th style=\"text-align: center; border: 1px solid #bdbdbd;\">").append("Conta").append("</th>");
 		sb.append("<th style=\"text-align: center; border: 1px solid #bdbdbd;\">").append("Vencimento").append("</th>");
-		sb.append("<th style=\"text-align: center; border: 1px solid #bdbdbd;\">").append("Dias atrazo").append("</th>");
+		sb.append("<th style=\"text-align: center; border: 1px solid #bdbdbd;\">").append("Dias atraso").append("</th>");
 		sb.append("<th style=\"text-align: center; border: 1px solid #bdbdbd;\">").append("Valor (R$)").append("</th>");
 		sb.append("</tr>");
 		if (count > 0) {
@@ -407,7 +409,7 @@ public class BillsNotifier {
 		sb.append("<tr").append(getStringAlternate(trTrue, trFalse, bw)).append(">");
 		sb.append("<th style=\"text-align: center; border: 1px solid #bdbdbd;\">").append("Conta").append("</th>");
 		sb.append("<th style=\"text-align: center; border: 1px solid #bdbdbd;\">").append("Vencimento").append("</th>");
-		sb.append("<th style=\"text-align: center; border: 1px solid #bdbdbd;\">").append("Dias atrazo").append("</th>");
+		sb.append("<th style=\"text-align: center; border: 1px solid #bdbdbd;\">").append("Dias atraso").append("</th>");
 		sb.append("<th style=\"text-align: center; border: 1px solid #bdbdbd;\">").append("Valor").append("</th>");
 		sb.append("</tr>");
 		if (count > 0) {
@@ -590,7 +592,7 @@ public class BillsNotifier {
 		"		</div>\r\n" + 
 		"      \r\n" + // Begin Contas a Receber de hoje
 		"       <div style=\"display:table-row;background: #1e94d2;\">\r\n" + 
-		"			<div style=\"border:1px solid #0586d3; border-bottom: 0px; text-align:center;vertical-align:middle; display:table-cell; background:  #1e94d2; width: 100%; color:#fff; padding-top: 5px; padding-bottom: 5px;\">Contas a Receber de hoje (" + todayStr + ")</div>\r\n" + 
+		"			<div style=\"border:1px solid #0586d3; border-bottom: 0px; text-align:center;vertical-align:middle; display:table-cell; background:  #1e94d2; width: 100%; color:#fff; padding-top: 5px; padding-bottom: 5px;\">Contas a Receber para hoje (" + todayStr + ")</div>\r\n" + 
 		"		</div>\r\n" + 
 		"      \r\n" + 
 		"      <div style=\"display:table-row;\">\r\n" + 
@@ -747,8 +749,6 @@ public class BillsNotifier {
 	
 	
 	private List<CaixaMovimentoItem> getFluxoCaixaResumoMovimentacoes(SysUser userAndTenant) {
-		
-		System.out.println("getFluxoCaixaResumoMovimentacoes Thread:" + Thread.currentThread().getName());
 		
 		String tenant = userAndTenant.getTenant().getName();
 		String username = userAndTenant.getEmail();

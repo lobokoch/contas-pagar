@@ -1,5 +1,5 @@
 /**********************************************************************************************
-Code generated with MKL Plug-in version: 55.0.3
+Code generated with MKL Plug-in version: 60.0.6
 Copyright: Kerubin - kerubin.platform@gmail.com
 
 WARNING: DO NOT CHANGE THIS CODE BECAUSE THE CHANGES WILL BE LOST IN THE NEXT CODE GENERATION.
@@ -129,7 +129,7 @@ public class ContaPagarServiceTest extends FinanceiroContasPagarBaseEntityTest {
 		
 		contaPagar.setDescricao(generateRandomString(255));
 		contaPagar.setDataVencimento(getNextDate());
-		contaPagar.setValor(new java.math.BigDecimal("7297.19668"));
+		contaPagar.setValor(new java.math.BigDecimal("31197.12836"));
 		contaPagar.setFormaPagamento(FormaPagamento.DINHEIRO);
 		
 		ContaBancariaEntity contaBancariaEntityParam = newContaBancariaEntity();
@@ -143,11 +143,11 @@ public class ContaPagarServiceTest extends FinanceiroContasPagarBaseEntityTest {
 		
 		contaPagar.setOutrosDescricao(generateRandomString(255));
 		contaPagar.setDataPagamento(getNextDate());
-		contaPagar.setValorDesconto(new java.math.BigDecimal("31397.8748"));
-		contaPagar.setValorMulta(new java.math.BigDecimal("9596.14633"));
-		contaPagar.setValorJuros(new java.math.BigDecimal("5136.25508"));
-		contaPagar.setValorAcrescimos(new java.math.BigDecimal("14630.21083"));
-		contaPagar.setValorPago(new java.math.BigDecimal("23313.12295"));
+		contaPagar.setValorDesconto(new java.math.BigDecimal("8742.21550"));
+		contaPagar.setValorMulta(new java.math.BigDecimal("24986.11573"));
+		contaPagar.setValorJuros(new java.math.BigDecimal("14966.7385"));
+		contaPagar.setValorAcrescimos(new java.math.BigDecimal("3243.10087"));
+		contaPagar.setValorPago(new java.math.BigDecimal("14845.17577"));
 		
 		FornecedorEntity fornecedorEntityParam = newFornecedorEntity();
 		FornecedorLookupResult fornecedor = newFornecedorLookupResult(fornecedorEntityParam);
@@ -200,7 +200,7 @@ public class ContaPagarServiceTest extends FinanceiroContasPagarBaseEntityTest {
 		
 		contaPagar.setDescricao(generateRandomString(255));
 		contaPagar.setDataVencimento(getNextDate());
-		contaPagar.setValor(new java.math.BigDecimal("4920.208"));
+		contaPagar.setValor(new java.math.BigDecimal("15396.3063"));
 		contaPagar.setFormaPagamento(FormaPagamento.DINHEIRO);
 		ContaPagarEntity contaPagarEntity = contaPagarService.create(contaPagarDTOConverter.convertDtoToEntity(contaPagar));
 		em.flush();
@@ -255,7 +255,7 @@ public class ContaPagarServiceTest extends FinanceiroContasPagarBaseEntityTest {
 		
 		contaPagar.setDescricao(generateRandomString(255));
 		contaPagar.setDataVencimento(getNextDate());
-		contaPagar.setValor(new java.math.BigDecimal("18006.22713"));
+		contaPagar.setValor(new java.math.BigDecimal("7727.19197"));
 		contaPagar.setFormaPagamento(FormaPagamento.DINHEIRO);
 		
 		ContaBancariaEntity contaBancariaEntityParam = newContaBancariaEntity();
@@ -269,11 +269,11 @@ public class ContaPagarServiceTest extends FinanceiroContasPagarBaseEntityTest {
 		
 		contaPagar.setOutrosDescricao(generateRandomString(255));
 		contaPagar.setDataPagamento(getNextDate());
-		contaPagar.setValorDesconto(new java.math.BigDecimal("5919.3898"));
-		contaPagar.setValorMulta(new java.math.BigDecimal("9492.26344"));
-		contaPagar.setValorJuros(new java.math.BigDecimal("6281.26289"));
-		contaPagar.setValorAcrescimos(new java.math.BigDecimal("4203.7431"));
-		contaPagar.setValorPago(new java.math.BigDecimal("9076.19183"));
+		contaPagar.setValorDesconto(new java.math.BigDecimal("16897.31535"));
+		contaPagar.setValorMulta(new java.math.BigDecimal("24775.2080"));
+		contaPagar.setValorJuros(new java.math.BigDecimal("25204.2981"));
+		contaPagar.setValorAcrescimos(new java.math.BigDecimal("25719.30333"));
+		contaPagar.setValorPago(new java.math.BigDecimal("7441.23322"));
 		
 		FornecedorEntity fornecedorEntityParam = newFornecedorEntity();
 		FornecedorLookupResult fornecedor = newFornecedorLookupResult(fornecedorEntityParam);
@@ -329,7 +329,7 @@ public class ContaPagarServiceTest extends FinanceiroContasPagarBaseEntityTest {
 		
 		contaPagar.setDescricao(generateRandomString(255));
 		contaPagar.setDataVencimento(getNextDate());
-		contaPagar.setValor(new java.math.BigDecimal("32704.9596"));
+		contaPagar.setValor(new java.math.BigDecimal("24617.31864"));
 		contaPagar.setFormaPagamento(FormaPagamento.DINHEIRO);
 		ContaPagarEntity contaPagarEntity = contaPagarService.update(id, contaPagarDTOConverter.convertDtoToEntity(contaPagar));
 		em.flush();
@@ -953,17 +953,17 @@ public class ContaPagarServiceTest extends FinanceiroContasPagarBaseEntityTest {
 		contaPagarEntity.setPlanoContas(newPlanoContaEntity());
 		contaPagarEntity.setDescricao(generateRandomString(255));
 		contaPagarEntity.setDataVencimento(getNextDate());
-		contaPagarEntity.setValor(new java.math.BigDecimal("6586.44"));
+		contaPagarEntity.setValor(new java.math.BigDecimal("10457.7131"));
 		contaPagarEntity.setFormaPagamento(FormaPagamento.DINHEIRO);
 		contaPagarEntity.setContaBancaria(newContaBancariaEntity());
 		contaPagarEntity.setCartaoCredito(newCartaoCreditoEntity());
 		contaPagarEntity.setOutrosDescricao(generateRandomString(255));
 		contaPagarEntity.setDataPagamento(getNextDate());
-		contaPagarEntity.setValorDesconto(new java.math.BigDecimal("7497.18743"));
-		contaPagarEntity.setValorMulta(new java.math.BigDecimal("27454.7285"));
-		contaPagarEntity.setValorJuros(new java.math.BigDecimal("9252.32670"));
-		contaPagarEntity.setValorAcrescimos(new java.math.BigDecimal("22197.30130"));
-		contaPagarEntity.setValorPago(new java.math.BigDecimal("28871.14776"));
+		contaPagarEntity.setValorDesconto(new java.math.BigDecimal("31614.6420"));
+		contaPagarEntity.setValorMulta(new java.math.BigDecimal("4801.25209"));
+		contaPagarEntity.setValorJuros(new java.math.BigDecimal("21371.24546"));
+		contaPagarEntity.setValorAcrescimos(new java.math.BigDecimal("12819.11855"));
+		contaPagarEntity.setValorPago(new java.math.BigDecimal("20377.27552"));
 		contaPagarEntity.setFornecedor(newFornecedorEntity());
 		contaPagarEntity.setNumDocumento(generateRandomString(255));
 		contaPagarEntity.setIdConcBancaria(generateRandomString(255));
@@ -993,7 +993,7 @@ public class ContaPagarServiceTest extends FinanceiroContasPagarBaseEntityTest {
 		planoContaEntity.setId(java.util.UUID.randomUUID());
 		planoContaEntity.setCodigo(generateRandomString(255));
 		planoContaEntity.setDescricao(generateRandomString(255));
-		planoContaEntity.setTipoFinanceiro(TipoPlanoContaFinanceiro.DESPESA);
+		planoContaEntity.setTipoFinanceiro(TipoPlanoContaFinanceiro.RECEITA);
 		planoContaEntity.setTipoReceitaDespesa(TipoReceitaDespesa.VARIAVEL);
 		planoContaEntity.setPlanoContaPai(null);
 		planoContaEntity.setAtivo(true);
@@ -1103,7 +1103,7 @@ public class ContaPagarServiceTest extends FinanceiroContasPagarBaseEntityTest {
 		cartaoCreditoEntity.setNomeTitular(generateRandomString(255));
 		cartaoCreditoEntity.setNumeroCartao(generateRandomString(50));
 		cartaoCreditoEntity.setValidade(getNextDate());
-		cartaoCreditoEntity.setValorLimite(new java.math.BigDecimal("31015.28912"));
+		cartaoCreditoEntity.setValorLimite(new java.math.BigDecimal("16302.14233"));
 		cartaoCreditoEntity.setBandeiraCartao(newBandeiraCartaoEntity());
 		cartaoCreditoEntity.setAtivo(true);
 		cartaoCreditoEntity.setDeleted(false);
