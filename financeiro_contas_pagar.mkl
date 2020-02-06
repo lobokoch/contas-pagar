@@ -1,10 +1,11 @@
 @label("Financeiro")
 domain financeiro
 
+@messagingEventHandler
 @webAnalitycs(tagId: "UA-157001792-1" onlyInProduction: true)
 @enableDoc
 @label("Contas a pagar")
-service contas_pagar { //xxx
+service contas_pagar { //xxxxx
 	
 	config {
 		groupId: "br.com.kerubin.api"

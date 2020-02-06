@@ -8,8 +8,6 @@ WARNING: DO NOT CHANGE THIS CODE BECAUSE THE CHANGES WILL BE LOST IN THE NEXT CO
 package br.com.kerubin.api.financeiro.contaspagar;
 
 import java.util.UUID;
-// import org.modelmapper.ModelMapper;
-// import org.modelmapper.convention.MatchingStrategies;
 import org.springframework.amqp.core.MessagePostProcessor;
 import org.springframework.amqp.rabbit.config.SimpleRabbitListenerContainerFactory;
 import org.springframework.amqp.rabbit.connection.ConnectionFactory;
@@ -21,20 +19,15 @@ import br.com.kerubin.api.messaging.core.DomainEvent;
 @Configuration
 public class ServerConfig {
 	
-	// TODO: remover esse cara
-	/*@Bean
-	public ModelMapper modelMapper() {
-		ModelMapper modelMapper = new ModelMapper();
-		modelMapper.getConfiguration().setMatchingStrategy(MatchingStrategies.STRICT);
-		return modelMapper;
-	}*/
-	
 	@Bean
 	public SimpleRabbitListenerContainerFactory rabbitListenerContainerFactory(
 			SimpleRabbitListenerContainerFactoryConfigurer configurer,
 	        ConnectionFactory connectionFactory) {
 		
 	    SimpleRabbitListenerContainerFactory factory = new SimpleRabbitListenerContainerFactory();
+	    
+	    factory.setPrefetchCount(20); // TODO: Should create a parameter for this.
+	    
 	    configurer.configure(factory, connectionFactory);
 	    factory.setConsumerTagStrategy(queue -> {
 	    	StringBuilder sb = new StringBuilder(DomainEvent.APPLICATION).append("_")
