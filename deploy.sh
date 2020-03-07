@@ -12,7 +12,7 @@ echo "Starting project deploy..."
 cd modules
 
 echo "Packing and installing modules..."
-mvn clean install
+mvn clean install -DskipTests
 
 cd app
 
