@@ -190,8 +190,8 @@ public class AplicarConciliacaoBancariaServiceTest extends FinanceiroContasPagar
 				ConciliacaoTransacaoDTO::getSituacaoConciliacaoTrn
 				)
 		.contains(
-				tuple(contaPagar1.getId(), contaPagar1.getDescricao(), /*getConciliadoComErro=*/false, /*getConciliadoMsg=*/"Sucesso", LocalDate.now(), SituacaoConciliacaoTrn.CONCILIADO_CONTAS_PAGAR),
-				tuple(contaPagar2.getId(), contaPagar2.getDescricao(), /*getConciliadoComErro=*/false, /*getConciliadoMsg=*/"Sucesso", LocalDate.now(), SituacaoConciliacaoTrn.CONCILIADO_CONTAS_PAGAR)
+				tuple(contaPagar1.getId(), contaPagar1.getDescricao(), /*getConciliadoComErro=*/false, /*getConciliadoMsg=*/null, LocalDate.now(), SituacaoConciliacaoTrn.CONCILIADO_CONTAS_PAGAR),
+				tuple(contaPagar2.getId(), contaPagar2.getDescricao(), /*getConciliadoComErro=*/false, /*getConciliadoMsg=*/null, LocalDate.now(), SituacaoConciliacaoTrn.CONCILIADO_CONTAS_PAGAR)
 				);
 		
 		
@@ -271,7 +271,7 @@ public class AplicarConciliacaoBancariaServiceTest extends FinanceiroContasPagar
 				)
 		.contains(
 				tuple(unknownId,           null,                       /*getConciliadoComErro=*/true,  /*getConciliadoMsg=*/erroMsg,   null,            SituacaoConciliacaoTrn.CONCILIAR_CONTAS_PAGAR),
-				tuple(contaPagar2.getId(), contaPagar2.getDescricao(), /*getConciliadoComErro=*/false, /*getConciliadoMsg=*/"Sucesso", LocalDate.now(), SituacaoConciliacaoTrn.CONCILIADO_CONTAS_PAGAR)
+				tuple(contaPagar2.getId(), contaPagar2.getDescricao(), /*getConciliadoComErro=*/false, /*getConciliadoMsg=*/null, LocalDate.now(), SituacaoConciliacaoTrn.CONCILIADO_CONTAS_PAGAR)
 				);
 		
 		
@@ -347,9 +347,9 @@ public class AplicarConciliacaoBancariaServiceTest extends FinanceiroContasPagar
 				ConciliacaoTransacaoDTO::getDataConciliacao,
 				ConciliacaoTransacaoDTO::getSituacaoConciliacaoTrn
 				)
-		.contains(
-				tuple(contaPagar1.getId(), null,                       /*getConciliadoComErro=*/true,  /*getConciliadoMsg=*/erroMsg,   null,            SituacaoConciliacaoTrn.CONCILIAR_CONTAS_PAGAR),
-				tuple(contaPagar2.getId(), contaPagar2.getDescricao(), /*getConciliadoComErro=*/false, /*getConciliadoMsg=*/"Sucesso", LocalDate.now(), SituacaoConciliacaoTrn.CONCILIADO_CONTAS_PAGAR)
+		.containsExactly(
+				tuple(contaPagar1.getId(), null,                       /*getConciliadoComErro=*/true,  /*getConciliadoMsg=*/erroMsg, null,            SituacaoConciliacaoTrn.CONCILIAR_CONTAS_PAGAR),
+				tuple(contaPagar2.getId(), contaPagar2.getDescricao(), /*getConciliadoComErro=*/false, /*getConciliadoMsg=*/null,    LocalDate.now(), SituacaoConciliacaoTrn.CONCILIADO_CONTAS_PAGAR)
 				);
 		
 		
@@ -426,7 +426,7 @@ public class AplicarConciliacaoBancariaServiceTest extends FinanceiroContasPagar
 				)
 		.contains(
 				tuple(contaPagar1.getId(), null,                       /*getConciliadoComErro=*/true,  /*getConciliadoMsg=*/erroMsg,   null,            SituacaoConciliacaoTrn.CONCILIAR_CONTAS_PAGAR),
-				tuple(contaPagar2.getId(), contaPagar2.getDescricao(), /*getConciliadoComErro=*/false, /*getConciliadoMsg=*/"Sucesso", LocalDate.now(), SituacaoConciliacaoTrn.CONCILIADO_CONTAS_PAGAR)
+				tuple(contaPagar2.getId(), contaPagar2.getDescricao(), /*getConciliadoComErro=*/false, /*getConciliadoMsg=*/null, LocalDate.now(), SituacaoConciliacaoTrn.CONCILIADO_CONTAS_PAGAR)
 				);
 		
 		
@@ -456,7 +456,7 @@ public class AplicarConciliacaoBancariaServiceTest extends FinanceiroContasPagar
 		conciliacaoBancariaDTO.setAgenciaId(AGENDIA_ID);
 		conciliacaoBancariaDTO.setContaId(CONTA_BANCARIA_ID);
 		
-		String erroMsg = "Tipo da transação deveria ser CRÉDITO mas é: " + TipoTransacao.CREDITO;
+		String erroMsg = "Tipo da transação deveria ser DÉDITO mas é: " + TipoTransacao.CREDITO;
 		List<ConciliacaoTransacaoDTO> transacoes = new ArrayList<>();
 		ConciliacaoTransacaoDTO t1 = ConciliacaoTransacaoDTO.builder()
 				.id(UUID.randomUUID())
@@ -503,7 +503,7 @@ public class AplicarConciliacaoBancariaServiceTest extends FinanceiroContasPagar
 				)
 		.contains(
 				tuple(contaPagar1.getId(), null,                       /*getConciliadoComErro=*/true,  /*getConciliadoMsg=*/erroMsg,   null,            SituacaoConciliacaoTrn.CONCILIAR_CONTAS_PAGAR),
-				tuple(contaPagar2.getId(), contaPagar2.getDescricao(), /*getConciliadoComErro=*/false, /*getConciliadoMsg=*/"Sucesso", LocalDate.now(), SituacaoConciliacaoTrn.CONCILIADO_CONTAS_PAGAR)
+				tuple(contaPagar2.getId(), contaPagar2.getDescricao(), /*getConciliadoComErro=*/false, /*getConciliadoMsg=*/null, LocalDate.now(), SituacaoConciliacaoTrn.CONCILIADO_CONTAS_PAGAR)
 				);
 		
 		
@@ -584,7 +584,7 @@ public class AplicarConciliacaoBancariaServiceTest extends FinanceiroContasPagar
 				)
 		.contains(
 				tuple(contaPagar1.getId(), null,                       /*getConciliadoComErro=*/true,  /*getConciliadoMsg=*/erroMsg,   null,            SituacaoConciliacaoTrn.CONCILIAR_CONTAS_PAGAR),
-				tuple(contaPagar2.getId(), contaPagar2.getDescricao(), /*getConciliadoComErro=*/false, /*getConciliadoMsg=*/"Sucesso", LocalDate.now(), SituacaoConciliacaoTrn.CONCILIADO_CONTAS_PAGAR)
+				tuple(contaPagar2.getId(), contaPagar2.getDescricao(), /*getConciliadoComErro=*/false, /*getConciliadoMsg=*/null, LocalDate.now(), SituacaoConciliacaoTrn.CONCILIADO_CONTAS_PAGAR)
 				);
 		
 		
@@ -661,9 +661,9 @@ public class AplicarConciliacaoBancariaServiceTest extends FinanceiroContasPagar
 				ConciliacaoTransacaoDTO::getDataConciliacao,
 				ConciliacaoTransacaoDTO::getSituacaoConciliacaoTrn
 				)
-		.contains(
-				tuple(contaPagar1.getId(), null,                       /*getConciliadoComErro=*/true,  /*getConciliadoMsg=*/erroMsg,   null,            SituacaoConciliacaoTrn.CONCILIAR_CONTAS_PAGAR),
-				tuple(contaPagar2.getId(), contaPagar2.getDescricao(), /*getConciliadoComErro=*/false, /*getConciliadoMsg=*/"Sucesso", LocalDate.now(), SituacaoConciliacaoTrn.CONCILIADO_CONTAS_PAGAR)
+		.containsExactly(                                                             // warning only
+				tuple(contaPagar1.getId(), null,                       /*getConciliadoComErro=*/false,  /*getConciliadoMsg=*/erroMsg, LocalDate.now(), SituacaoConciliacaoTrn.CONCILIADO_CONTAS_PAGAR),
+				tuple(contaPagar2.getId(), contaPagar2.getDescricao(), /*getConciliadoComErro=*/false, /*getConciliadoMsg=*/ null,    LocalDate.now(), SituacaoConciliacaoTrn.CONCILIADO_CONTAS_PAGAR)
 				);
 		
 		
@@ -677,8 +677,8 @@ public class AplicarConciliacaoBancariaServiceTest extends FinanceiroContasPagar
 				ContaPagarEntity::getNumDocConcBancaria,
 				ContaPagarEntity::getHistConcBancaria
 				)
-		.contains(
-				tuple(null,            null,             FormaPagamento.CONTA_BANCARIA, newContaBancariaConciliacao(), null,          null,                 null),
+		.containsExactly(
+				tuple(t1.getTrnData(), t1.getTrnValor(), FormaPagamento.CONTA_BANCARIA, newContaBancariaConciliacao(), t1.getTrnId(), t1.getTrnDocumento(), t1.getTrnHistorico()),
 				tuple(t2.getTrnData(), t2.getTrnValor(), FormaPagamento.CONTA_BANCARIA, newContaBancariaConciliacao(), t2.getTrnId(), t2.getTrnDocumento(), t2.getTrnHistorico())
 				);
 	}

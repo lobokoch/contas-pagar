@@ -1,5 +1,6 @@
 package br.com.kerubin.api.financeiro.contaspagar.conciliacaobancaria;
 
+import static br.com.kerubin.api.servicecore.util.CoreUtils.daysBetweenAbs;
 import static br.com.kerubin.api.servicecore.util.CoreUtils.format;
 import static br.com.kerubin.api.servicecore.util.CoreUtils.formatMoney;
 import static br.com.kerubin.api.servicecore.util.CoreUtils.getDiff;
@@ -14,7 +15,6 @@ import static br.com.kerubin.api.servicecore.util.CoreUtils.isZero;
 import java.math.BigDecimal;
 import java.text.MessageFormat;
 import java.time.LocalDate;
-import java.time.Period;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -130,9 +130,10 @@ public class ConciliacaoBancariaServiceImpl implements ConciliacaoBancariaServic
 			
 			List<ContaPagarEntity> contas = q.fetch();
 			
-			contas = discardNotStartsWithTokens(contas, tokens);
 			
 			if (isNotEmpty(contas)) {
+				Map<ContaPagarEntity, Integer> scores = computeScore(contas, tokens, transacao);
+				contas = contas.stream().filter(conta -> scores.get(conta).intValue() > 0).collect(Collectors.toList());
 				
 				Comparator<ContaPagarEntity> comparator = Comparator.comparing(ContaPagarEntity::getDataVencimento);
 				ContaPagarEntity contaMaiorDataVencimento = contas.stream().max(comparator).get();
@@ -143,21 +144,28 @@ public class ConciliacaoBancariaServiceImpl implements ConciliacaoBancariaServic
 					List<ContaPagarEntity> contasClone = new ArrayList<>(contas);
 					
 					// Tem alguma conta conciliada?
-					contaCandidata = contas.stream().filter(it -> isConciliado(it, transacao)).findFirst().orElse(null);
+					List<ContaPagarEntity> contasConciliadas = contas.stream()
+							.filter(it -> isConciliado(it, transacao))
+							.collect(Collectors.toList());
+					
+					contaCandidata = getContaComMaiorScore(contasConciliadas, scores);
 					
 					// Tem alguma conta paga?
 					if (isEmpty(contaCandidata)) {
-						contaCandidata = contas.stream().filter(it -> isPago(it, transacao)).findFirst().orElse(null);
+						List<ContaPagarEntity> contasPagas = contas.stream()
+								.filter(it -> isPago(it, transacao))
+								.collect(Collectors.toList());
+						
+						contaCandidata = getContaComMaiorScore(contasPagas, scores);
 					}
 					
 					// Tem alguma conta em aberto?
 					if (isEmpty(contaCandidata)) {
-						//if (hasLastVisited) { // Não deveria pegar a mais próxima e sim a última, pois a mais próxima já deve ter sido pega.
-						//	contaCandidata = contaMaiorDataVencimento;
-						//}
-						//else {
-							contaCandidata = contas.stream().filter(it -> isEmAberto(it, transacao, contasClone)).findFirst().orElse(null);
-						//}
+						List<ContaPagarEntity> contasEmAberto = contas.stream()
+								.filter(it -> isEmAberto(it, transacao, contasClone))
+								.collect(Collectors.toList());
+						
+						contaCandidata = getContaComMaiorScore(contasEmAberto, scores);
 					}
 					
 					if (isEmpty(contaCandidata)) {
@@ -166,7 +174,7 @@ public class ConciliacaoBancariaServiceImpl implements ConciliacaoBancariaServic
 					}
 					
 					if (isEmpty(contaCandidata)) {
-						contaCandidata = contas.get(0);
+						contaCandidata = Collections.max(scores.entrySet(), Map.Entry.comparingByValue()).getKey();
 					}
 				}
 				else {
@@ -272,21 +280,80 @@ public class ConciliacaoBancariaServiceImpl implements ConciliacaoBancariaServic
 		return conciliacaoBancariaDTO;
 	}
 	
-	// Discard not starting words
+	public ContaPagarEntity getContaComMaiorScore(List<ContaPagarEntity> contas, Map<ContaPagarEntity, Integer> allScores) {
+		if (isEmpty(contas)) {
+			return null;
+		}
+		
+		if (isEmpty(allScores)) {
+			return contas.get(0);
+		}
+		
+		Map<ContaPagarEntity, Integer> scores = allScores.entrySet().stream()
+				.filter(entry -> contas.stream().anyMatch(conta -> conta.equals(entry.getKey())))
+				.collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+		
+		if (isEmpty(scores)) {
+			return null;
+		}
+		
+		ContaPagarEntity result = Collections.max(scores.entrySet(), Map.Entry.comparingByValue()).getKey();
+		return result;
+	}
+	
+	/**
+	 * Generates a match score for each bill.
+	 * */
 	@Override
-	public List<ContaPagarEntity> discardNotStartsWithTokens(List<ContaPagarEntity> contas, List<String> tokens) {
-		List<ContaPagarEntity> result = contas.stream().filter(conta -> {
+	public Map<ContaPagarEntity, Integer> computeScore(List<ContaPagarEntity> contas, List<String> tokens, ConciliacaoTransacaoDTO transacao) {
+		Map<ContaPagarEntity, Integer> scores = new HashMap<>(contas.size());
+		
+		contas.forEach(conta -> {
+			int score = 0;
+			if (isNotEmpty(transacao)) {
+				
+				boolean isPaga = isNotEmpty(conta.getDataPagamento());
+				if (isEquals(conta.getValor(), transacao.getTrnValor()) || (isPaga && isEquals(conta.getValorPago(), transacao.getTrnValor())) ) { // Valor bate.
+					score += 7919; // 1000 ésimo número primo.
+					
+					
+					if (isPaga && conta.getDataPagamento().equals(transacao.getTrnData())) { // Está paga e a data de pagamento bate.
+						score += 997; // Maior primo antes de mil
+					}
+					
+					if (conta.getDataVencimento().equals(transacao.getTrnData())) { // Data de vencimento bate.
+						score += 541; // primo
+					}					
+					
+				}
+			}
+			
+			// Tokens da descrição da conta ou tokens do nome do fornecedor que batem com tokens da descrição da transação bancária
 			List<String> descricaoTokens = getTokens(conta.getDescricao());
 			List<String> nomeTokens = isNotEmpty(conta.getFornecedor()) ? getTokens(conta.getFornecedor().getNome()) : Collections.emptyList();
-			boolean match = tokens.stream().anyMatch(it1 -> descricaoTokens.stream().anyMatch(it2 -> it2.startsWith(it1)));
-			match = match || tokens.stream().anyMatch(it1 -> nomeTokens.stream().anyMatch(it2 -> it2.startsWith(it1)));
-			return match;
-		})
+			
+			for (String token: tokens) {
+				
+				for (String tokenDesc: descricaoTokens) {
+					if (tokenDesc.startsWith(token) || token.startsWith(tokenDesc)) {
+						score++;
+					}
+				} //for
+				
+				for (String tokenNome: nomeTokens) {
+					if (tokenNome.startsWith(token) || token.startsWith(tokenNome)) {
+						score++;
+					}
+				} // for
+				
+			}
+			
+			scores.put(conta, score);
+		}); // forEach
 		//.sorted(Comparator.comparing(ContaPagarEntity::getDataVencimento)/*.reversed()*/)
-		.collect(Collectors.toList());
 		
 		
-		return result;		
+		return scores;		
 	}
 
 	private String getTrnKey(ConciliacaoTransacaoDTO transacao) {
@@ -305,6 +372,7 @@ public class ConciliacaoBancariaServiceImpl implements ConciliacaoBancariaServic
 		boolean result = isEquals(transacao.getTrnValor(), conta.getValor()) && //
 				isEmpty(conta.getDataPagamento()) && //
 				(isEmpty(contaMaisPerto) || conta.equals(contaMaisPerto));
+		
 		return result;
 	}
 	
@@ -321,15 +389,15 @@ public class ConciliacaoBancariaServiceImpl implements ConciliacaoBancariaServic
 		}
 		
 		ContaPagarEntity result = contas.get(0);
-		int dif = Math.abs(Period.between(dataRef, result.getDataVencimento()).getDays());
+		long dif = daysBetweenAbs(dataRef, result.getDataVencimento());
 		if (dif == 0) { // dataRef = dataVencimento, já retorna
 			return result;
 		}
 		
-		int minDif = dif;
+		long minDif = dif;
 		for (int i = 1; i < contas.size(); i++) {
-			ContaPagarEntity conta =  contas.get(i);
-			dif = Math.abs(Period.between(dataRef, conta.getDataVencimento()).getDays());
+			ContaPagarEntity conta = contas.get(i);
+			dif = daysBetweenAbs(dataRef, conta.getDataVencimento());
 			
 			if (dif == 0) { // dataRef = dataVencimento, já retorna
 				return result;

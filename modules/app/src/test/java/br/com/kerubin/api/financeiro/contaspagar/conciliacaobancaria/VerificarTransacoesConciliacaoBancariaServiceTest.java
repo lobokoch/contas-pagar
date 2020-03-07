@@ -17,6 +17,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 import javax.inject.Inject;
@@ -139,41 +140,129 @@ public class VerificarTransacoesConciliacaoBancariaServiceTest extends Financeir
 	private ConciliacaoBancariaService conciliacaoBancariaService;
 	
 	@Test
-	public void testDiscardNotStartsWithTokens() {
+	public void testScores() {
 		
-		List<ContaPagarEntity> contas = new ArrayList<>(5); 
+		List<ContaPagarEntity> contas = new ArrayList<>(); 
 		
 		ContaPagarEntity c = new ContaPagarEntity();
 		c.setDescricao("Conta de energia elétrica");
 		c.setDataVencimento(LocalDate.of(2020, 01, 23));
+		c.setDataPagamento(LocalDate.of(2020, 01, 23));
+		c.setValor(BigDecimal.valueOf(181.50));
+		c.setValorPago(BigDecimal.valueOf(181.50));
+		
 		FornecedorEntity f = new FornecedorEntity();
 		f.setNome("Celesc Santa Catarina");
 		c.setFornecedor(f);
+		
+		ConciliacaoTransacaoDTO transacao = new ConciliacaoTransacaoDTO();
+		transacao.setTrnHistorico("Celesc Sant. Catarin. Energ. Elétr.");
+		transacao.setTrnData(LocalDate.of(2020, 01, 23));
+		transacao.setTrnValor(BigDecimal.valueOf(181.50));
+		
 		contas.add(c);
 		
+		List<String> tokens = CoreUtils.getTokens(transacao.getTrnHistorico());
+		Map<ContaPagarEntity, Integer> scores = conciliacaoBancariaService.computeScore(contas, tokens, transacao);
+		assertThat(scores).containsValue(9462);
+		
+		contas.clear();
+		
 		c = new ContaPagarEntity();
-		c.setDescricao("Bobina de plástico");
-		c.setDataVencimento(LocalDate.of(2020, 01, 24));
+		c.setDescricao("Conta de gáz");
+		c.setDataVencimento(LocalDate.of(2020, 01, 23));
+		c.setDataPagamento(LocalDate.of(2020, 01, 23));
+		c.setValor(BigDecimal.valueOf(181.50));
+		c.setValorPago(BigDecimal.valueOf(181.50));
+		
 		f = new FornecedorEntity();
-		f.setNome("Plastex");
+		f.setNome("Petrobras");
 		c.setFornecedor(f);
+		
+		transacao = new ConciliacaoTransacaoDTO();
+		transacao.setTrnHistorico("Celesc Sant. Catarin. Energ. Elétr.");
+		transacao.setTrnData(LocalDate.of(2020, 01, 23));
+		transacao.setTrnValor(BigDecimal.valueOf(181.99));
+		
 		contas.add(c);
 		
+		tokens = CoreUtils.getTokens(transacao.getTrnHistorico());
+		scores = conciliacaoBancariaService.computeScore(contas, tokens, transacao);
+		assertThat(scores).containsValue(0);
+		
+		contas.clear();
+		
 		c = new ContaPagarEntity();
-		c.setDescricao("Compra de protetor solar");
+		c.setDescricao("Conta de energia elétrica");
+		c.setDataVencimento(LocalDate.of(2020, 01, 23));
+		c.setDataPagamento(LocalDate.of(2020, 01, 23));
+		c.setValor(BigDecimal.valueOf(181.50));
+		c.setValorPago(BigDecimal.valueOf(181.50));
+		
+		f = new FornecedorEntity();
+		f.setNome("Celesc Santa Catarina");
+		c.setFornecedor(f);
+		
+		transacao = new ConciliacaoTransacaoDTO();
+		transacao.setTrnHistorico("Celesc Sant. Catarin. Energ. Elétr.");
+		transacao.setTrnData(LocalDate.of(2020, 01, 23));
+		transacao.setTrnValor(BigDecimal.valueOf(181.99));
+		
+		contas.add(c);
+		
+		tokens = CoreUtils.getTokens(transacao.getTrnHistorico());
+		scores = conciliacaoBancariaService.computeScore(contas, tokens, transacao);
+		assertThat(scores).containsValue(5);
+		
+		contas.clear();
+		
+		c = new ContaPagarEntity();
+		c.setDescricao("Conta de energia elétrica");
+		c.setDataVencimento(LocalDate.of(2020, 01, 23));
+		//c.setDataPagamento(LocalDate.of(2020, 01, 23));
+		c.setValor(BigDecimal.valueOf(181.50));
+		//c.setValorPago(BigDecimal.valueOf(181.50));
+		
+		f = new FornecedorEntity();
+		f.setNome("Celesc Santa Catarina");
+		c.setFornecedor(f);
+		
+		transacao = new ConciliacaoTransacaoDTO();
+		transacao.setTrnHistorico("Celesc Sant. Catarin. Energ. Elétr.");
+		transacao.setTrnData(LocalDate.of(2020, 01, 23));
+		transacao.setTrnValor(BigDecimal.valueOf(181.50));
+		
+		contas.add(c);
+		
+		tokens = CoreUtils.getTokens(transacao.getTrnHistorico());
+		scores = conciliacaoBancariaService.computeScore(contas, tokens, transacao);
+		assertThat(scores).containsValue(8465);
+		
+		contas.clear();
+		
+		c = new ContaPagarEntity();
+		c.setDescricao("Conta de energia elétrica");
 		c.setDataVencimento(LocalDate.of(2020, 01, 25));
+		//c.setDataPagamento(LocalDate.of(2020, 01, 23));
+		c.setValor(BigDecimal.valueOf(181.50));
+		//c.setValorPago(BigDecimal.valueOf(181.50));
+		
 		f = new FornecedorEntity();
-		f.setNome("Farmácia catarinense");
+		f.setNome("Celesc Santa Catarina");
 		c.setFornecedor(f);
+		
+		transacao = new ConciliacaoTransacaoDTO();
+		transacao.setTrnHistorico("Celesc Sant. Catarin. Energ. Elétr.");
+		transacao.setTrnData(LocalDate.of(2020, 01, 23));
+		transacao.setTrnValor(BigDecimal.valueOf(181.50));
+		
 		contas.add(c);
 		
-		List<String> tokens = CoreUtils.getTokens("Celesc Sant. Catarin. Energ. Elétr.");
-		//List<String> tokens = Arrays.asList("celesc", "sant", "catarin", "energ", "elétr");
-		List<ContaPagarEntity> actual = conciliacaoBancariaService.discardNotStartsWithTokens(contas, tokens);
+		tokens = CoreUtils.getTokens(transacao.getTrnHistorico());
+		scores = conciliacaoBancariaService.computeScore(contas, tokens, transacao);
+		assertThat(scores).containsValue(7924);
 		
-		assertThat(actual).hasSize(2);
-		assertThat(actual.get(0)).isEqualToComparingFieldByField(contas.get(0));
-		assertThat(actual.get(1)).isEqualToComparingFieldByField(contas.get(2));
+		
 	}
 	
 	@Test

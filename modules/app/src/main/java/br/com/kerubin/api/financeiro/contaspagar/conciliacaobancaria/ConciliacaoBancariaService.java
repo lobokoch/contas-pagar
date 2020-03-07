@@ -1,6 +1,7 @@
 package br.com.kerubin.api.financeiro.contaspagar.conciliacaobancaria;
 
 import java.util.List;
+import java.util.Map;
 
 import br.com.kerubin.api.financeiro.contaspagar.entity.contapagar.ContaPagarEntity;
 
@@ -10,6 +11,6 @@ public interface ConciliacaoBancariaService {
 
 	ConciliacaoBancariaDTO aplicarConciliacaoBancaria(ConciliacaoBancariaDTO conciliacaoBancariaDTO);
 
-	List<ContaPagarEntity> discardNotStartsWithTokens(List<ContaPagarEntity> contas, List<String> tokens);
+	Map<ContaPagarEntity, Integer> computeScore(List<ContaPagarEntity> contas, List<String> tokens, ConciliacaoTransacaoDTO transacao);
 
 }
