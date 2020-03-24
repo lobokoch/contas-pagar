@@ -19,7 +19,7 @@ public class ContaPagarAutoCompleteImpl implements ContaPagarAutoComplete {
 	@ApiModelProperty(notes = "Identificador único", required = true, position = 0)
 	private java.util.UUID id;
 	
-	@ApiModelProperty(notes = "Descrição da conta", required = true, position = 2)
+	@ApiModelProperty(notes = "Descrição da conta", required = true, position = 1)
 	private String descricao;
 	
 	public ContaPagarAutoCompleteImpl() {

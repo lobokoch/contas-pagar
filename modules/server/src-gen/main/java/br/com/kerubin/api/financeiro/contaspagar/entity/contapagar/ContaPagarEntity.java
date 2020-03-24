@@ -12,15 +12,16 @@ import javax.persistence.Table;
 import javax.persistence.Id;
 import javax.persistence.Column;
 import br.com.kerubin.api.database.entity.AuditingEntity;
+import javax.persistence.Transient;
 import javax.persistence.GeneratedValue;
 import org.hibernate.annotations.GenericGenerator;
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.Size;
 import javax.validation.constraints.NotNull;
 import br.com.kerubin.api.financeiro.contaspagar.entity.planoconta.PlanoContaEntity;
 import javax.persistence.ManyToOne;
 import javax.persistence.FetchType;
 import javax.persistence.JoinColumn;
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.Size;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
 import br.com.kerubin.api.financeiro.contaspagar.FormaPagamento;
@@ -38,21 +39,21 @@ public class ContaPagarEntity extends AuditingEntity {
 	@Column(name="id")
 	private java.util.UUID id;
 	
-	@NotNull(message="\"Plano de contas\" é obrigatório.")
-	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "plano_contas")
-	private PlanoContaEntity planoContas;
-	
 	@NotBlank(message="\"Descrição da conta\" é obrigatório.")
 	@Size(max = 255, message = "\"Descrição da conta\" pode ter no máximo 255 caracteres.")
 	@Column(name="descricao")
 	private String descricao;
 	
-	@NotNull(message="\"Vencimento\" é obrigatório.")
+	@NotNull(message="\"Plano de contas\" é obrigatório.")
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "plano_contas")
+	private PlanoContaEntity planoContas;
+	
+	@NotNull(message="\"Data de vencimento\" é obrigatório.")
 	@Column(name="data_vencimento")
 	private java.time.LocalDate dataVencimento;
 	
-	@NotNull(message="\"Valor da conta\" é obrigatório.")
+	@NotNull(message="\"Valor total\" é obrigatório.")
 	@Column(name="valor")
 	private java.math.BigDecimal valor;
 	
@@ -73,6 +74,14 @@ public class ContaPagarEntity extends AuditingEntity {
 	@Column(name="outros_descricao")
 	private String outrosDescricao;
 	
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "fornecedor")
+	private FornecedorEntity fornecedor;
+	
+	@NotNull(message="\"Conta paga\" é obrigatório.")
+	@Column(name="conta_paga")
+	private Boolean contaPaga = false;
+	
 	@Column(name="data_pagamento")
 	private java.time.LocalDate dataPagamento;
 	
@@ -91,13 +100,8 @@ public class ContaPagarEntity extends AuditingEntity {
 	@Column(name="valor_pago")
 	private java.math.BigDecimal valorPago;
 	
-	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "fornecedor")
-	private FornecedorEntity fornecedor;
-	
-	@Size(max = 255, message = "\"Documento\" pode ter no máximo 255 caracteres.")
-	@Column(name="num_documento")
-	private String numDocumento;
+	@Transient
+	private Boolean maisOpcoes = false;
 	
 	@Size(max = 255, message = "\"Id da conciliação bancária\" pode ter no máximo 255 caracteres.")
 	@Column(name="id_conc_bancaria")
@@ -111,6 +115,10 @@ public class ContaPagarEntity extends AuditingEntity {
 	@Column(name="num_doc_conc_bancaria")
 	private String numDocConcBancaria;
 	
+	@Size(max = 255, message = "\"Documento\" pode ter no máximo 255 caracteres.")
+	@Column(name="num_documento")
+	private String numDocumento;
+	
 	@Size(max = 1000, message = "\"Observações\" pode ter no máximo 1000 caracteres.")
 	@Column(name="observacoes")
 	private String observacoes;
@@ -123,12 +131,12 @@ public class ContaPagarEntity extends AuditingEntity {
 		return id;
 	}
 	
-	public PlanoContaEntity getPlanoContas() {
-		return planoContas;
-	}
-	
 	public String getDescricao() {
 		return descricao;
+	}
+	
+	public PlanoContaEntity getPlanoContas() {
+		return planoContas;
 	}
 	
 	public java.time.LocalDate getDataVencimento() {
@@ -155,6 +163,14 @@ public class ContaPagarEntity extends AuditingEntity {
 		return outrosDescricao;
 	}
 	
+	public FornecedorEntity getFornecedor() {
+		return fornecedor;
+	}
+	
+	public Boolean getContaPaga() {
+		return contaPaga;
+	}
+	
 	public java.time.LocalDate getDataPagamento() {
 		return dataPagamento;
 	}
@@ -179,12 +195,8 @@ public class ContaPagarEntity extends AuditingEntity {
 		return valorPago;
 	}
 	
-	public FornecedorEntity getFornecedor() {
-		return fornecedor;
-	}
-	
-	public String getNumDocumento() {
-		return numDocumento;
+	public Boolean getMaisOpcoes() {
+		return maisOpcoes;
 	}
 	
 	public String getIdConcBancaria() {
@@ -199,6 +211,10 @@ public class ContaPagarEntity extends AuditingEntity {
 		return numDocConcBancaria;
 	}
 	
+	public String getNumDocumento() {
+		return numDocumento;
+	}
+	
 	public String getObservacoes() {
 		return observacoes;
 	}
@@ -211,12 +227,12 @@ public class ContaPagarEntity extends AuditingEntity {
 		this.id = id;
 	}
 	
-	public void setPlanoContas(PlanoContaEntity planoContas) {
-		this.planoContas = planoContas;
-	}
-	
 	public void setDescricao(String descricao) {
 		this.descricao = descricao != null ? descricao.trim() : descricao; // Chamadas REST fazem trim.
+	}
+	
+	public void setPlanoContas(PlanoContaEntity planoContas) {
+		this.planoContas = planoContas;
 	}
 	
 	public void setDataVencimento(java.time.LocalDate dataVencimento) {
@@ -243,6 +259,14 @@ public class ContaPagarEntity extends AuditingEntity {
 		this.outrosDescricao = outrosDescricao != null ? outrosDescricao.trim() : outrosDescricao; // Chamadas REST fazem trim.
 	}
 	
+	public void setFornecedor(FornecedorEntity fornecedor) {
+		this.fornecedor = fornecedor;
+	}
+	
+	public void setContaPaga(Boolean contaPaga) {
+		this.contaPaga = contaPaga;
+	}
+	
 	public void setDataPagamento(java.time.LocalDate dataPagamento) {
 		this.dataPagamento = dataPagamento;
 	}
@@ -267,12 +291,8 @@ public class ContaPagarEntity extends AuditingEntity {
 		this.valorPago = valorPago;
 	}
 	
-	public void setFornecedor(FornecedorEntity fornecedor) {
-		this.fornecedor = fornecedor;
-	}
-	
-	public void setNumDocumento(String numDocumento) {
-		this.numDocumento = numDocumento != null ? numDocumento.trim() : numDocumento; // Chamadas REST fazem trim.
+	public void setMaisOpcoes(Boolean maisOpcoes) {
+		this.maisOpcoes = maisOpcoes;
 	}
 	
 	public void setIdConcBancaria(String idConcBancaria) {
@@ -287,6 +307,10 @@ public class ContaPagarEntity extends AuditingEntity {
 		this.numDocConcBancaria = numDocConcBancaria != null ? numDocConcBancaria.trim() : numDocConcBancaria; // Chamadas REST fazem trim.
 	}
 	
+	public void setNumDocumento(String numDocumento) {
+		this.numDocumento = numDocumento != null ? numDocumento.trim() : numDocumento; // Chamadas REST fazem trim.
+	}
+	
 	public void setObservacoes(String observacoes) {
 		this.observacoes = observacoes != null ? observacoes.trim() : observacoes; // Chamadas REST fazem trim.
 	}
@@ -298,25 +322,27 @@ public class ContaPagarEntity extends AuditingEntity {
 	public void assign(ContaPagarEntity source) {
 		if (source != null) {
 			this.setId(source.getId());
-			this.setPlanoContas(source.getPlanoContas());
 			this.setDescricao(source.getDescricao());
+			this.setPlanoContas(source.getPlanoContas());
 			this.setDataVencimento(source.getDataVencimento());
 			this.setValor(source.getValor());
 			this.setFormaPagamento(source.getFormaPagamento());
 			this.setContaBancaria(source.getContaBancaria());
 			this.setCartaoCredito(source.getCartaoCredito());
 			this.setOutrosDescricao(source.getOutrosDescricao());
+			this.setFornecedor(source.getFornecedor());
+			this.setContaPaga(source.getContaPaga());
 			this.setDataPagamento(source.getDataPagamento());
 			this.setValorDesconto(source.getValorDesconto());
 			this.setValorMulta(source.getValorMulta());
 			this.setValorJuros(source.getValorJuros());
 			this.setValorAcrescimos(source.getValorAcrescimos());
 			this.setValorPago(source.getValorPago());
-			this.setFornecedor(source.getFornecedor());
-			this.setNumDocumento(source.getNumDocumento());
+			this.setMaisOpcoes(source.getMaisOpcoes());
 			this.setIdConcBancaria(source.getIdConcBancaria());
 			this.setHistConcBancaria(source.getHistConcBancaria());
 			this.setNumDocConcBancaria(source.getNumDocConcBancaria());
+			this.setNumDocumento(source.getNumDocumento());
 			this.setObservacoes(source.getObservacoes());
 			this.setAgrupador(source.getAgrupador());
 			this.setCreatedBy(source.getCreatedBy());
@@ -339,25 +365,27 @@ public class ContaPagarEntity extends AuditingEntity {
 		visited.put(this, theClone);
 		
 		theClone.setId(this.getId());
-		theClone.setPlanoContas(this.getPlanoContas() != null ? this.getPlanoContas().clone(visited) : null);
 		theClone.setDescricao(this.getDescricao());
+		theClone.setPlanoContas(this.getPlanoContas() != null ? this.getPlanoContas().clone(visited) : null);
 		theClone.setDataVencimento(this.getDataVencimento());
 		theClone.setValor(this.getValor());
 		theClone.setFormaPagamento(this.getFormaPagamento());
 		theClone.setContaBancaria(this.getContaBancaria() != null ? this.getContaBancaria().clone(visited) : null);
 		theClone.setCartaoCredito(this.getCartaoCredito() != null ? this.getCartaoCredito().clone(visited) : null);
 		theClone.setOutrosDescricao(this.getOutrosDescricao());
+		theClone.setFornecedor(this.getFornecedor() != null ? this.getFornecedor().clone(visited) : null);
+		theClone.setContaPaga(this.getContaPaga());
 		theClone.setDataPagamento(this.getDataPagamento());
 		theClone.setValorDesconto(this.getValorDesconto());
 		theClone.setValorMulta(this.getValorMulta());
 		theClone.setValorJuros(this.getValorJuros());
 		theClone.setValorAcrescimos(this.getValorAcrescimos());
 		theClone.setValorPago(this.getValorPago());
-		theClone.setFornecedor(this.getFornecedor() != null ? this.getFornecedor().clone(visited) : null);
-		theClone.setNumDocumento(this.getNumDocumento());
+		theClone.setMaisOpcoes(this.getMaisOpcoes());
 		theClone.setIdConcBancaria(this.getIdConcBancaria());
 		theClone.setHistConcBancaria(this.getHistConcBancaria());
 		theClone.setNumDocConcBancaria(this.getNumDocConcBancaria());
+		theClone.setNumDocumento(this.getNumDocumento());
 		theClone.setObservacoes(this.getObservacoes());
 		theClone.setAgrupador(this.getAgrupador());
 		theClone.setCreatedBy(this.getCreatedBy());

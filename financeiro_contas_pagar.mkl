@@ -36,68 +36,93 @@ service contas_pagar { //xxx
 	
 	@auditing
 	@baseRepository
-	@label("Contas a pagar") //
+	@label(title:"Contas a pagar" shortTitle: "Conta a Pagar") //
+	@help(text: "Nesta tela, cadastre novas contas a pagar. Após tê-la pago, acesse novamente seu registro e marquê-a como Conta paga e informe também os demais dados de pagamento.")
 	//@publishEvents(events=[updated])
 	entity ContaPagar {
 		
-		planoContas: refers PlanoConta manyToOne
-		// listFilter(many: "Plano de Contas")
-		publishedInEvents
-		web(styleClass: "ui-md-6")
-		
+		//////////////////////////////////////
 		descricao: string
 		publishedInEvents
 		label: "Descrição da conta"
 		listFilter(many: "Contas")
 		web(styleClass: "ui-md-6")
-		//--
+		help(text: "Informe uma descrição para esta conta a pagar, exemplo: Luz, Combustível, Aluguel, Mensalidade da escola.")
+		
+		planoContas: refers PlanoConta manyToOne
+		// listFilter(many: "Plano de Contas")
+		publishedInEvents
+		web(styleClass: "ui-md-6")
+		help(text: "Associa contas diferentes a uma categoria mais geral. Por exemplo, contas de: Luz, Água, Gás, Aluguel e Condomínio poderiam pertencer ao Plano de contas: Habitação.")
+		/////////////////////////////////////
 		
 		dataVencimento: date
-		label: "Vencimento"
+		label: "Data de vencimento"
 		listFilter(between: "Vencimento de;Até;Intervalo de tempo")  
 		web(styleClass: "ui-md-2")
 		sort(order: asc position: 0)
+		help(text: "Informe a data de vencimento da conta. Esta data você encontra no documento da conta. Por exemplo, na fatura da Luz.")
 		
 		valor: money 
-		label: "Valor da conta"
+		label: "Valor total"
 		sum(styleClass:"kb-conta-valor-apagar" label:"A")
 		web(styleClass: "ui-md-2") //
 		listFilter(between: "Contas com valores de;até;" styleClass: "ui-md-3")
 		sort(order: desc position: 1)
+		help(text: "Informe o valor total que você terá que pagar por esta conta.")
 		
 		formaPagamento: FormaPagamento
 		publishedInEvents
 		label: "Forma de pagamento"
 		web(styleClass: "ui-md-2")
 		listFilter(isEqualTo: "Forma de pagamento" styleClass: "ui-md-4")
+		help(text: "Escolha a forma de pagamento que será ou foi utilizada para pagar esta conta.")
 		//--
-				
 		
-		//--
 		contaBancaria: refers ContaBancaria? manyToOne 
 		publishedInEvents
 		grid(hidden)
-		label: "Dados da conta bancária"
+		label: "Conta bancária"
 		web(styleClass: "ui-md-6")
+		help(text: "Escolha a conta bancária que foi ou será utilizada para pagar esta conta.")
 		
 		cartaoCredito: refers CartaoCredito? manyToOne
 		publishedInEvents
-		label: "Dados do cartão de crédito"
+		label: "Cartão de crédito"
 		grid(hidden)
 		web(styleClass: "ui-md-6")
+		help(text: "Escolha o cartão de crédito que foi ou será utilizado para pagar esta conta.")
 		
 		outrosDescricao: string?
 		label: "Dados complementares"
 		web(styleClass: "ui-md-6")
 		grid(hidden)
-		//--
+		help(text: "Caso tenha, informe dados adicionais referente a forma de pagamento informada.")
+		///////////////////////////////
+		
+		separator /* SEPARATOR */
+		fornecedor: refers Fornecedor? manyToOne ////
+		publishedInEvents
+		web(styleClass: "ui-md-12")
+		help(text: "Caso tenha, escolha o fornecedor que originou esta conta.")
+		
+		/////////////////////////////////
+		separator /* SEPARATOR */
+		contaPaga: boolean default: false
+		publishedInEvents
+		label: "Conta paga"
+		grid(hidden) 
+		web(styleClass: "ui-md-12")
+		help(text: "Ative esta opção somente quando a conta já tiver sido paga. Neste caso, informe também os demais dados do pagamento, como por exemplo: Data do pagamento e Valor total pago.")
+		////////////////////////////////////
 		
 		//--
 		dataPagamento: date? 
 		publishedInEvents
-		label: "Data pagamento"
+		label: "Data do pagamento"
 		listFilter(isNotNull_isNull: "Pagas;Em aberto" default:"isNull" /*styleClass: "ui-md-4"*/ containerStyleClass: "ui-md-4") 
-		web(styleClass: "ui-md-2") //xxx
+		web(styleClass: "ui-md-2")
+		help(text: "Informe a data em que esta conta foi paga. Ao informar a data do pagamento, o campo Valor total pago é sugerido com o Valor total automaticamente.")
 		
 		//dataBaixa: date?
 		//label: "Data da baixa"
@@ -129,54 +154,100 @@ service contas_pagar { //xxx
 		valorPago: money? 
 		publishedInEvents
 		sum(styleClass:"kb-conta-valor-pago" label:"B")
-		label: "Valor pago"
+		label: "Valor total pago"
 		web(styleClass: "ui-md-2")
-		//--
+		help(text: "Valor total que foi pago por esta conta. Caso informe algum dos campos: Descontos, Multas, Juros mora ou Acréscimos, o valor total pago é calculado automaticamente.")
+		///////////////////////////////////////
 		
-		fornecedor: refers Fornecedor? manyToOne ///
-		publishedInEvents
-		web(styleClass: "ui-md-6")
 		
-		numDocumento: string? 
-		publishedInEvents
-		label: "Documento"
+		/////////////////////////////
+		separator
+		maisOpcoes: boolean? transient
+		label: "Mostrar mais opções"
+		help(text: "Mostra ou oculta opções extras para a conta")
+		web(styleClass: "ui-md-12")
 		grid(hidden) 
-		web(styleClass: "ui-md-6")
 		
 		///////
 		// Begin conciliação bancária
+		separator
 		idConcBancaria: string? 
 		label: "Id da conciliação bancária"
 		grid(hidden) 
 		web(styleClass: "ui-md-4" readOnly)
 		listFilter(isNotNull: "Baixa via conc. banc." containerStyleClass: "ui-md-4")
+		help(text: "Identificador da conciliação bancária (baixa da conta via importação de extrato bancário).")
 		
 		histConcBancaria: string?
 		label: "Histórico da conciliação bancária"
 		grid(hidden)
 		web(styleClass: "ui-md-5" readOnly)
 		listFilter(many: "Histórico da conciliação bancária" containerStyleClass: "ui-md-6")
+		help(text: "Descrição da transação bancária (baixa da conta via importação de extrato bancário).")
 		
+		separator(before: false after: true)
 		numDocConcBancaria: string? 
 		label: "Documento da conciliação bancária"
 		grid(hidden) 
 		web(styleClass: "ui-md-3" readOnly)
+		help(text: "Documento da transação bancária (baixa da conta via importação de extrato bancário).")
 		// End conciliação bancária
-		///////////
+		/////////////
+		
+		numDocumento: string? 
+		publishedInEvents
+		label: "Documento"
+		grid(hidden) 
+		web(styleClass: "ui-md-12")
+		help(text: "Informe caso a conta tenha um documento relacionado.")
 		
 		observacoes: string[1000]? 
 		label: "Observações"
 		grid(hidden) 
 		web(styleClass: "ui-md-12")
 		
-		
 		agrupador: string ? 
 		label: "Identificador para agrupamento da conta"
-		listFilter(many: "Agrupador:" containerStyleClass: "ui-md-6")
+		listFilter(many: "Agrupador:" containerStyleClass: "ui-md-12")
 		grid(hidden) 
-		web(styleClass: "ui-md-4")
+		web(styleClass: "ui-md-12")
+		help(text: "Informe um texto para agrupar contas iguais a esta. Você poderá filtrar todas as contas que possuem o mesmo agrupador, por exemplo: luz_2020.")
 		
-		rules { ///
+		rules { ////////////
+			// with(dataPagamento).apply(disable).when(contaPaga.isNotTrue)
+			
+			/*with(form.actions)
+				.apply(
+					crudButtons(
+						buttonSave(tooltip: "Abrir caixa" label: "Abrir caixa" cssClass: "ui-button-success" icon: "pi pi-lock-open")						
+						buttonNew(tooltip: "Abrir caixa" label: "Abrir caixa" cssClass: "ui-button-success" icon: "pi pi-lock-open")						
+						buttonBack(tooltip: "Abrir caixa" label: "Abrir caixa" cssClass: "ui-button-success" icon: "pi pi-lock-open")						
+					)
+				)*/
+				
+			with(form.beforeSave)
+			.apply(error('A data de pagamento deve ser informada para poder pagar a conta.'))
+			.when(contaPaga.isTrue and dataPagamento.isNull)
+			
+			with(form.beforeSave)
+			.apply(error('A data de pagamento não pode ser maior do que a data de hoje ({0}).', ['today']))
+			.when(contaPaga.isTrue and dataPagamento.isAfter(today))
+			
+			with(form.beforeSave)
+			.apply(error('O valor pago deve ser informado para poder pagar a conta.'))
+			.when(contaPaga.isTrue and valorPago.isNull)
+				
+			with(numDocumento).apply(hiddeComponent).when(maisOpcoes.isNotTrue)
+			with(observacoes).apply(hiddeComponent).when(maisOpcoes.isNotTrue)
+			with(agrupador).apply(hiddeComponent).when(maisOpcoes.isNotTrue)
+				
+			with(dataPagamento).apply(hiddeComponent).when(contaPaga.isNotTrue)
+			with(valorDesconto).apply(hiddeComponent).when(contaPaga.isNotTrue)
+			with(valorMulta).apply(hiddeComponent).when(contaPaga.isNotTrue)
+			with(valorJuros).apply(hiddeComponent).when(contaPaga.isNotTrue)
+			with(valorAcrescimos).apply(hiddeComponent).when(contaPaga.isNotTrue)
+			with(valorPago).apply(hiddeComponent).when(contaPaga.isNotTrue)
+		
 			with(valorPago)
 				.apply(equation(valor - valorDesconto + valorMulta + valorJuros + valorAcrescimos))
 				.when(dataPagamento.isNotNull)
@@ -184,13 +255,14 @@ service contas_pagar { //xxx
 			
 			with(grid.actions).apply(webActionsColumn{width: "14em"})
 			
-			with(contaBancaria).apply(styleClass:"hidden").when(formaPagamento.isNotEquals(FormaPagamento.CONTA_BANCARIA))
-			with(cartaoCredito).apply(styleClass:"hidden").when(formaPagamento.isNotEquals(FormaPagamento.CARTAO_CREDITO))
-			with(outrosDescricao).apply(styleClass:"hidden").when(formaPagamento.isEquals(FormaPagamento.CONTA_BANCARIA) or formaPagamento.isEquals(FormaPagamento.CARTAO_CREDITO) )
+			with(contaBancaria).apply(hiddeComponent).when(formaPagamento.isNotEquals(FormaPagamento.CONTA_BANCARIA))
+			with(cartaoCredito).apply(hiddeComponent).when(formaPagamento.isNotEquals(FormaPagamento.CARTAO_CREDITO))
+			with(outrosDescricao).apply(hiddeComponent).when(formaPagamento.isEquals(FormaPagamento.CONTA_BANCARIA) or formaPagamento.isEquals(FormaPagamento.CARTAO_CREDITO) )
 			
-			with(idConcBancaria).apply(styleClass:"hidden").when(idConcBancaria.isNull)
-			with(numDocConcBancaria).apply(styleClass:"hidden").when(numDocConcBancaria.isNull)
-			with(histConcBancaria).apply(styleClass:"hidden").when(numDocConcBancaria.isNull)
+			with(idConcBancaria).apply(hiddeComponent).when(maisOpcoes.isNotTrue or idConcBancaria.isNull)
+			with(numDocConcBancaria).apply(hiddeComponent).when(maisOpcoes.isNotTrue or numDocConcBancaria.isNull)
+			with(histConcBancaria).apply(hiddeComponent).when(maisOpcoes.isNotTrue or numDocConcBancaria.isNull)
+			//with(histConcBancaria).apply(styleClass:"hidden").when(numDocConcBancaria.isNull)
 			
 			// Destaca o estado de vencimento das contas a pagar.kkkk
 			// Destaca as contas vencidas
@@ -223,7 +295,7 @@ service contas_pagar { //xxx
 			.when(dataPagamento.isNull and dataVencimento.isBefore(today))
 			.action(name: baixarContaComDataPagamentoIgualDataVenciento button(tooltip: "Baixar a conta com a data de pagamento igual a data de vencimento" icon: "pi pi-calendar"))
 			
-			// Action: Estorna conta baixada
+			// Action: Estorna conta baixada //
 			with(grid.actions)
 			.apply(dataPagamento = null, valorPago = null)
 			.when(dataPagamento.isNotNull)
@@ -231,8 +303,17 @@ service contas_pagar { //xxx
 			.action(name: estornarPagamentoContaComUmClique button(tooltip: "Estornar o pagamento da conta" icon: "pi pi-undo"))
 			
 			with(form)
-				.apply(makeCopies(title: "Gerar cópias da conta" referenceField: dataVencimento grouperField: agrupador))
-				.action(name: fazerCopiasContaPagar button(tooltip: "Fazer cópias da conta" label: "Gerar cópias" icon: "pi pi-clone"))
+				.apply(
+					makeCopies(
+						title: "Clique aqui para criar várias cópias desta conta" //
+						referenceField: dataVencimento 
+						grouperField: agrupador
+						minCopies: 1
+						maxCopies: 120
+						hiddeWhen(maisOpcoes.isFalse or contaPaga.isTrue)
+					)
+				)
+				.action(name: fazerCopiasContaPagar button(tooltip: "Criar e salvar as cópias desta conta" label: "Criar cópias" icon: "pi pi-clone"))
 			
 		}
 		
@@ -241,7 +322,7 @@ service contas_pagar { //xxx
 	
 	@externalEntity
 	@subscribe(domain= cadastros, service=fornecedor, events=[created, updated, deleted])
-	@label("Fornecedor")
+	@label(title: "Fornecedor")
 	entity Fornecedor {		
 		
 		tipoPessoa: TipoPessoa
@@ -261,7 +342,7 @@ service contas_pagar { //xxx
 	
 	@externalEntity
 	@subscribe(domain= cadastros, service=banco, events=[created, updated, deleted])
-	@label("Banco")
+	@label(title:"Banco")
 	entity Banco {
 		
 		numero: string[20] 
@@ -279,7 +360,7 @@ service contas_pagar { //xxx
 	
 	@externalEntity
 	@subscribe(domain= cadastros, service=banco, events=[cud])
-	@label("Agência bancária")
+	@label(title:"Agência bancária")
 	entity AgenciaBancaria {
 		
 		banco: refers Banco manyToOne
@@ -304,7 +385,7 @@ service contas_pagar { //xxx
 	
 	@externalEntity
 	@subscribe(domain= cadastros, service=banco, events=[cud])
-	@label("Bandeira de cartão")
+	@label(title:"Bandeira de cartão")
 	entity BandeiraCartao {
 		
 		nomeBandeira: string
@@ -316,7 +397,7 @@ service contas_pagar { //xxx
 	
 	@externalEntity
 	@subscribe(domain= cadastros, service=banco, events=[cud])
-	@label("Conta bancária")
+	@label(title:"Conta bancária")
 	entity ContaBancaria {
 		
 		nomeTitular: string
@@ -359,7 +440,7 @@ service contas_pagar { //xxx
 	
 	@externalEntity
 	@subscribe(domain= cadastros, service=banco, events=[cud])
-	@label("Cartão de crédito")
+	@label(title:"Cartão de crédito")
 	entity CartaoCredito {
 		
 		//--
@@ -399,7 +480,7 @@ service contas_pagar { //xxx
 	
 	@externalEntity
 	@subscribe(domain= financeiro, service=plano_contas, events=[cud])
-	@label("Plano de contas")
+	@label(title:"Plano de contas")
 	entity PlanoConta {
 		
 		codigo: string
@@ -424,7 +505,7 @@ service contas_pagar { //xxx
 		label: "Plano de conta pai"
 		web(styleClass: "ui-md-7")
 		
-		ativo: boolean default: true // Will be replecated
+		ativo: boolean default: true // Will be replecated //
 		label: "Ativo"
 		web(styleClass: "ui-md-1")
 		listFilter(isNotNull_isNull: "Ativo;Inativo" default: "isNotNull")
@@ -462,7 +543,7 @@ service contas_pagar { //xxx
 		label: "Outros"
 	}
 	
-	// From Plano de Contas //
+	// From Plano de Contas ////
 	@label("Tipo da receita/despesa")
 	enum TipoReceitaDespesa {
 		VARIAVEL

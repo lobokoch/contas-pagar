@@ -13,22 +13,22 @@ import io.swagger.annotations.ApiModelProperty;
 @ApiModel(description = "Details about sums of Contas a pagar")
 public class ContaPagarSumFields {
 	
-	@ApiModelProperty(notes = "Sum of Valor da conta", required = true, position = 4)
+	@ApiModelProperty(notes = "Sum of Valor total", required = true, position = 4)
 	private java.math.BigDecimal sumValor;
 	
-	@ApiModelProperty(notes = "Sum of Descontos", position = 10)
+	@ApiModelProperty(notes = "Sum of Descontos", position = 12)
 	private java.math.BigDecimal sumValorDesconto;
 	
-	@ApiModelProperty(notes = "Sum of Multas", position = 11)
+	@ApiModelProperty(notes = "Sum of Multas", position = 13)
 	private java.math.BigDecimal sumValorMulta;
 	
-	@ApiModelProperty(notes = "Sum of Juros mora", position = 12)
+	@ApiModelProperty(notes = "Sum of Juros mora", position = 14)
 	private java.math.BigDecimal sumValorJuros;
 	
-	@ApiModelProperty(notes = "Sum of Acréscimos", position = 13)
+	@ApiModelProperty(notes = "Sum of Acréscimos", position = 15)
 	private java.math.BigDecimal sumValorAcrescimos;
 	
-	@ApiModelProperty(notes = "Sum of Valor pago", position = 14)
+	@ApiModelProperty(notes = "Sum of Valor total pago", position = 16)
 	private java.math.BigDecimal sumValorPago;
 	
 	public ContaPagarSumFields() {

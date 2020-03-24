@@ -20,39 +20,39 @@ import br.com.kerubin.api.financeiro.contaspagar.FormaPagamento;
 @ApiModel(description = "Details about list filter of Contas a pagar")
 public class ContaPagarListFilter {
 
-	@ApiModelProperty(notes = "Descrição da conta", position = 2)
+	@ApiModelProperty(notes = "Descrição da conta", position = 1)
 	private java.util.List<String> descricao;
 	
 	@DateTimeFormat(pattern = "yyyy-MM-dd")
-	@ApiModelProperty(notes = "Is between from Vencimento", position = 3)
+	@ApiModelProperty(notes = "Is between from Data de vencimento", position = 3)
 	private java.time.LocalDate dataVencimentoFrom;
 	
 	@DateTimeFormat(pattern = "yyyy-MM-dd")
-	@ApiModelProperty(notes = "Is between to Vencimento", position = 3)
+	@ApiModelProperty(notes = "Is between to Data de vencimento", position = 3)
 	private java.time.LocalDate dataVencimentoTo;
 	
-	@ApiModelProperty(notes = "Is between from Valor da conta", position = 4)
+	@ApiModelProperty(notes = "Is between from Valor total", position = 4)
 	private java.math.BigDecimal valorFrom;
 	
-	@ApiModelProperty(notes = "Is between to Valor da conta", position = 4)
+	@ApiModelProperty(notes = "Is between to Valor total", position = 4)
 	private java.math.BigDecimal valorTo;
 	
 	@ApiModelProperty(notes = "Forma de pagamento", position = 5)
 	private FormaPagamento formaPagamento;
 	
-	@ApiModelProperty(notes = "Data pagamento is not null", position = 9)
+	@ApiModelProperty(notes = "Data do pagamento is not null", position = 11)
 	private Boolean dataPagamentoIsNotNull;
 	
-	@ApiModelProperty(notes = "Data pagamento is null", position = 9)
+	@ApiModelProperty(notes = "Data do pagamento is null", position = 11)
 	private Boolean dataPagamentoIsNull;
 	
-	@ApiModelProperty(notes = "Id da conciliação bancária is not null", position = 17)
+	@ApiModelProperty(notes = "Id da conciliação bancária is not null", position = 18)
 	private Boolean idConcBancariaIsNotNull;
 	
-	@ApiModelProperty(notes = "Histórico da conciliação bancária", position = 18)
+	@ApiModelProperty(notes = "Histórico da conciliação bancária", position = 19)
 	private java.util.List<String> histConcBancaria;
 	
-	@ApiModelProperty(notes = "Identificador para agrupamento da conta", position = 21)
+	@ApiModelProperty(notes = "Identificador para agrupamento da conta", position = 23)
 	private java.util.List<String> agrupador;
 	
 	// Map field for developer customizing parameters.

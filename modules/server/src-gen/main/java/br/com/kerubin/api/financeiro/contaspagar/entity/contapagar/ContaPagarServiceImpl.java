@@ -34,10 +34,12 @@ import br.com.kerubin.api.financeiro.contaspagar.entity.fornecedor.FornecedorRep
 import java.util.Collection;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import java.util.Optional;
-import java.math.BigDecimal;
 import java.util.Objects;
 import java.time.LocalDate;
+import java.text.MessageFormat;
+import java.time.format.DateTimeFormatter;
+import java.util.Optional;
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.ArrayList;
 import java.time.temporal.ChronoUnit;
@@ -71,6 +73,7 @@ public class ContaPagarServiceImpl implements ContaPagarService {
 	@Transactional
 	@Override
 	public ContaPagarEntity create(ContaPagarEntity contaPagarEntity) {
+		doRulesFormBeforeSave(contaPagarEntity);
 		return contaPagarBaseRepository.save(contaPagarEntity);
 	}
 	
@@ -83,6 +86,7 @@ public class ContaPagarServiceImpl implements ContaPagarService {
 	@Transactional
 	@Override
 	public ContaPagarEntity update(java.util.UUID id, ContaPagarEntity contaPagarEntity) {
+		doRulesFormBeforeSave(contaPagarEntity);
 		// ContaPagarEntity entity = getContaPagarEntity(id);
 		// BeanUtils.copyProperties(contaPagarEntity, entity, "id");
 		// entity = contaPagarBaseRepository.save(entity);
@@ -91,6 +95,25 @@ public class ContaPagarServiceImpl implements ContaPagarService {
 		
 		return entity;
 	}
+	
+	private void doRulesFormBeforeSave(ContaPagarEntity contaPagar) {
+		
+		if ((Boolean.TRUE.equals(contaPagar.getContaPaga())) && Objects.isNull(contaPagar.getDataPagamento())) {
+			throw new IllegalStateException("A data de pagamento deve ser informada para poder pagar a conta.");
+		}
+		
+		
+		if ((Boolean.TRUE.equals(contaPagar.getContaPaga())) && contaPagar.getDataPagamento().isAfter(LocalDate.now())) {
+			throw new IllegalStateException(MessageFormat.format("A data de pagamento não pode ser maior do que a data de hoje ({0}).", LocalDate.now().format(DateTimeFormatter.ofPattern("dd/MM/yyyy"))));
+		}
+		
+		
+		if ((Boolean.TRUE.equals(contaPagar.getContaPaga())) && Objects.isNull(contaPagar.getValorPago())) {
+			throw new IllegalStateException("O valor pago deve ser informado para poder pagar a conta.");
+		}
+		
+	}
+	
 	
 	@Transactional
 	@Override
