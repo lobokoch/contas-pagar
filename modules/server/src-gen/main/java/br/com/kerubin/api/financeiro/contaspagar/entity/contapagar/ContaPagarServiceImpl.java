@@ -99,17 +99,17 @@ public class ContaPagarServiceImpl implements ContaPagarService {
 	private void doRulesFormBeforeSave(ContaPagarEntity contaPagar) {
 		
 		if ((Boolean.TRUE.equals(contaPagar.getContaPaga())) && Objects.isNull(contaPagar.getDataPagamento())) {
-			throw new IllegalStateException("A data de pagamento deve ser informada para poder pagar a conta.");
+			throw new IllegalStateException("A data do pagamento deve ser informada para poder pagar a conta.");
 		}
 		
 		
 		if ((Boolean.TRUE.equals(contaPagar.getContaPaga())) && contaPagar.getDataPagamento().isAfter(LocalDate.now())) {
-			throw new IllegalStateException(MessageFormat.format("A data de pagamento não pode ser maior do que a data de hoje ({0}).", LocalDate.now().format(DateTimeFormatter.ofPattern("dd/MM/yyyy"))));
+			throw new IllegalStateException(MessageFormat.format("A data do pagamento não pode ser maior do que a data de hoje ({0}).", LocalDate.now().format(DateTimeFormatter.ofPattern("dd/MM/yyyy"))));
 		}
 		
 		
 		if ((Boolean.TRUE.equals(contaPagar.getContaPaga())) && Objects.isNull(contaPagar.getValorPago())) {
-			throw new IllegalStateException("O valor pago deve ser informado para poder pagar a conta.");
+			throw new IllegalStateException("O valor total pago deve ser informado para poder pagar a conta.");
 		}
 		
 	}

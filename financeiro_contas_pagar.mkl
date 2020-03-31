@@ -34,14 +34,15 @@ service contas_pagar { //xxx
 		version: "1.0.0" 
 	}
 	
+	@enableWebCustomService
 	@auditing
 	@baseRepository
-	@label(title:"Contas a pagar" shortTitle: "Conta a Pagar") //
+	@label(title:"Contas a pagar" shortTitle: "Conta a pagar") //
 	@help(text: "Nesta tela, cadastre novas contas a pagar. Após tê-la pago, acesse novamente seu registro e marquê-a como Conta paga e informe também os demais dados de pagamento.")
 	//@publishEvents(events=[updated])
 	entity ContaPagar {
 		
-		//////////////////////////////////////
+		////////////////////////////////////////
 		descricao: string
 		publishedInEvents
 		label: "Descrição da conta"
@@ -113,7 +114,8 @@ service contas_pagar { //xxx
 		label: "Conta paga"
 		grid(hidden) 
 		web(styleClass: "ui-md-12")
-		help(text: "Ative esta opção somente quando a conta já tiver sido paga. Neste caso, informe também os demais dados do pagamento, como por exemplo: Data do pagamento e Valor total pago.")
+		help(text: "Ative esta opção somente quando a conta já tiver sido paga. Neste caso, CONFIRA e informe OS DADOS DO PAGAMENTO, como por exemplo: Data do pagamento e Valor total pago.")
+		onChange
 		////////////////////////////////////
 		
 		//--
@@ -123,9 +125,6 @@ service contas_pagar { //xxx
 		listFilter(isNotNull_isNull: "Pagas;Em aberto" default:"isNull" /*styleClass: "ui-md-4"*/ containerStyleClass: "ui-md-4") 
 		web(styleClass: "ui-md-2")
 		help(text: "Informe a data em que esta conta foi paga. Ao informar a data do pagamento, o campo Valor total pago é sugerido com o Valor total automaticamente.")
-		
-		//dataBaixa: date?
-		//label: "Data da baixa"
 		
 		valorDesconto: money? 
 		sum
@@ -164,9 +163,9 @@ service contas_pagar { //xxx
 		separator
 		maisOpcoes: boolean? transient
 		label: "Mostrar mais opções"
-		help(text: "Mostra ou oculta opções extras para a conta")
+		help(text: "Mostra ou oculta opções extras para a conta.")
 		web(styleClass: "ui-md-12")
-		grid(hidden) 
+		grid(hidden)
 		
 		///////
 		// Begin conciliação bancária
@@ -208,13 +207,12 @@ service contas_pagar { //xxx
 		
 		agrupador: string ? 
 		label: "Identificador para agrupamento da conta"
+		web(styleClass: "ui-md-12")
 		listFilter(many: "Agrupador:" containerStyleClass: "ui-md-12")
 		grid(hidden) 
-		web(styleClass: "ui-md-12")
 		help(text: "Informe um texto para agrupar contas iguais a esta. Você poderá filtrar todas as contas que possuem o mesmo agrupador, por exemplo: luz_2020.")
 		
-		rules { ////////////
-			// with(dataPagamento).apply(disable).when(contaPaga.isNotTrue)
+		rules {
 			
 			/*with(form.actions)
 				.apply(
@@ -226,15 +224,15 @@ service contas_pagar { //xxx
 				)*/
 				
 			with(form.beforeSave)
-			.apply(error('A data de pagamento deve ser informada para poder pagar a conta.'))
+			.apply(error('A data do pagamento deve ser informada para poder pagar a conta.'))
 			.when(contaPaga.isTrue and dataPagamento.isNull)
 			
 			with(form.beforeSave)
-			.apply(error('A data de pagamento não pode ser maior do que a data de hoje ({0}).', ['today']))
+			.apply(error('A data do pagamento não pode ser maior do que a data de hoje ({0}).', ['today']))
 			.when(contaPaga.isTrue and dataPagamento.isAfter(today))
 			
 			with(form.beforeSave)
-			.apply(error('O valor pago deve ser informado para poder pagar a conta.'))
+			.apply(error('O valor total pago deve ser informado para poder pagar a conta.'))
 			.when(contaPaga.isTrue and valorPago.isNull)
 				
 			with(numDocumento).apply(hiddeComponent).when(maisOpcoes.isNotTrue)
@@ -264,7 +262,7 @@ service contas_pagar { //xxx
 			with(histConcBancaria).apply(hiddeComponent).when(maisOpcoes.isNotTrue or numDocConcBancaria.isNull)
 			//with(histConcBancaria).apply(styleClass:"hidden").when(numDocConcBancaria.isNull)
 			
-			// Destaca o estado de vencimento das contas a pagar.kkkk
+			// Destaca o estado de vencimento das contas a pagar.
 			// Destaca as contas vencidas
 			with(grid.rows).apply(styleClass: "kb-conta-vencida" label: "Conta vencida").when(dataPagamento.isNull and dataVencimento.isBefore(today))
 			// Destaca as contas que vencem hoje
