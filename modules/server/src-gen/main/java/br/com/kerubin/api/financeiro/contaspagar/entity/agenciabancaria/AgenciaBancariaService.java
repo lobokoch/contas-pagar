@@ -23,6 +23,8 @@ public interface AgenciaBancariaService {
 	
 	public void delete(java.util.UUID id);
 	
+	public void deleteInBulk(java.util.List<java.util.UUID> idList);
+	
 	public Page<AgenciaBancariaEntity> list(AgenciaBancariaListFilter agenciaBancariaListFilter, Pageable pageable);
 	
 	public Collection<AgenciaBancariaAutoComplete> autoComplete(String query);

@@ -22,6 +22,8 @@ public interface BancoService {
 	
 	public void delete(java.util.UUID id);
 	
+	public void deleteInBulk(java.util.List<java.util.UUID> idList);
+	
 	public Page<BancoEntity> list(BancoListFilter bancoListFilter, Pageable pageable);
 	
 	public Collection<BancoAutoComplete> autoComplete(String query);

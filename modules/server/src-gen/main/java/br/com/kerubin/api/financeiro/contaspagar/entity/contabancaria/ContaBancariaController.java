@@ -90,6 +90,13 @@ public class ContaBancariaController {
 		contaBancariaService.delete(id);
 	}
 	
+	@ResponseStatus(HttpStatus.NO_CONTENT)
+	@PostMapping("/deleteInBulk")
+	@ApiOperation(value = "Delete a list of Conta bancária by ids.")
+	public void deleteInBulk(@RequestBody java.util.List<java.util.UUID> idList) {
+		contaBancariaService.deleteInBulk(idList);
+	}
+	
 	@Transactional(readOnly = true)
 	@GetMapping
 	@ApiOperation(value = "Retrieves a list of Conta bancária")

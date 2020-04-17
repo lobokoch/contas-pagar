@@ -22,6 +22,8 @@ public interface PlanoContaService {
 	
 	public void delete(java.util.UUID id);
 	
+	public void deleteInBulk(java.util.List<java.util.UUID> idList);
+	
 	public Page<PlanoContaEntity> list(PlanoContaListFilter planoContaListFilter, Pageable pageable);
 	
 	public Collection<PlanoContaAutoComplete> autoComplete(String query);

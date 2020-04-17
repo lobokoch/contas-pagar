@@ -91,6 +91,13 @@ public class CartaoCreditoController {
 		cartaoCreditoService.delete(id);
 	}
 	
+	@ResponseStatus(HttpStatus.NO_CONTENT)
+	@PostMapping("/deleteInBulk")
+	@ApiOperation(value = "Delete a list of Cartão de crédito by ids.")
+	public void deleteInBulk(@RequestBody java.util.List<java.util.UUID> idList) {
+		cartaoCreditoService.deleteInBulk(idList);
+	}
+	
 	@Transactional(readOnly = true)
 	@GetMapping
 	@ApiOperation(value = "Retrieves a list of Cartão de crédito")

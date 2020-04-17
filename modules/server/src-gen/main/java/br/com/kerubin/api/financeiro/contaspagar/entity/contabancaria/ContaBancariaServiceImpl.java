@@ -74,6 +74,16 @@ public class ContaBancariaServiceImpl implements ContaBancariaService {
 		
 	}
 	
+	@Transactional
+	@Override
+	public void deleteInBulk(java.util.List<java.util.UUID> idList) {
+		// Delete it.
+		contaBancariaRepository.deleteInBulk(idList);
+		
+		// Force flush to the database, for relationship validation and must throw exception because of this here.
+		contaBancariaRepository.flush();
+	}
+	
 	
 	@Transactional(readOnly = true)
 	@Override

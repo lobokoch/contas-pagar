@@ -87,6 +87,13 @@ public class BancoController {
 		bancoService.delete(id);
 	}
 	
+	@ResponseStatus(HttpStatus.NO_CONTENT)
+	@PostMapping("/deleteInBulk")
+	@ApiOperation(value = "Delete a list of Banco by ids.")
+	public void deleteInBulk(@RequestBody java.util.List<java.util.UUID> idList) {
+		bancoService.deleteInBulk(idList);
+	}
+	
 	@Transactional(readOnly = true)
 	@GetMapping
 	@ApiOperation(value = "Retrieves a list of Banco")

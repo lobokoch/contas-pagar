@@ -87,6 +87,13 @@ public class BandeiraCartaoController {
 		bandeiraCartaoService.delete(id);
 	}
 	
+	@ResponseStatus(HttpStatus.NO_CONTENT)
+	@PostMapping("/deleteInBulk")
+	@ApiOperation(value = "Delete a list of Bandeira de cartão by ids.")
+	public void deleteInBulk(@RequestBody java.util.List<java.util.UUID> idList) {
+		bandeiraCartaoService.deleteInBulk(idList);
+	}
+	
 	@Transactional(readOnly = true)
 	@GetMapping
 	@ApiOperation(value = "Retrieves a list of Bandeira de cartão")

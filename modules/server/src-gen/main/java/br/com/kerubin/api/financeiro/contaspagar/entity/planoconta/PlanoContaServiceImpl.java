@@ -68,6 +68,16 @@ public class PlanoContaServiceImpl implements PlanoContaService {
 		
 	}
 	
+	@Transactional
+	@Override
+	public void deleteInBulk(java.util.List<java.util.UUID> idList) {
+		// Delete it.
+		planoContaRepository.deleteInBulk(idList);
+		
+		// Force flush to the database, for relationship validation and must throw exception because of this here.
+		planoContaRepository.flush();
+	}
+	
 	
 	@Transactional(readOnly = true)
 	@Override

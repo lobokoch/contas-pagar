@@ -24,6 +24,8 @@ public interface CartaoCreditoService {
 	
 	public void delete(java.util.UUID id);
 	
+	public void deleteInBulk(java.util.List<java.util.UUID> idList);
+	
 	public Page<CartaoCreditoEntity> list(CartaoCreditoListFilter cartaoCreditoListFilter, Pageable pageable);
 	
 	public Collection<CartaoCreditoAutoComplete> autoComplete(String query);

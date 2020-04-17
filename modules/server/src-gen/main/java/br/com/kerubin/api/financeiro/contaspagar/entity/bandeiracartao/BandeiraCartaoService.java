@@ -22,6 +22,8 @@ public interface BandeiraCartaoService {
 	
 	public void delete(java.util.UUID id);
 	
+	public void deleteInBulk(java.util.List<java.util.UUID> idList);
+	
 	public Page<BandeiraCartaoEntity> list(BandeiraCartaoListFilter bandeiraCartaoListFilter, Pageable pageable);
 	
 	public Collection<BandeiraCartaoAutoComplete> autoComplete(String query);

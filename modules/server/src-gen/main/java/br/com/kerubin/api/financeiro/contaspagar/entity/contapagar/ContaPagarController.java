@@ -94,6 +94,13 @@ public class ContaPagarController {
 		contaPagarService.delete(id);
 	}
 	
+	@ResponseStatus(HttpStatus.NO_CONTENT)
+	@PostMapping("/deleteInBulk")
+	@ApiOperation(value = "Delete a list of Contas a pagar by ids.")
+	public void deleteInBulk(@RequestBody java.util.List<java.util.UUID> idList) {
+		contaPagarService.deleteInBulk(idList);
+	}
+	
 	@Transactional(readOnly = true)
 	@GetMapping
 	@ApiOperation(value = "Retrieves a list of Contas a pagar")

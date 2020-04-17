@@ -34,6 +34,7 @@ import br.com.kerubin.api.financeiro.contaspagar.entity.fornecedor.FornecedorRep
 import java.util.Collection;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import br.com.kerubin.api.financeiro.contaspagar.TipoPagamentoConta;
 import java.util.Objects;
 import java.time.LocalDate;
 import java.text.MessageFormat;
@@ -98,17 +99,17 @@ public class ContaPagarServiceImpl implements ContaPagarService {
 	
 	private void doRulesFormBeforeSave(ContaPagarEntity contaPagar) {
 		
-		if ((Boolean.TRUE.equals(contaPagar.getContaPaga())) && Objects.isNull(contaPagar.getDataPagamento())) {
+		if ((Boolean.TRUE.equals(contaPagar.getContaPaga())) && contaPagar.getTipoPagamento().equals(TipoPagamentoConta.SINGLE) && Objects.isNull(contaPagar.getDataPagamento())) {
 			throw new IllegalStateException("A data do pagamento deve ser informada para poder pagar a conta.");
 		}
 		
 		
-		if ((Boolean.TRUE.equals(contaPagar.getContaPaga())) && contaPagar.getDataPagamento().isAfter(LocalDate.now())) {
+		if ((Boolean.TRUE.equals(contaPagar.getContaPaga())) && contaPagar.getTipoPagamento().equals(TipoPagamentoConta.SINGLE) && contaPagar.getDataPagamento().isAfter(LocalDate.now())) {
 			throw new IllegalStateException(MessageFormat.format("A data do pagamento não pode ser maior do que a data de hoje ({0}).", LocalDate.now().format(DateTimeFormatter.ofPattern("dd/MM/yyyy"))));
 		}
 		
 		
-		if ((Boolean.TRUE.equals(contaPagar.getContaPaga())) && Objects.isNull(contaPagar.getValorPago())) {
+		if ((Boolean.TRUE.equals(contaPagar.getContaPaga())) && contaPagar.getTipoPagamento().equals(TipoPagamentoConta.SINGLE) && Objects.isNull(contaPagar.getValorPago())) {
 			throw new IllegalStateException("O valor total pago deve ser informado para poder pagar a conta.");
 		}
 		
@@ -125,6 +126,16 @@ public class ContaPagarServiceImpl implements ContaPagarService {
 		// Force flush to the database, for relationship validation and must throw exception because of this here.
 		contaPagarBaseRepository.flush();
 		
+	}
+	
+	@Transactional
+	@Override
+	public void deleteInBulk(java.util.List<java.util.UUID> idList) {
+		// Delete it.
+		contaPagarBaseRepository.deleteInBulk(idList);
+		
+		// Force flush to the database, for relationship validation and must throw exception because of this here.
+		contaPagarBaseRepository.flush();
 	}
 	
 	
@@ -235,7 +246,8 @@ public class ContaPagarServiceImpl implements ContaPagarService {
 	public void actionBaixarContaComDataPagamentoHoje(java.util.UUID id) {
 		ContaPagarEntity contaPagar = getContaPagarEntity(id);
 		
-		if (Objects.isNull(contaPagar.getDataPagamento())) {
+		if ((Boolean.FALSE.equals(contaPagar.getContaPaga()))) {
+			contaPagar.setContaPaga(Boolean.TRUE);
 			contaPagar.setDataPagamento(LocalDate.now());
 			contaPagar.setValorPago(contaPagar.getValor());
 			
@@ -252,7 +264,8 @@ public class ContaPagarServiceImpl implements ContaPagarService {
 	public void actionBaixarContaComDataPagamentoIgualDataVenciento(java.util.UUID id) {
 		ContaPagarEntity contaPagar = getContaPagarEntity(id);
 		
-		if (Objects.isNull(contaPagar.getDataPagamento()) && contaPagar.getDataVencimento().isBefore(LocalDate.now())) {
+		if ((Boolean.FALSE.equals(contaPagar.getContaPaga())) && contaPagar.getDataVencimento().isBefore(LocalDate.now())) {
+			contaPagar.setContaPaga(Boolean.TRUE);
 			contaPagar.setDataPagamento(contaPagar.getDataVencimento());
 			contaPagar.setValorPago(contaPagar.getValor());
 			
@@ -269,9 +282,10 @@ public class ContaPagarServiceImpl implements ContaPagarService {
 	public void actionEstornarPagamentoContaComUmClique(java.util.UUID id) {
 		ContaPagarEntity contaPagar = getContaPagarEntity(id);
 		
-		if (Objects.nonNull(contaPagar.getDataPagamento())) {
+		if ((Boolean.TRUE.equals(contaPagar.getContaPaga())) && contaPagar.getTipoPagamento().equals(TipoPagamentoConta.SINGLE)) {
 			contaPagar.setDataPagamento(null);
 			contaPagar.setValorPago(null);
+			contaPagar.setTipoPagamento(TipoPagamentoConta.SINGLE);
 			
 			contaPagar = contaPagarBaseRepository.save(contaPagar);
 		}

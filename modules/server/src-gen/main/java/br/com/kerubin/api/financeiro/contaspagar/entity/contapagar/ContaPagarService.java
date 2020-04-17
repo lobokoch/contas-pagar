@@ -26,6 +26,8 @@ public interface ContaPagarService {
 	
 	public void delete(java.util.UUID id);
 	
+	public void deleteInBulk(java.util.List<java.util.UUID> idList);
+	
 	public Page<ContaPagarEntity> list(ContaPagarListFilter contaPagarListFilter, Pageable pageable);
 	
 	public Collection<ContaPagarAutoComplete> autoComplete(String query);

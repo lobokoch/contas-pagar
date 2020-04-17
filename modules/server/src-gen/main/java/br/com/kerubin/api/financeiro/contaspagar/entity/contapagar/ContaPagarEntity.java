@@ -28,6 +28,7 @@ import br.com.kerubin.api.financeiro.contaspagar.FormaPagamento;
 import br.com.kerubin.api.financeiro.contaspagar.entity.contabancaria.ContaBancariaEntity;
 import br.com.kerubin.api.financeiro.contaspagar.entity.cartaocredito.CartaoCreditoEntity;
 import br.com.kerubin.api.financeiro.contaspagar.entity.fornecedor.FornecedorEntity;
+import br.com.kerubin.api.financeiro.contaspagar.TipoPagamentoConta;
 
 @Entity
 @Table(name = "conta_pagar")
@@ -127,6 +128,13 @@ public class ContaPagarEntity extends AuditingEntity {
 	@Column(name="agrupador")
 	private String agrupador;
 	
+	@Enumerated(EnumType.STRING)
+	@Column(name="tipo_pagamento")
+	private TipoPagamentoConta tipoPagamento;
+	
+	@Column(name="conta_pagar_pai")
+	private java.util.UUID contaPagarPai;
+	
 	public java.util.UUID getId() {
 		return id;
 	}
@@ -221,6 +229,14 @@ public class ContaPagarEntity extends AuditingEntity {
 	
 	public String getAgrupador() {
 		return agrupador;
+	}
+	
+	public TipoPagamentoConta getTipoPagamento() {
+		return tipoPagamento;
+	}
+	
+	public java.util.UUID getContaPagarPai() {
+		return contaPagarPai;
 	}
 	
 	public void setId(java.util.UUID id) {
@@ -319,6 +335,14 @@ public class ContaPagarEntity extends AuditingEntity {
 		this.agrupador = agrupador != null ? agrupador.trim() : agrupador; // Chamadas REST fazem trim.
 	}
 	
+	public void setTipoPagamento(TipoPagamentoConta tipoPagamento) {
+		this.tipoPagamento = tipoPagamento;
+	}
+	
+	public void setContaPagarPai(java.util.UUID contaPagarPai) {
+		this.contaPagarPai = contaPagarPai;
+	}
+	
 	public void assign(ContaPagarEntity source) {
 		if (source != null) {
 			this.setId(source.getId());
@@ -345,6 +369,8 @@ public class ContaPagarEntity extends AuditingEntity {
 			this.setNumDocumento(source.getNumDocumento());
 			this.setObservacoes(source.getObservacoes());
 			this.setAgrupador(source.getAgrupador());
+			this.setTipoPagamento(source.getTipoPagamento());
+			this.setContaPagarPai(source.getContaPagarPai());
 			this.setCreatedBy(source.getCreatedBy());
 			this.setCreatedDate(source.getCreatedDate());
 			this.setLastModifiedBy(source.getLastModifiedBy());
@@ -388,6 +414,8 @@ public class ContaPagarEntity extends AuditingEntity {
 		theClone.setNumDocumento(this.getNumDocumento());
 		theClone.setObservacoes(this.getObservacoes());
 		theClone.setAgrupador(this.getAgrupador());
+		theClone.setTipoPagamento(this.getTipoPagamento());
+		theClone.setContaPagarPai(this.getContaPagarPai());
 		theClone.setCreatedBy(this.getCreatedBy());
 		theClone.setCreatedDate(this.getCreatedDate());
 		theClone.setLastModifiedBy(this.getLastModifiedBy());

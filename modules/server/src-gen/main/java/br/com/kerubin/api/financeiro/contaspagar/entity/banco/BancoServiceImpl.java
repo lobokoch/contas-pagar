@@ -65,6 +65,16 @@ public class BancoServiceImpl implements BancoService {
 		
 	}
 	
+	@Transactional
+	@Override
+	public void deleteInBulk(java.util.List<java.util.UUID> idList) {
+		// Delete it.
+		bancoRepository.deleteInBulk(idList);
+		
+		// Force flush to the database, for relationship validation and must throw exception because of this here.
+		bancoRepository.flush();
+	}
+	
 	
 	@Transactional(readOnly = true)
 	@Override

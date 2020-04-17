@@ -9,13 +9,20 @@ package br.com.kerubin.api.financeiro.contaspagar.entity.banco;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.querydsl.QuerydslPredicateExecutor;
-import java.util.Collection;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.transaction.annotation.Transactional;
+import java.util.Collection;
 import org.springframework.data.repository.query.Param;
 
 @Transactional(readOnly = true)
 public interface BancoRepository extends JpaRepository<BancoEntity, java.util.UUID>, QuerydslPredicateExecutor<BancoEntity> {
+	
+	@Transactional
+	@Modifying
+	@Query("delete from BancoEntity be where be.id in ?1")
+	void deleteInBulk(java.util.List<java.util.UUID> idList);
+	
 	
 	// WARNING: supports only where clause with like for STRING fields. For relationships entities will get the first string autocomplete key field name.
 	@Query("select distinct ac.id as id, ac.numero as numero, ac.nome as nome from BancoEntity ac where ( upper(ac.numero) like upper(concat('%', :query, '%')) ) or ( upper(ac.nome) like upper(concat('%', :query, '%')) ) order by 1 asc")

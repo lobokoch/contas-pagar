@@ -23,6 +23,8 @@ public interface ContaBancariaService {
 	
 	public void delete(java.util.UUID id);
 	
+	public void deleteInBulk(java.util.List<java.util.UUID> idList);
+	
 	public Page<ContaBancariaEntity> list(ContaBancariaListFilter contaBancariaListFilter, Pageable pageable);
 	
 	public Collection<ContaBancariaAutoComplete> autoComplete(String query);

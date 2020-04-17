@@ -17,6 +17,7 @@ import br.com.kerubin.api.financeiro.contaspagar.FormaPagamento;
 import br.com.kerubin.api.financeiro.contaspagar.entity.contabancaria.ContaBancariaLookupResult;
 import br.com.kerubin.api.financeiro.contaspagar.entity.cartaocredito.CartaoCreditoLookupResult;
 import br.com.kerubin.api.financeiro.contaspagar.entity.fornecedor.FornecedorLookupResult;
+import br.com.kerubin.api.financeiro.contaspagar.TipoPagamentoConta;
 
 
 @ApiModel(description = "Details about Contas a pagar")
@@ -108,18 +109,24 @@ public class ContaPagar {
 	@ApiModelProperty(notes = "Identificador para agrupamento da conta", position = 23)
 	private String agrupador;
 	
+	@ApiModelProperty(notes = "tipoPagamento", position = 24)
+	private TipoPagamentoConta tipoPagamento;
+	
+	@ApiModelProperty(notes = "Identificador da conta pai", position = 25)
+	private java.util.UUID contaPagarPai;
+	
 	@Size(max = 255, message = "\"Criado por\" pode ter no máximo 255 caracteres.")
-	@ApiModelProperty(notes = "Criado por", position = 24)
+	@ApiModelProperty(notes = "Criado por", position = 26)
 	private String createdBy;
 	
-	@ApiModelProperty(notes = "Data de criação", position = 25)
+	@ApiModelProperty(notes = "Data de criação", position = 27)
 	private java.time.LocalDateTime createdDate;
 	
 	@Size(max = 255, message = "\"Alterado por\" pode ter no máximo 255 caracteres.")
-	@ApiModelProperty(notes = "Alterado por", position = 26)
+	@ApiModelProperty(notes = "Alterado por", position = 28)
 	private String lastModifiedBy;
 	
-	@ApiModelProperty(notes = "Data de alteração", position = 27)
+	@ApiModelProperty(notes = "Data de alteração", position = 29)
 	private java.time.LocalDateTime lastModifiedDate;
 	
 	
@@ -222,6 +229,14 @@ public class ContaPagar {
 	
 	public String getAgrupador() {
 		return agrupador;
+	}
+	
+	public TipoPagamentoConta getTipoPagamento() {
+		return tipoPagamento;
+	}
+	
+	public java.util.UUID getContaPagarPai() {
+		return contaPagarPai;
 	}
 	
 	public String getCreatedBy() {
@@ -334,6 +349,14 @@ public class ContaPagar {
 	
 	public void setAgrupador(String agrupador) {
 		this.agrupador = agrupador;
+	}
+	
+	public void setTipoPagamento(TipoPagamentoConta tipoPagamento) {
+		this.tipoPagamento = tipoPagamento;
+	}
+	
+	public void setContaPagarPai(java.util.UUID contaPagarPai) {
+		this.contaPagarPai = contaPagarPai;
 	}
 	
 	public void setCreatedBy(String createdBy) {
