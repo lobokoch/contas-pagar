@@ -120,6 +120,13 @@ public class ContaPagarMultipleController {
 	}
 	
 	
+	@GetMapping("/contaPagarMultipleHistConcBancariaAutoComplete")
+	@ApiOperation(value = "Retrieves a list of Registros de pagamento with a query param")
+	public Collection<ContaPagarMultipleHistConcBancariaAutoComplete> contaPagarMultipleHistConcBancariaAutoComplete(@RequestParam("query") String query) {
+		Collection<ContaPagarMultipleHistConcBancariaAutoComplete> result = contaPagarMultipleService.contaPagarMultipleHistConcBancariaAutoComplete(query);
+		return result;
+	}
+	
 	@GetMapping("/contaPagarMultipleSumFields")
 	@ApiOperation(value = "Retrieves a sum of contaPagarMultipleSumFields filtering by contaPagarMultipleListFilter")
 	public ContaPagarMultipleSumFields getContaPagarMultipleSumFields(ContaPagarMultipleListFilter contaPagarMultipleListFilter) {

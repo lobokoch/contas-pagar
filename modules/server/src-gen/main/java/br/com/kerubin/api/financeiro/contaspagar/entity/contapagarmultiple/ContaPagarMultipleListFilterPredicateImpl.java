@@ -7,6 +7,7 @@ WARNING: DO NOT CHANGE THIS CODE BECAUSE THE CHANGES WILL BE LOST IN THE NEXT CO
 
 package br.com.kerubin.api.financeiro.contaspagar.entity.contapagarmultiple;
 
+import org.springframework.util.CollectionUtils;
 
 import org.springframework.stereotype.Component;
 import com.querydsl.core.types.Predicate;
@@ -31,6 +32,24 @@ public class ContaPagarMultipleListFilterPredicateImpl implements ContaPagarMult
 			where.and(contaPagarIdIsEqualTo);
 		}
 		// End field: contaPagarId
+		
+		// Begin field: IdConcBancaria
+		if (contaPagarMultipleListFilter.getIdConcBancariaIsNotNull() != null) {		
+			if (contaPagarMultipleListFilter.isIdConcBancariaIsNotNull()) {
+				where.and(qEntity.idConcBancaria.isNotNull());
+			}
+			else {
+				where.and(qEntity.idConcBancaria.isNull());
+			}
+		}
+		// End field: IdConcBancaria
+		
+		// Begin field: histConcBancaria
+		if (!CollectionUtils.isEmpty(contaPagarMultipleListFilter.getHistConcBancaria())) {
+			BooleanExpression inExpression = qEntity.histConcBancaria.in(contaPagarMultipleListFilter.getHistConcBancaria());
+			where.and(inExpression);
+		}
+		// End field: histConcBancaria
 		
 		return where;
 	}

@@ -91,6 +91,18 @@ public class ContaPagarMultipleEntity extends AuditingEntity {
 	@JoinColumn(name = "conta_pagar")
 	private ContaPagarEntity contaPagar;
 	
+	@Size(max = 255, message = "\"Id da conciliação bancária\" pode ter no máximo 255 caracteres.")
+	@Column(name="id_conc_bancaria")
+	private String idConcBancaria;
+	
+	@Size(max = 255, message = "\"Histórico da conciliação bancária\" pode ter no máximo 255 caracteres.")
+	@Column(name="hist_conc_bancaria")
+	private String histConcBancaria;
+	
+	@Size(max = 255, message = "\"Documento da conciliação bancária\" pode ter no máximo 255 caracteres.")
+	@Column(name="num_doc_conc_bancaria")
+	private String numDocConcBancaria;
+	
 	public java.util.UUID getId() {
 		return id;
 	}
@@ -137,6 +149,18 @@ public class ContaPagarMultipleEntity extends AuditingEntity {
 	
 	public ContaPagarEntity getContaPagar() {
 		return contaPagar;
+	}
+	
+	public String getIdConcBancaria() {
+		return idConcBancaria;
+	}
+	
+	public String getHistConcBancaria() {
+		return histConcBancaria;
+	}
+	
+	public String getNumDocConcBancaria() {
+		return numDocConcBancaria;
 	}
 	
 	public void setId(java.util.UUID id) {
@@ -187,6 +211,18 @@ public class ContaPagarMultipleEntity extends AuditingEntity {
 		this.contaPagar = contaPagar;
 	}
 	
+	public void setIdConcBancaria(String idConcBancaria) {
+		this.idConcBancaria = idConcBancaria != null ? idConcBancaria.trim() : idConcBancaria; // Chamadas REST fazem trim.
+	}
+	
+	public void setHistConcBancaria(String histConcBancaria) {
+		this.histConcBancaria = histConcBancaria != null ? histConcBancaria.trim() : histConcBancaria; // Chamadas REST fazem trim.
+	}
+	
+	public void setNumDocConcBancaria(String numDocConcBancaria) {
+		this.numDocConcBancaria = numDocConcBancaria != null ? numDocConcBancaria.trim() : numDocConcBancaria; // Chamadas REST fazem trim.
+	}
+	
 	public void assign(ContaPagarMultipleEntity source) {
 		if (source != null) {
 			this.setId(source.getId());
@@ -201,6 +237,9 @@ public class ContaPagarMultipleEntity extends AuditingEntity {
 			this.setCartaoCredito(source.getCartaoCredito());
 			this.setOutrosDescricao(source.getOutrosDescricao());
 			this.setContaPagar(source.getContaPagar());
+			this.setIdConcBancaria(source.getIdConcBancaria());
+			this.setHistConcBancaria(source.getHistConcBancaria());
+			this.setNumDocConcBancaria(source.getNumDocConcBancaria());
 			this.setCreatedBy(source.getCreatedBy());
 			this.setCreatedDate(source.getCreatedDate());
 			this.setLastModifiedBy(source.getLastModifiedBy());
@@ -232,6 +271,9 @@ public class ContaPagarMultipleEntity extends AuditingEntity {
 		theClone.setCartaoCredito(this.getCartaoCredito() != null ? this.getCartaoCredito().clone(visited) : null);
 		theClone.setOutrosDescricao(this.getOutrosDescricao());
 		theClone.setContaPagar(this.getContaPagar() != null ? this.getContaPagar().clone(visited) : null);
+		theClone.setIdConcBancaria(this.getIdConcBancaria());
+		theClone.setHistConcBancaria(this.getHistConcBancaria());
+		theClone.setNumDocConcBancaria(this.getNumDocConcBancaria());
 		theClone.setCreatedBy(this.getCreatedBy());
 		theClone.setCreatedDate(this.getCreatedDate());
 		theClone.setLastModifiedBy(this.getLastModifiedBy());

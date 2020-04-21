@@ -424,6 +424,33 @@ service contas_pagar { //xxx
 		hidden
 		listFilter(isEqualTo: "Conta a pagar pai")
 		
+		
+		///////
+		// Begin conciliação bancária
+		separator
+		idConcBancaria: string? 
+		label: "Id da conciliação bancária"
+		grid(hidden) 
+		web(styleClass: "ui-md-4" readOnly)
+		listFilter(isNotNull: "Baixa via conc. banc." containerStyleClass: "ui-md-4")
+		help(text: "Identificador da conciliação bancária (baixa da conta via importação de extrato bancário).")
+		
+		histConcBancaria: string?
+		label: "Histórico da conciliação bancária"
+		grid(hidden)
+		web(styleClass: "ui-md-5" readOnly)
+		listFilter(many: "Histórico da conciliação bancária" containerStyleClass: "ui-md-6")
+		help(text: "Descrição da transação bancária (baixa da conta via importação de extrato bancário).")
+		
+		separator(before: false after: true)
+		numDocConcBancaria: string? 
+		label: "Documento da conciliação bancária"
+		grid(hidden) 
+		web(styleClass: "ui-md-3" readOnly)
+		help(text: "Documento da transação bancária (baixa da conta via importação de extrato bancário).")
+		// End conciliação bancária
+		/////////////
+		
 		rules {
 			
 			with(form.beforeSave)
@@ -437,6 +464,11 @@ service contas_pagar { //xxx
 			with(outrosDescricao).apply(hiddeComponent).when(maisOpcoes.isFalse or formaPagamento.isEquals(FormaPagamento.CONTA_BANCARIA) or formaPagamento.isEquals(FormaPagamento.CARTAO_CREDITO) )
 			
 			with(planoContas).apply(hiddeComponent).when(maisOpcoes.isFalse)
+			
+			// Conciliação bancária
+			with(idConcBancaria).apply(hiddeComponent).when(maisOpcoes.isNotTrue or idConcBancaria.isNull)
+			with(numDocConcBancaria).apply(hiddeComponent).when(maisOpcoes.isNotTrue or numDocConcBancaria.isNull)
+			with(histConcBancaria).apply(hiddeComponent).when(maisOpcoes.isNotTrue or numDocConcBancaria.isNull)
 		}
 		
 				

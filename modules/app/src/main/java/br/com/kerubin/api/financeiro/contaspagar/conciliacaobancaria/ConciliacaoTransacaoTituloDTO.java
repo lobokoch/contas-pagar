@@ -35,5 +35,8 @@ public class ConciliacaoTransacaoTituloDTO {
 	private SituacaoConciliacaoTrn situacaoConciliacaoTrn;
 	private java.time.LocalDate dataConciliacao;	
 	
+	@Builder.Default
+    private Boolean tituloConciliadoMultiple = false;
+	
 	
 }

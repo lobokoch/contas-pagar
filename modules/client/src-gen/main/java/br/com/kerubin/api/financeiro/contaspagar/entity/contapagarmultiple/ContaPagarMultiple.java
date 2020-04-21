@@ -71,18 +71,30 @@ public class ContaPagarMultiple {
 	@ApiModelProperty(notes = "Conta a pagar pai", required = true, position = 11)
 	private ContaPagarLookupResult contaPagar;
 	
+	@Size(max = 255, message = "\"Id da conciliação bancária\" pode ter no máximo 255 caracteres.")
+	@ApiModelProperty(notes = "Id da conciliação bancária", position = 12)
+	private String idConcBancaria;
+	
+	@Size(max = 255, message = "\"Histórico da conciliação bancária\" pode ter no máximo 255 caracteres.")
+	@ApiModelProperty(notes = "Histórico da conciliação bancária", position = 13)
+	private String histConcBancaria;
+	
+	@Size(max = 255, message = "\"Documento da conciliação bancária\" pode ter no máximo 255 caracteres.")
+	@ApiModelProperty(notes = "Documento da conciliação bancária", position = 14)
+	private String numDocConcBancaria;
+	
 	@Size(max = 255, message = "\"Criado por\" pode ter no máximo 255 caracteres.")
-	@ApiModelProperty(notes = "Criado por", position = 12)
+	@ApiModelProperty(notes = "Criado por", position = 15)
 	private String createdBy;
 	
-	@ApiModelProperty(notes = "Data de criação", position = 13)
+	@ApiModelProperty(notes = "Data de criação", position = 16)
 	private java.time.LocalDateTime createdDate;
 	
 	@Size(max = 255, message = "\"Alterado por\" pode ter no máximo 255 caracteres.")
-	@ApiModelProperty(notes = "Alterado por", position = 14)
+	@ApiModelProperty(notes = "Alterado por", position = 17)
 	private String lastModifiedBy;
 	
-	@ApiModelProperty(notes = "Data de alteração", position = 15)
+	@ApiModelProperty(notes = "Data de alteração", position = 18)
 	private java.time.LocalDateTime lastModifiedDate;
 	
 	
@@ -137,6 +149,18 @@ public class ContaPagarMultiple {
 	
 	public ContaPagarLookupResult getContaPagar() {
 		return contaPagar;
+	}
+	
+	public String getIdConcBancaria() {
+		return idConcBancaria;
+	}
+	
+	public String getHistConcBancaria() {
+		return histConcBancaria;
+	}
+	
+	public String getNumDocConcBancaria() {
+		return numDocConcBancaria;
 	}
 	
 	public String getCreatedBy() {
@@ -201,6 +225,18 @@ public class ContaPagarMultiple {
 	
 	public void setContaPagar(ContaPagarLookupResult contaPagar) {
 		this.contaPagar = contaPagar;
+	}
+	
+	public void setIdConcBancaria(String idConcBancaria) {
+		this.idConcBancaria = idConcBancaria;
+	}
+	
+	public void setHistConcBancaria(String histConcBancaria) {
+		this.histConcBancaria = histConcBancaria;
+	}
+	
+	public void setNumDocConcBancaria(String numDocConcBancaria) {
+		this.numDocConcBancaria = numDocConcBancaria;
 	}
 	
 	public void setCreatedBy(String createdBy) {

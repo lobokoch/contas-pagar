@@ -42,5 +42,7 @@ public interface ContaPagarMultipleService {
 	// End relationships autoComplete
 	 
 	
+	public Collection<ContaPagarMultipleHistConcBancariaAutoComplete> contaPagarMultipleHistConcBancariaAutoComplete(String query);
+	
 	public ContaPagarMultipleSumFields getContaPagarMultipleSumFields(ContaPagarMultipleListFilter contaPagarMultipleListFilter);
 }

@@ -46,14 +46,17 @@ CREATE TABLE conta_pagar_multiple /* ContaPagarMultiple */  (
 	id UUID NOT NULL,
 	data_pagamento DATE NOT NULL /* dataPagamento */,
 	valor_pago DECIMAL NOT NULL /* valorPago */,
-	fornecedor UUID,
 	descricao VARCHAR(255) NOT NULL,
+	fornecedor UUID,
+	plano_contas UUID NOT NULL /* planoContas */,
 	forma_pagamento VARCHAR(255) NOT NULL /* formaPagamento */,
 	conta_bancaria UUID /* contaBancaria */,
 	cartao_credito UUID /* cartaoCredito */,
 	outros_descricao VARCHAR(255) /* outrosDescricao */,
-	plano_contas UUID NOT NULL /* planoContas */,
 	conta_pagar UUID NOT NULL /* contaPagar */,
+	id_conc_bancaria VARCHAR(255) /* idConcBancaria */,
+	hist_conc_bancaria VARCHAR(255) /* histConcBancaria */,
+	num_doc_conc_bancaria VARCHAR(255) /* numDocConcBancaria */,
 	created_by VARCHAR(255) /* createdBy */,
 	created_date TIMESTAMP /* createdDate */,
 	last_modified_by VARCHAR(255) /* lastModifiedBy */,
@@ -143,9 +146,9 @@ ALTER TABLE conta_pagar ADD CONSTRAINT fk_conta_pagar_conta_bancaria FOREIGN KEY
 ALTER TABLE conta_pagar ADD CONSTRAINT fk_conta_pagar_cartao_credito FOREIGN KEY (cartao_credito) REFERENCES cartao_credito (id);
 ALTER TABLE conta_pagar ADD CONSTRAINT fk_conta_pagar_fornecedor FOREIGN KEY (fornecedor) REFERENCES fornecedor (id);
 ALTER TABLE conta_pagar_multiple ADD CONSTRAINT fk_conta_pagar_multiple_fornecedor FOREIGN KEY (fornecedor) REFERENCES fornecedor (id);
+ALTER TABLE conta_pagar_multiple ADD CONSTRAINT fk_conta_pagar_multiple_plano_contas FOREIGN KEY (plano_contas) REFERENCES plano_conta (id);
 ALTER TABLE conta_pagar_multiple ADD CONSTRAINT fk_conta_pagar_multiple_conta_bancaria FOREIGN KEY (conta_bancaria) REFERENCES conta_bancaria (id);
 ALTER TABLE conta_pagar_multiple ADD CONSTRAINT fk_conta_pagar_multiple_cartao_credito FOREIGN KEY (cartao_credito) REFERENCES cartao_credito (id);
-ALTER TABLE conta_pagar_multiple ADD CONSTRAINT fk_conta_pagar_multiple_plano_contas FOREIGN KEY (plano_contas) REFERENCES plano_conta (id);
 ALTER TABLE conta_pagar_multiple ADD CONSTRAINT fk_conta_pagar_multiple_conta_pagar FOREIGN KEY (conta_pagar) REFERENCES conta_pagar (id);
 ALTER TABLE agencia_bancaria ADD CONSTRAINT fk_agencia_bancaria_banco FOREIGN KEY (banco) REFERENCES banco (id);
 ALTER TABLE conta_bancaria ADD CONSTRAINT fk_conta_bancaria_agencia FOREIGN KEY (agencia) REFERENCES agencia_bancaria (id);

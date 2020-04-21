@@ -47,6 +47,11 @@ import static org.mockito.ArgumentMatchers.any;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.stream.Collectors;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import br.com.kerubin.api.financeiro.contaspagar.common.PageResult;
+import java.util.Arrays;
 import java.util.Collection;
 import br.com.kerubin.api.financeiro.contaspagar.entity.fornecedor.FornecedorAutoComplete;
 import br.com.kerubin.api.financeiro.contaspagar.entity.planoconta.PlanoContaAutoComplete;
@@ -121,7 +126,7 @@ public class ContaPagarMultipleServiceTest extends FinanceiroContasPagarBaseEnti
 		
 		contaPagarMultiple.setId(java.util.UUID.randomUUID());
 		contaPagarMultiple.setDataPagamento(java.time.LocalDate.now().minusDays(1));
-		contaPagarMultiple.setValorPago(new java.math.BigDecimal("5607.28041"));
+		contaPagarMultiple.setValorPago(new java.math.BigDecimal("29083.11125"));
 		contaPagarMultiple.setDescricao(generateRandomString(255));
 		
 		FornecedorEntity fornecedorEntityParam = newFornecedorEntity();
@@ -151,6 +156,9 @@ public class ContaPagarMultipleServiceTest extends FinanceiroContasPagarBaseEnti
 		ContaPagarLookupResult contaPagar = newContaPagarLookupResult(contaPagarEntityParam);
 		contaPagarMultiple.setContaPagar(contaPagar);
 		
+		contaPagarMultiple.setIdConcBancaria(generateRandomString(255));
+		contaPagarMultiple.setHistConcBancaria(generateRandomString(255));
+		contaPagarMultiple.setNumDocConcBancaria(generateRandomString(255));
 		ContaPagarMultipleEntity contaPagarMultipleEntity = contaPagarMultipleService.create(contaPagarMultipleDTOConverter.convertDtoToEntity(contaPagarMultiple));
 		em.flush();
 		verify(publisher, times(0)).publish(any());
@@ -190,7 +198,7 @@ public class ContaPagarMultipleServiceTest extends FinanceiroContasPagarBaseEnti
 		
 		contaPagarMultiple.setId(java.util.UUID.randomUUID());
 		contaPagarMultiple.setDataPagamento(java.time.LocalDate.now().minusDays(1));
-		contaPagarMultiple.setValorPago(new java.math.BigDecimal("5816.14471"));
+		contaPagarMultiple.setValorPago(new java.math.BigDecimal("14804.16028"));
 		contaPagarMultiple.setDescricao(generateRandomString(255));
 		
 		PlanoContaEntity planoContaEntityParam = newPlanoContaEntity();
@@ -254,7 +262,7 @@ public class ContaPagarMultipleServiceTest extends FinanceiroContasPagarBaseEnti
 		contaPagarMultiple.setId(id);
 		
 		contaPagarMultiple.setDataPagamento(java.time.LocalDate.now().minusDays(1));
-		contaPagarMultiple.setValorPago(new java.math.BigDecimal("19926.15742"));
+		contaPagarMultiple.setValorPago(new java.math.BigDecimal("22320.25855"));
 		contaPagarMultiple.setDescricao(generateRandomString(255));
 		
 		FornecedorEntity fornecedorEntityParam = newFornecedorEntity();
@@ -284,6 +292,9 @@ public class ContaPagarMultipleServiceTest extends FinanceiroContasPagarBaseEnti
 		ContaPagarLookupResult contaPagar = newContaPagarLookupResult(contaPagarEntityParam);
 		contaPagarMultiple.setContaPagar(contaPagar);
 		
+		contaPagarMultiple.setIdConcBancaria(generateRandomString(255));
+		contaPagarMultiple.setHistConcBancaria(generateRandomString(255));
+		contaPagarMultiple.setNumDocConcBancaria(generateRandomString(255));
 		ContaPagarMultipleEntity contaPagarMultipleEntity = contaPagarMultipleService.update(id, contaPagarMultipleDTOConverter.convertDtoToEntity(contaPagarMultiple));
 		em.flush();
 		verify(publisher, times(0)).publish(any());
@@ -326,7 +337,7 @@ public class ContaPagarMultipleServiceTest extends FinanceiroContasPagarBaseEnti
 		contaPagarMultiple.setId(id);
 		
 		contaPagarMultiple.setDataPagamento(java.time.LocalDate.now().minusDays(1));
-		contaPagarMultiple.setValorPago(new java.math.BigDecimal("10892.12211"));
+		contaPagarMultiple.setValorPago(new java.math.BigDecimal("12556.14022"));
 		contaPagarMultiple.setDescricao(generateRandomString(255));
 		
 		PlanoContaEntity planoContaEntityParam = newPlanoContaEntity();
@@ -383,6 +394,99 @@ public class ContaPagarMultipleServiceTest extends FinanceiroContasPagarBaseEnti
 	// END DELETE TESTS
 	
 	// BEGIN LIST TESTS
+	
+	@Test
+	public void testList_FilteringByHistConcBancaria() {
+		// Reset lastDate field to start LocalDate fields with today in this test. 
+		resetNextDate();
+		
+		// Generate 33 records of data for ContaPagarMultipleEntity for this test.
+		List<ContaPagarMultipleEntity> testData = new ArrayList<>();
+		final int lastRecord = 33;
+		final int firstRecord = 1;
+		for (int i = firstRecord; i <= lastRecord; i++) {
+			testData.add(newContaPagarMultipleEntity());
+		}
+		
+		// Check if 33 records of ContaPagarMultipleEntity was generated.
+		long count = contaPagarMultipleRepository.count();
+		assertThat(count).isEqualTo(lastRecord);
+		
+		// Creates a list filter for entity ContaPagarMultiple.
+		ContaPagarMultipleListFilter listFilter = new ContaPagarMultipleListFilter();
+		
+		// Extracts 7 records of ContaPagarMultipleEntity randomly from testData.
+		final int resultSize = 7;
+		List<ContaPagarMultipleEntity> filterTestData = getRandomItemsOf(testData, resultSize);
+		
+		// Extracts a list with only ContaPagarMultipleEntity.histConcBancaria field and configure this list as a filter.
+		List<String> histConcBancariaListFilter = filterTestData.stream().map(ContaPagarMultipleEntity::getHistConcBancaria).collect(Collectors.toList());
+		listFilter.setHistConcBancaria(histConcBancariaListFilter);
+		
+		// Generates a pageable configuration, without sorting.
+		int pageIndex = 0; // First page starts at index zero.
+		int size = 33; // Max of 33 records per page.
+		Pageable pageable = PageRequest.of(pageIndex, size);
+		// Call service list method.
+		Page<ContaPagarMultipleEntity> page = contaPagarMultipleService.list(listFilter, pageable);
+		
+		// Converts found entities to DTOs and mount the result page.
+		List<ContaPagarMultiple> content = page.getContent().stream().map(it -> contaPagarMultipleDTOConverter.convertEntityToDto(it)).collect(Collectors.toList());
+		PageResult<ContaPagarMultiple> pageResult = new PageResult<>(content, page.getNumber(), page.getSize(), page.getTotalElements());
+		
+		// Asserts that result has size 7, in any order and has only rows with histConcBancariaListFilter elements based on histConcBancaria field.
+		assertThat(pageResult.getContent())
+		.hasSize(7)
+		.extracting(ContaPagarMultiple::getHistConcBancaria)
+		.containsExactlyInAnyOrderElementsOf(histConcBancariaListFilter);
+		
+		// Asserts some page result elements.
+		assertThat(pageResult.getNumber()).isEqualTo(pageIndex);
+		assertThat(pageResult.getNumberOfElements()).isEqualTo(7);
+		assertThat(pageResult.getTotalElements()).isEqualTo(7);
+		assertThat(pageResult.getTotalPages()).isEqualTo(1);
+		
+	}
+	
+	@Test
+	public void testList_FilteringByHistConcBancariaWithoutResults() {
+		// Reset lastDate field to start LocalDate fields with today in this test. 
+		resetNextDate();
+					
+		// Generate 33 records of data for ContaPagarMultipleEntity for this test.
+		List<ContaPagarMultipleEntity> testData = new ArrayList<>();
+		final int lastRecord = 33;
+		final int firstRecord = 1;
+		for (int i = firstRecord; i <= lastRecord; i++) {
+			testData.add(newContaPagarMultipleEntity());
+		}
+		
+		// Check if 33 records of ContaPagarMultipleEntity was generated.
+		long count = contaPagarMultipleRepository.count();
+		assertThat(count).isEqualTo(lastRecord);
+		
+		// Creates a list filter for entity ContaPagarMultiple.
+		ContaPagarMultipleListFilter listFilter = new ContaPagarMultipleListFilter();
+		
+		// Generates a list with only ContaPagarMultipleEntity.histConcBancaria field with 1 not found data in the database and configure this list as a filter.
+		List<String> histConcBancariaListFilter = Arrays.asList(generateRandomString(255));
+		listFilter.setHistConcBancaria(histConcBancariaListFilter);
+		
+		// Generates a pageable configuration, without sorting.
+		int pageIndex = 0; // First page starts at index zero.
+		int size = 33; // Max of 33 records per page.
+		Pageable pageable = PageRequest.of(pageIndex, size);
+		// Call service list method.
+		Page<ContaPagarMultipleEntity> page = contaPagarMultipleService.list(listFilter, pageable);
+		
+		// Converts found entities to DTOs and mount the result page.
+		List<ContaPagarMultiple> content = page.getContent().stream().map(it -> contaPagarMultipleDTOConverter.convertEntityToDto(it)).collect(Collectors.toList());
+		PageResult<ContaPagarMultiple> pageResult = new PageResult<>(content, page.getNumber(), page.getSize(), page.getTotalElements());
+		
+		// Asserts that result has size 0 for unknown histConcBancaria field.
+		assertThat(pageResult.getContent()).hasSize(0);
+		
+	}
 	// END LIST TESTS
 	
 	// BEGIN Autocomplete TESTS
@@ -421,6 +525,41 @@ public class ContaPagarMultipleServiceTest extends FinanceiroContasPagarBaseEnti
 	
 	// END Autocomplete TESTS
 	
+	// BEGIN ListFilter Autocomplete TESTS
+	
+	@Test
+	public void testContaPagarMultipleHistConcBancariaAutoComplete() {
+		// Reset lastDate field to start LocalDate fields with today in this test. 
+		resetNextDate();
+					
+		// Generate 33 records of data for ContaPagarMultipleEntity for this test.
+		List<ContaPagarMultipleEntity> testData = new ArrayList<>();
+		final int lastRecord = 33;
+		final int firstRecord = 1;
+		for (int i = firstRecord; i <= lastRecord; i++) {
+			testData.add(newContaPagarMultipleEntity());
+		}
+		
+		// Check if 33 records of ContaPagarMultipleEntity was generated.
+		long count = contaPagarMultipleRepository.count();
+		assertThat(count).isEqualTo(lastRecord);
+		
+		// Extracts 1 records of ContaPagarMultipleEntity randomly from testData.
+		final int resultSize = 1;
+		List<ContaPagarMultipleEntity> filterTestData = getRandomItemsOf(testData, resultSize);
+		
+		// Extracts a list with only ContaPagarMultipleEntity.histConcBancaria field and configure this list as a filter.
+		List<String> histConcBancariaListFilter = filterTestData.stream().map(ContaPagarMultipleEntity::getHistConcBancaria).collect(Collectors.toList());
+		// Mount the autocomplete query expression and call it.
+		String query = histConcBancariaListFilter.get(0);
+		Collection<ContaPagarMultipleHistConcBancariaAutoComplete> result = contaPagarMultipleService.contaPagarMultipleHistConcBancariaAutoComplete(query);
+		// Assert ContaPagarMultipleHistConcBancariaAutoComplete results.
+		assertThat(result).isNotNull().hasSize(1)
+		.extracting(ContaPagarMultipleHistConcBancariaAutoComplete::getHistConcBancaria)
+		.containsExactlyInAnyOrderElementsOf(histConcBancariaListFilter);
+	}
+	
+	// END ListFilter Autocomplete TESTS
 	
 	// BEGIN Relationships Autocomplete TESTS
 	
@@ -636,7 +775,7 @@ public class ContaPagarMultipleServiceTest extends FinanceiroContasPagarBaseEnti
 		ContaPagarMultipleEntity contaPagarMultipleEntity = new ContaPagarMultipleEntity();
 		
 		contaPagarMultipleEntity.setDataPagamento(java.time.LocalDate.now().minusDays(1));
-		contaPagarMultipleEntity.setValorPago(new java.math.BigDecimal("2151.15689"));
+		contaPagarMultipleEntity.setValorPago(new java.math.BigDecimal("11003.6836"));
 		contaPagarMultipleEntity.setDescricao(generateRandomString(255));
 		contaPagarMultipleEntity.setFornecedor(newFornecedorEntity());
 		contaPagarMultipleEntity.setMaisOpcoes(false);
@@ -646,6 +785,9 @@ public class ContaPagarMultipleServiceTest extends FinanceiroContasPagarBaseEnti
 		contaPagarMultipleEntity.setCartaoCredito(newCartaoCreditoEntity());
 		contaPagarMultipleEntity.setOutrosDescricao(generateRandomString(255));
 		contaPagarMultipleEntity.setContaPagar(newContaPagarEntity());
+		contaPagarMultipleEntity.setIdConcBancaria(generateRandomString(255));
+		contaPagarMultipleEntity.setHistConcBancaria(generateRandomString(255));
+		contaPagarMultipleEntity.setNumDocConcBancaria(generateRandomString(255));
 		
 		contaPagarMultipleEntity = em.persistAndFlush(contaPagarMultipleEntity);
 		return contaPagarMultipleEntity;
@@ -803,7 +945,7 @@ public class ContaPagarMultipleServiceTest extends FinanceiroContasPagarBaseEnti
 		cartaoCreditoEntity.setNomeTitular(generateRandomString(255));
 		cartaoCreditoEntity.setNumeroCartao(generateRandomString(50));
 		cartaoCreditoEntity.setValidade(getNextDate());
-		cartaoCreditoEntity.setValorLimite(new java.math.BigDecimal("10167.24834"));
+		cartaoCreditoEntity.setValorLimite(new java.math.BigDecimal("4794.8701"));
 		cartaoCreditoEntity.setBandeiraCartao(newBandeiraCartaoEntity());
 		cartaoCreditoEntity.setAtivo(true);
 		cartaoCreditoEntity.setDeleted(false);
@@ -852,7 +994,7 @@ public class ContaPagarMultipleServiceTest extends FinanceiroContasPagarBaseEnti
 		contaPagarEntity.setDescricao(generateRandomString(255));
 		contaPagarEntity.setPlanoContas(newPlanoContaEntity());
 		contaPagarEntity.setDataVencimento(getNextDate());
-		contaPagarEntity.setValor(new java.math.BigDecimal("7306.23992"));
+		contaPagarEntity.setValor(new java.math.BigDecimal("2124.32576"));
 		contaPagarEntity.setFormaPagamento(FormaPagamento.DINHEIRO);
 		contaPagarEntity.setContaBancaria(newContaBancariaEntity());
 		contaPagarEntity.setCartaoCredito(newCartaoCreditoEntity());
@@ -860,11 +1002,11 @@ public class ContaPagarMultipleServiceTest extends FinanceiroContasPagarBaseEnti
 		contaPagarEntity.setFornecedor(newFornecedorEntity());
 		contaPagarEntity.setContaPaga(false);
 		contaPagarEntity.setDataPagamento(getNextDate());
-		contaPagarEntity.setValorDesconto(new java.math.BigDecimal("5660.12070"));
-		contaPagarEntity.setValorMulta(new java.math.BigDecimal("27255.7292"));
-		contaPagarEntity.setValorJuros(new java.math.BigDecimal("25000.6585"));
-		contaPagarEntity.setValorAcrescimos(new java.math.BigDecimal("9067.24061"));
-		contaPagarEntity.setValorPago(new java.math.BigDecimal("27960.3339"));
+		contaPagarEntity.setValorDesconto(new java.math.BigDecimal("8495.16051"));
+		contaPagarEntity.setValorMulta(new java.math.BigDecimal("16687.15694"));
+		contaPagarEntity.setValorJuros(new java.math.BigDecimal("8727.10928"));
+		contaPagarEntity.setValorAcrescimos(new java.math.BigDecimal("9283.6747"));
+		contaPagarEntity.setValorPago(new java.math.BigDecimal("3071.28683"));
 		contaPagarEntity.setMaisOpcoes(false);
 		contaPagarEntity.setIdConcBancaria(generateRandomString(255));
 		contaPagarEntity.setHistConcBancaria(generateRandomString(255));

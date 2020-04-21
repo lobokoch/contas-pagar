@@ -27,4 +27,7 @@ public interface ContaPagarMultipleRepository extends JpaRepository<ContaPagarMu
 	// WARNING: supports only where clause with like for STRING fields. For relationships entities will get the first string autocomplete key field name.
 	@Query("select distinct ac.id as id, ac.descricao as descricao from ContaPagarMultipleEntity ac where ( upper(ac.descricao) like upper(concat('%', :query, '%')) ) order by 1 asc")
 	Collection<ContaPagarMultipleAutoComplete> autoComplete(@Param("query") String query);
+	// WARNING: supports only where clause with like for STRING fields. For relationships entities will get the first string autocomplete key field name.
+	@Query("select distinct ac.histConcBancaria as histConcBancaria from ContaPagarMultipleEntity ac where ( upper(ac.histConcBancaria) like upper(concat('%', :query, '%')) ) order by 1 asc")
+	Collection<ContaPagarMultipleHistConcBancariaAutoComplete> contaPagarMultipleHistConcBancariaAutoComplete(@Param("query") String query);
 }

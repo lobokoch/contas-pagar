@@ -1,6 +1,7 @@
 package br.com.kerubin.api.financeiro.contaspagar.service;
 
 import static br.com.kerubin.api.servicecore.util.CoreUtils.isEmpty;
+import static br.com.kerubin.api.servicecore.util.CoreUtils.isZero;
 import static br.com.kerubin.api.servicecore.util.CoreUtils.isNotEmpty;
 
 import java.math.BigDecimal;
@@ -187,7 +188,7 @@ public class CustomContaPagarServiceImpl extends ContaPagarServiceImpl {
 		
 		// Publicação de evento para lançamento no caixa.
 		if (beforeUpdateEntity.getContaPaga() && !entity.getContaPaga()) { // Despagou a conta.
-			if (isEmpty(entity.getValorPago())) {
+			if (isEmpty(entity.getValorPago()) || isZero(entity.getValorPago())) {
 				entity.setValorPago(beforeUpdateEntity.getValorPago());
 			}
 			
@@ -330,5 +331,6 @@ public class CustomContaPagarServiceImpl extends ContaPagarServiceImpl {
 		}
 		
 	}
+	
 
 }

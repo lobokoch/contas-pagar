@@ -192,6 +192,13 @@ public class ContaPagarMultipleServiceImpl implements ContaPagarMultipleService 
 	
 	@Transactional(readOnly = true)
 	@Override
+	public Collection<ContaPagarMultipleHistConcBancariaAutoComplete> contaPagarMultipleHistConcBancariaAutoComplete(String query) {
+		Collection<ContaPagarMultipleHistConcBancariaAutoComplete> result = contaPagarMultipleRepository.contaPagarMultipleHistConcBancariaAutoComplete(query);
+		return result;
+	}
+	
+	@Transactional(readOnly = true)
+	@Override
 	public ContaPagarMultipleSumFields getContaPagarMultipleSumFields(ContaPagarMultipleListFilter contaPagarMultipleListFilter) {
 		Predicate predicate = contaPagarMultipleListFilterPredicate.mountAndGetPredicate(contaPagarMultipleListFilter);
 		

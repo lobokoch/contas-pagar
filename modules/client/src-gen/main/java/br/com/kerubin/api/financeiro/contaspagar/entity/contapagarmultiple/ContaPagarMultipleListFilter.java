@@ -21,6 +21,12 @@ public class ContaPagarMultipleListFilter {
 	@ApiModelProperty(notes = "Conta a pagar pai", position = 11)
 	private java.util.UUID contaPagarId;
 	
+	@ApiModelProperty(notes = "Id da conciliação bancária is not null", position = 12)
+	private Boolean idConcBancariaIsNotNull;
+	
+	@ApiModelProperty(notes = "Histórico da conciliação bancária", position = 13)
+	private java.util.List<String> histConcBancaria;
+	
 	// Map field for developer customizing parameters.
 	@ApiModelProperty(notes = "Campo tipo mapa (chave = valor) onde o desenvolvedor pode passar seus parâmetros personalizados no formato objeto JSON.", position = 9999)
 	private Map<Object, Object> customParams = new HashMap<>();
@@ -31,6 +37,26 @@ public class ContaPagarMultipleListFilter {
 			
 	public void setContaPagarId(java.util.UUID contaPagarId) {
 		this.contaPagarId = contaPagarId;
+	}
+	
+	public Boolean isIdConcBancariaIsNotNull() {
+		return idConcBancariaIsNotNull != null && idConcBancariaIsNotNull;
+	}
+	
+	public Boolean getIdConcBancariaIsNotNull() {
+		return idConcBancariaIsNotNull;
+	}
+			
+	public void setIdConcBancariaIsNotNull(Boolean idConcBancariaIsNotNull) {
+		this.idConcBancariaIsNotNull = idConcBancariaIsNotNull;
+	}
+	
+	public java.util.List<String> getHistConcBancaria() {
+		return histConcBancaria;
+	}
+	
+	public void setHistConcBancaria(java.util.List<String> histConcBancaria) {
+		this.histConcBancaria = histConcBancaria;
 	}
 	
 	public Map<Object, Object> getCustomParams() {

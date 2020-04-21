@@ -178,6 +178,33 @@ public class CustomContaPagarMultipleServiceImpl extends ContaPagarMultipleServi
 		result.setContaPagarPai(source.getContaPagar().getId());
 		result.setTipoPagamento(TipoPagamentoConta.MULTIPLE);
 		
+		// Conciliação bancária
+		result.setIdConcBancaria(source.getIdConcBancaria());
+		result.setHistConcBancaria(source.getHistConcBancaria());
+		result.setNumDocConcBancaria(source.getNumDocConcBancaria());
+		
+		return result;
+	}
+	
+	public ContaPagarMultipleEntity buildContaPagarMultiple(ContaPagarEntity source) {
+		ContaPagarMultipleEntity result = new ContaPagarMultipleEntity();
+		
+		result.setDataPagamento(source.getDataPagamento());
+		result.setValorPago(source.getValorPago());
+		result.setDescricao(source.getDescricao());
+		result.setFornecedor(source.getFornecedor());
+		result.setPlanoContas(source.getPlanoContas());
+		result.setFormaPagamento(source.getFormaPagamento());
+		result.setContaBancaria(source.getContaBancaria());
+		result.setCartaoCredito(source.getCartaoCredito());
+		result.setOutrosDescricao(source.getOutrosDescricao());
+		result.setContaPagar(source);
+		
+		// Conciliação bancária
+		result.setIdConcBancaria(source.getIdConcBancaria());
+		result.setHistConcBancaria(source.getHistConcBancaria());
+		result.setNumDocConcBancaria(source.getNumDocConcBancaria());
+		
 		return result;
 	}
 

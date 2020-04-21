@@ -36,15 +36,19 @@ import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 
 import br.com.kerubin.api.financeiro.contaspagar.FormaPagamento;
+import br.com.kerubin.api.financeiro.contaspagar.TipoPagamentoConta;
 import br.com.kerubin.api.financeiro.contaspagar.entity.contabancaria.ContaBancariaEntity;
 import br.com.kerubin.api.financeiro.contaspagar.entity.contabancaria.ContaBancariaRepository;
 import br.com.kerubin.api.financeiro.contaspagar.entity.contapagar.ContaPagarEntity;
 import br.com.kerubin.api.financeiro.contaspagar.entity.contapagar.ContaPagarService;
 import br.com.kerubin.api.financeiro.contaspagar.entity.contapagar.QContaPagarEntity;
+import br.com.kerubin.api.financeiro.contaspagar.entity.contapagarmultiple.ContaPagarMultipleEntity;
+import br.com.kerubin.api.financeiro.contaspagar.entity.contapagarmultiple.ContaPagarMultipleService;
 import br.com.kerubin.api.financeiro.contaspagar.entity.fornecedor.QFornecedorEntity;
 import br.com.kerubin.api.financeiro.contaspagar.entity.planoconta.PlanoContaEntity;
 import br.com.kerubin.api.financeiro.contaspagar.entity.planoconta.PlanoContaService;
 import br.com.kerubin.api.financeiro.contaspagar.repository.ContaPagarRepository;
+import br.com.kerubin.api.financeiro.contaspagar.service.CustomContaPagarMultipleServiceImpl;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -65,6 +69,9 @@ public class ConciliacaoBancariaServiceImpl implements ConciliacaoBancariaServic
 	
 	@Inject
 	private PlanoContaService planoContaService;
+	
+	@Inject
+	private ContaPagarMultipleService contaPagarMultipleService;
 	
 	
 	@Transactional(readOnly = true)
@@ -135,145 +142,150 @@ public class ConciliacaoBancariaServiceImpl implements ConciliacaoBancariaServic
 				Map<ContaPagarEntity, Integer> scores = computeScore(contas, tokens, transacao);
 				contas = contas.stream().filter(conta -> scores.get(conta).intValue() > 0).collect(Collectors.toList());
 				
-				Comparator<ContaPagarEntity> comparator = Comparator.comparing(ContaPagarEntity::getDataVencimento);
-				ContaPagarEntity contaMaiorDataVencimento = contas.stream().max(comparator).get();
+				if (isNotEmpty(contas)) {				
 				
-				ContaPagarEntity contaCandidata = null;
-				boolean temAlgumaContaComConciliacao = contas.stream().anyMatch(it -> isConciliado(it, transacao)); 
-				if (temAlgumaContaComConciliacao || !lastVisitedIsAfter) {
-					List<ContaPagarEntity> contasClone = new ArrayList<>(contas);
+					Comparator<ContaPagarEntity> comparator = Comparator.comparing(ContaPagarEntity::getDataVencimento);
+					ContaPagarEntity contaMaiorDataVencimento = contas.stream().max(comparator).orElse(null);
 					
-					// Tem alguma conta conciliada?
-					List<ContaPagarEntity> contasConciliadas = contas.stream()
-							.filter(it -> isConciliado(it, transacao))
-							.collect(Collectors.toList());
-					
-					contaCandidata = getContaComMaiorScore(contasConciliadas, scores);
-					
-					// Tem alguma conta paga?
-					if (isEmpty(contaCandidata)) {
-						List<ContaPagarEntity> contasPagas = contas.stream()
-								.filter(it -> isPago(it, transacao))
+					ContaPagarEntity contaCandidata = null;
+					boolean temAlgumaContaComConciliacao = contas.stream().anyMatch(it -> isConciliado(it, transacao)); 
+					if (temAlgumaContaComConciliacao || !lastVisitedIsAfter) {
+						List<ContaPagarEntity> contasClone = new ArrayList<>(contas);
+						
+						// Tem alguma conta conciliada?
+						List<ContaPagarEntity> contasConciliadas = contas.stream()
+								.filter(it -> isConciliado(it, transacao))
 								.collect(Collectors.toList());
 						
-						contaCandidata = getContaComMaiorScore(contasPagas, scores);
-					}
-					
-					// Tem alguma conta em aberto?
-					if (isEmpty(contaCandidata)) {
-						List<ContaPagarEntity> contasEmAberto = contas.stream()
-								.filter(it -> isEmAberto(it, transacao, contasClone))
-								.collect(Collectors.toList());
+						contaCandidata = getContaComMaiorScore(contasConciliadas, scores);
 						
-						contaCandidata = getContaComMaiorScore(contasEmAberto, scores);
-					}
-					
-					if (isEmpty(contaCandidata)) {
-						// Os títulos devem ter valores diferentes da transação, então procura a conta de valor mais próximo.
-						contaCandidata = getContaEmAbertoComValorMaisPerto(transacao.getTrnValor(), contasClone);
-					}
-					
-					if (isEmpty(contaCandidata)) {
-						contaCandidata = Collections.max(scores.entrySet(), Map.Entry.comparingByValue()).getKey();
-					}
-				}
-				else {
-					// Como tem contas em lastVisitedList, a de maior data encontrada é a candidata mais provável. Pagamentos antecipados.
-					contaCandidata = contaMaiorDataVencimento;
-				}
-				
-				lastVisitedList.put(key, contaMaiorDataVencimento);
-				
-				transacao.setTituloConciliadoId(contaCandidata.getId());
-				transacao.setTituloConciliadoDesc(contaCandidata.getDescricao());
-				
-				transacao.setTituloConciliadoValor(contaCandidata.getDataPagamento() == null ? contaCandidata.getValor() : contaCandidata.getValorPago());
-				transacao.setTituloConciliadoDataVen(contaCandidata.getDataVencimento());
-				transacao.setTituloConciliadoDataPag(contaCandidata.getDataPagamento());
-				PlanoContaDTO planoContas = contaCandidata.getPlanoContas() != null ? PlanoContaDTO.builder().id(contaCandidata.getPlanoContas().getId()).build() : null;
-				transacao.setTituloPlanoContas(planoContas);
-				
-				SituacaoConciliacaoTrn situacaoConciliacaoTrn = transacao.getSituacaoConciliacaoTrn(); // Valor atual é o default.
-				if (isNotEmpty(contaCandidata.getDataPagamento())) { // Já pagou, baixado.
-					if (isNotEmpty(contaCandidata.getIdConcBancaria())) { // Pagamento normal, sem conciliação
-						situacaoConciliacaoTrn = SituacaoConciliacaoTrn.CONCILIADO_CONTAS_PAGAR;
+						// Tem alguma conta paga?
+						if (isEmpty(contaCandidata)) {
+							List<ContaPagarEntity> contasPagas = contas.stream()
+									.filter(it -> isPago(it, transacao))
+									.collect(Collectors.toList());
+							
+							contaCandidata = getContaComMaiorScore(contasPagas, scores);
+						}
+						
+						// Tem alguma conta em aberto?
+						if (isEmpty(contaCandidata)) {
+							List<ContaPagarEntity> contasEmAberto = contas.stream()
+									.filter(it -> isEmAberto(it, transacao, contasClone))
+									.collect(Collectors.toList());
+							
+							contaCandidata = getContaComMaiorScore(contasEmAberto, scores);
+						}
+						
+						if (isEmpty(contaCandidata)) {
+							// Os títulos devem ter valores diferentes da transação, então procura a conta de valor mais próximo.
+							contaCandidata = getContaEmAbertoComValorMaisPerto(transacao.getTrnValor(), contasClone);
+						}
+						
+						if (isEmpty(contaCandidata)) {
+							contaCandidata = Collections.max(scores.entrySet(), Map.Entry.comparingByValue()).getKey();
+						}
 					}
 					else {
-						situacaoConciliacaoTrn = SituacaoConciliacaoTrn.CONTAS_PAGAR_BAIXADO_SEM_CONCILIACAO;
-					}
-				}
-				else {
-					situacaoConciliacaoTrn = SituacaoConciliacaoTrn.CONCILIAR_CONTAS_PAGAR;
-				}
-				transacao.setSituacaoConciliacaoTrn(situacaoConciliacaoTrn);
-				
-				BigDecimal valor = contaCandidata.getValor();
-				if (isNotEquals(transacao.getTrnValor(), valor)) {
-					BigDecimal valDiff = getDiff(transacao.getTrnValor(), valor);
-					transacao.setConciliadoMsg(MessageFormat.format("Valor da transação e valor da conta são diferentes em: {0}", formatMoney(valDiff)));
-				}
-				
-				/*BigDecimal diff = getDiff(transacao.getTrnValor(), contaCandidata.getValor());
-				if (isGte(diff, transacao.getTrnValor().divide(BigDecimal.valueOf(2))) || isGte(diff, contaCandidata.getValor().divide(BigDecimal.valueOf(2)))) {
-					transacao.setConciliadoMsg("Valor da conta e o valor da transação possuem diferença maior ou igual a 50%");
-				}*/
-				
-				// Se já foi conciliado, remove as contas que não tem a ver com a conta que conciliou.
-				if (contas.size() > 1 && SituacaoConciliacaoTrn.CONCILIADO_CONTAS_PAGAR.equals(situacaoConciliacaoTrn)) {
-					contas.removeIf(it -> !it.getId().equals(transacao.getTituloConciliadoId()));
-				}
-				
-				// Se já foi baixada, e tiver contas com a data de pagamento igual a data da transação, deixa apenas essas contas. 
-				if (contas.size() > 1 && SituacaoConciliacaoTrn.CONTAS_PAGAR_BAIXADO_SEM_CONCILIACAO.equals(situacaoConciliacaoTrn)) {
-					List<ContaPagarEntity> contasCandidatas = contas
-							.stream()
-							.filter(it -> isNotEmpty(it.getDataPagamento()) && it.getDataPagamento().equals(transacao.getTrnData()))
-							.collect(Collectors.toList());
-					
-					if (!contasCandidatas.isEmpty()) {
-						contas.removeIf(it1 -> !contasCandidatas.stream().anyMatch(it2 -> it2.getId().equals(it1.getId())));
+						// Como tem contas em lastVisitedList, a de maior data encontrada é a candidata mais provável. Pagamentos antecipados.
+						contaCandidata = contaMaiorDataVencimento;
 					}
 					
-				}
-				
-				// Caso tenha mais de um título, empacota eles junto para o usuário decidir qual é o título certo.
-				if (!contas.isEmpty()) {
+					lastVisitedList.put(key, contaMaiorDataVencimento);
 					
-					List<ConciliacaoTransacaoTituloDTO> titulos = contas.stream().map(it -> {
-						PlanoContaDTO planoContasTitulo = it.getPlanoContas() != null ? PlanoContaDTO.builder().id(it.getPlanoContas().getId()).build() : null;
-						ConciliacaoTransacaoTituloDTO titulo = ConciliacaoTransacaoTituloDTO.builder()
-								.tituloConciliadoId(it.getId())
-								.tituloConciliadoDesc(it.getDescricao())
-								.tituloConciliadoValor(isEmpty(it.getDataPagamento()) ? it.getValor() : it.getValorPago())
-								.tituloConciliadoDataVen(it.getDataVencimento())
-								.tituloConciliadoDataPag(it.getDataPagamento())
-								.tituloPlanoContas(planoContasTitulo)
-								.build();
-						
-						// Situação do título
-						SituacaoConciliacaoTrn situacaoConciliacaoTrn2 = titulo.getSituacaoConciliacaoTrn(); // Valor atual é o default.
-						if (isNotEmpty(it.getDataPagamento())) { // Já pagou, baixado.
-							if (isNotEmpty(it.getIdConcBancaria())) { // Pagamento normal, sem conciliação
-								situacaoConciliacaoTrn2 = SituacaoConciliacaoTrn.CONCILIADO_CONTAS_PAGAR;
-							}
-							else {
-								situacaoConciliacaoTrn2 = SituacaoConciliacaoTrn.CONTAS_PAGAR_BAIXADO_SEM_CONCILIACAO;
-							}
+					transacao.setTituloConciliadoId(contaCandidata.getId());
+					transacao.setTituloConciliadoDesc(contaCandidata.getDescricao());
+					
+					transacao.setTituloConciliadoValor(contaCandidata.getDataPagamento() == null ? contaCandidata.getValor() : contaCandidata.getValorPago());
+					transacao.setTituloConciliadoDataVen(contaCandidata.getDataVencimento());
+					transacao.setTituloConciliadoDataPag(contaCandidata.getDataPagamento());
+					PlanoContaDTO planoContas = contaCandidata.getPlanoContas() != null ? PlanoContaDTO.builder().id(contaCandidata.getPlanoContas().getId()).build() : null;
+					transacao.setTituloPlanoContas(planoContas);
+					transacao.setTituloConciliadoMultiple(TipoPagamentoConta.MULTIPLE.equals(contaCandidata.getTipoPagamento()));
+					
+					SituacaoConciliacaoTrn situacaoConciliacaoTrn = transacao.getSituacaoConciliacaoTrn(); // Valor atual é o default.
+					if (isNotEmpty(contaCandidata.getDataPagamento())) { // Já pagou, baixado.
+						if (isNotEmpty(contaCandidata.getIdConcBancaria())) { // Pagamento normal, sem conciliação
+							situacaoConciliacaoTrn = SituacaoConciliacaoTrn.CONCILIADO_CONTAS_PAGAR;
 						}
 						else {
-							situacaoConciliacaoTrn2 = SituacaoConciliacaoTrn.CONCILIAR_CONTAS_PAGAR;
+							situacaoConciliacaoTrn = SituacaoConciliacaoTrn.CONTAS_PAGAR_BAIXADO_SEM_CONCILIACAO;
 						}
-						titulo.setSituacaoConciliacaoTrn(situacaoConciliacaoTrn2);
-						
-						return titulo;
-						
-					}).collect(Collectors.toList());
+					}
+					else {
+						situacaoConciliacaoTrn = SituacaoConciliacaoTrn.CONCILIAR_CONTAS_PAGAR;
+					}
+					transacao.setSituacaoConciliacaoTrn(situacaoConciliacaoTrn);
 					
-					transacao.setConciliacaoTransacaoTitulosDTO(titulos);
+					BigDecimal valor = contaCandidata.getValor();
+					if (isNotEquals(transacao.getTrnValor(), valor)) {
+						BigDecimal valDiff = getDiff(transacao.getTrnValor(), valor);
+						transacao.setConciliadoMsg(MessageFormat.format("Valor da transação e valor da conta são diferentes em: {0}", formatMoney(valDiff)));
+					}
 					
-				} // if (!contas.isEmpty())
+					/*BigDecimal diff = getDiff(transacao.getTrnValor(), contaCandidata.getValor());
+					if (isGte(diff, transacao.getTrnValor().divide(BigDecimal.valueOf(2))) || isGte(diff, contaCandidata.getValor().divide(BigDecimal.valueOf(2)))) {
+						transacao.setConciliadoMsg("Valor da conta e o valor da transação possuem diferença maior ou igual a 50%");
+					}*/
+					
+					// Se já foi conciliado, remove as contas que não tem a ver com a conta que conciliou.
+					if (contas.size() > 1 && SituacaoConciliacaoTrn.CONCILIADO_CONTAS_PAGAR.equals(situacaoConciliacaoTrn)) {
+						contas.removeIf(it -> !it.getId().equals(transacao.getTituloConciliadoId()));
+					}
+					
+					// Se já foi baixada, e tiver contas com a data de pagamento igual a data da transação, deixa apenas essas contas. 
+					if (contas.size() > 1 && SituacaoConciliacaoTrn.CONTAS_PAGAR_BAIXADO_SEM_CONCILIACAO.equals(situacaoConciliacaoTrn)) {
+						List<ContaPagarEntity> contasCandidatas = contas
+								.stream()
+								.filter(it -> isNotEmpty(it.getDataPagamento()) && it.getDataPagamento().equals(transacao.getTrnData()))
+								.collect(Collectors.toList());
+						
+						if (!contasCandidatas.isEmpty()) {
+							contas.removeIf(it1 -> !contasCandidatas.stream().anyMatch(it2 -> it2.getId().equals(it1.getId())));
+						}
+						
+					}
+					
+					// Caso tenha mais de um título, empacota eles junto para o usuário decidir qual é o título certo.
+					if (!contas.isEmpty()) {
+						
+						List<ConciliacaoTransacaoTituloDTO> titulos = contas.stream().map(it -> {
+							PlanoContaDTO planoContasTitulo = it.getPlanoContas() != null ? PlanoContaDTO.builder().id(it.getPlanoContas().getId()).build() : null;
+							ConciliacaoTransacaoTituloDTO titulo = ConciliacaoTransacaoTituloDTO.builder()
+									.tituloConciliadoId(it.getId())
+									.tituloConciliadoDesc(it.getDescricao())
+									.tituloConciliadoValor(isEmpty(it.getDataPagamento()) ? it.getValor() : it.getValorPago())
+									.tituloConciliadoDataVen(it.getDataVencimento())
+									.tituloConciliadoDataPag(it.getDataPagamento())
+									.tituloPlanoContas(planoContasTitulo)
+									.tituloConciliadoMultiple(TipoPagamentoConta.MULTIPLE.equals(it.getTipoPagamento()))
+									.build();
+							
+							// Situação do título
+							SituacaoConciliacaoTrn situacaoConciliacaoTrn2 = titulo.getSituacaoConciliacaoTrn(); // Valor atual é o default.
+							if (isNotEmpty(it.getDataPagamento())) { // Já pagou, baixado.
+								if (isNotEmpty(it.getIdConcBancaria())) { // Pagamento normal, sem conciliação
+									situacaoConciliacaoTrn2 = SituacaoConciliacaoTrn.CONCILIADO_CONTAS_PAGAR;
+								}
+								else {
+									situacaoConciliacaoTrn2 = SituacaoConciliacaoTrn.CONTAS_PAGAR_BAIXADO_SEM_CONCILIACAO;
+								}
+							}
+							else {
+								situacaoConciliacaoTrn2 = SituacaoConciliacaoTrn.CONCILIAR_CONTAS_PAGAR;
+							}
+							titulo.setSituacaoConciliacaoTrn(situacaoConciliacaoTrn2);
+							
+							return titulo;
+							
+						}).collect(Collectors.toList());
+						
+						transacao.setConciliacaoTransacaoTitulosDTO(titulos);
+						
+					} // if (!contas.isEmpty())
 				
-			}//
+				} // if scores
+			} // if
 			
 		});
 		
@@ -515,6 +527,12 @@ public class ConciliacaoBancariaServiceImpl implements ConciliacaoBancariaServic
 			
 			ContaPagarEntity conta = contaPagarRepository.findById(transacao.getTituloConciliadoId()).orElse(null);
 			
+			boolean isMultiple = TipoPagamentoConta.MULTIPLE.equals(conta.getTipoPagamento());
+			if (isMultiple) {
+				em.detach(conta); // Evitar que a conta original seja salva, será apenas utilizada para gerar um conta multiple.
+				//conta = conta.clone();
+			}
+			
 			if (isEmpty(conta)) {
 				erroMsg = "Título não localizado com o id: " + transacao.getTituloConciliadoId();
 				log.error(erroMsg + ": " + logHeader);
@@ -539,9 +557,18 @@ public class ConciliacaoBancariaServiceImpl implements ConciliacaoBancariaServic
 				transacao.setConciliadoMsg(erroMsg);
 			}
 			
+			
+			
 			conta.setDataPagamento(transacao.getTrnData());
 			conta.setValorPago(transacao.getTrnValor());
-			conta.setDescricao(transacao.getTituloConciliadoDesc());
+			
+			// Atualizar a descrição
+			if (conta.getDescricao().equals(transacao.getTituloConciliadoDesc())) {
+				conta.setDescricao(transacao.getTrnHistorico());
+			} else {
+				conta.setDescricao(transacao.getTituloConciliadoDesc());
+			}
+			
 			conta.setFormaPagamento(FormaPagamento.CONTA_BANCARIA);
 			conta.setContaBancaria(contaBancariaEntity);
 			conta.setIdConcBancaria(transacao.getTrnId());
@@ -562,14 +589,21 @@ public class ConciliacaoBancariaServiceImpl implements ConciliacaoBancariaServic
 					conta.setPlanoContas(planoContaEntity);
 				}
 				
-				conta = contaPagarService.update(conta.getId(), conta);
+				if (isMultiple) {
+					ContaPagarMultipleEntity contaMultiple = ((CustomContaPagarMultipleServiceImpl) contaPagarMultipleService).buildContaPagarMultiple(conta);
+					contaMultiple = contaPagarMultipleService.create(contaMultiple);
+				} else {
+					conta = contaPagarService.update(conta.getId(), conta);
+				}
 				
 				transacao.setConciliadoComErro(false);
 				transacao.setSituacaoConciliacaoTrn(SituacaoConciliacaoTrn.CONCILIADO_CONTAS_PAGAR);
 				transacao.setDataConciliacao(LocalDate.now());
-				transacao.setTituloConciliadoDesc(conta.getDescricao());
+				//transacao.setTituloConciliadoDesc(conta.getDescricao());
 			} catch (Exception e) {
-				log.error("Erro ao baixar a conta a pagar via conciliação bancária:" + conta.getId(), e);
+				log.error(MessageFormat.format("Erro ao baixar a conta a pagar id: {0} via conciliação bancária. isMultiple: {1}, Erro: {2}",
+						conta.getId(), isMultiple, e.getMessage()), e);
+				
 				transacao.setConciliadoComErro(true);
 				transacao.setConciliadoMsg(e.getMessage());
 			}
