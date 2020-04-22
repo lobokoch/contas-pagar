@@ -28,6 +28,7 @@ import br.com.kerubin.api.financeiro.contaspagar.model.ContaPagarMultipleResumo;
 import lombok.extern.slf4j.Slf4j;
 import static br.com.kerubin.api.servicecore.util.CoreUtils.isNotEmpty;
 import static br.com.kerubin.api.servicecore.util.CoreUtils.isNotEquals;
+import static br.com.kerubin.api.servicecore.util.CoreUtils.isGtZero;
 
 @Slf4j
 @Primary
@@ -144,7 +145,8 @@ public class CustomContaPagarMultipleServiceImpl extends ContaPagarMultipleServi
 			BigDecimal valorTotalPago = tuple.get(0, BigDecimal.class);
 			LocalDate dataUltimoPagamento = tuple.get(1, LocalDate.class);
 			
-			result.setTemResumo(isNotEmpty(dataUltimoPagamento) || isNotEmpty(valorTotalPago));
+			boolean temResumo = isNotEmpty(dataUltimoPagamento) || isGtZero(valorTotalPago);
+			result.setTemResumo(temResumo);
 			result.setValorTotalPago(valorTotalPago);
 			result.setDataUltimoPagamento(dataUltimoPagamento);
 			
