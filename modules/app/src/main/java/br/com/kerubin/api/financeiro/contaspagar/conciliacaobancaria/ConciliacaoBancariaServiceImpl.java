@@ -593,6 +593,7 @@ public class ConciliacaoBancariaServiceImpl implements ConciliacaoBancariaServic
 					ContaPagarMultipleEntity contaMultiple = ((CustomContaPagarMultipleServiceImpl) contaPagarMultipleService).buildContaPagarMultiple(conta);
 					contaMultiple = contaPagarMultipleService.create(contaMultiple);
 				} else {
+					conta.setContaPaga(true); // Baixada
 					conta = contaPagarService.update(conta.getId(), conta);
 				}
 				

@@ -239,6 +239,10 @@ service contas_pagar { //xxx
 				)*/
 				
 			with(form.beforeSave)
+			.apply(error('Foi informada a data de pagamento para a conta, porém ela não foi marcada como conta paga.'))
+			.when(contaPaga.isNotTrue and dataPagamento.isNotNull)
+			
+			with(form.beforeSave)
 			.apply(error('A data do pagamento deve ser informada para poder pagar a conta.'))
 			.when(contaPaga.isTrue and tipoPagamento.isEquals(TipoPagamentoConta.SINGLE) and dataPagamento.isNull)
 			

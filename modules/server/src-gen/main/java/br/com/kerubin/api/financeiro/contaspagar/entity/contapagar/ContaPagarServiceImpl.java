@@ -34,8 +34,8 @@ import br.com.kerubin.api.financeiro.contaspagar.entity.fornecedor.FornecedorRep
 import java.util.Collection;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import br.com.kerubin.api.financeiro.contaspagar.TipoPagamentoConta;
 import java.util.Objects;
+import br.com.kerubin.api.financeiro.contaspagar.TipoPagamentoConta;
 import java.time.LocalDate;
 import java.text.MessageFormat;
 import java.time.format.DateTimeFormatter;
@@ -98,6 +98,11 @@ public class ContaPagarServiceImpl implements ContaPagarService {
 	}
 	
 	private void doRulesFormBeforeSave(ContaPagarEntity contaPagar) {
+		
+		if ((!Boolean.TRUE.equals(contaPagar.getContaPaga())) && Objects.nonNull(contaPagar.getDataPagamento())) {
+			throw new IllegalStateException("Foi informada a data de pagamento para a conta, porém ela não foi marcada como conta paga.");
+		}
+		
 		
 		if ((Boolean.TRUE.equals(contaPagar.getContaPaga())) && contaPagar.getTipoPagamento().equals(TipoPagamentoConta.SINGLE) && Objects.isNull(contaPagar.getDataPagamento())) {
 			throw new IllegalStateException("A data do pagamento deve ser informada para poder pagar a conta.");
