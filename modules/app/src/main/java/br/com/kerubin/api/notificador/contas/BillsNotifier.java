@@ -3,7 +3,7 @@ package br.com.kerubin.api.notificador.contas;
 import static br.com.kerubin.api.messaging.constants.MessagingConstants.HEADER_TENANT;
 import static br.com.kerubin.api.messaging.constants.MessagingConstants.HEADER_USER;
 import static br.com.kerubin.api.servicecore.mail.MailUtils.EMAIL_KERUBIN_NOTIFICADOR;
-import static br.com.kerubin.api.servicecore.mail.MailUtils.EMAIL_KERUBIN_NOTIFICADOR_APP_PWD;
+import static br.com.kerubin.api.servicecore.mail.MailUtils.get_EMAIL_KERUBIN_NOTIFICADOR_APP_PWD;
 import static br.com.kerubin.api.servicecore.mail.MailUtils.EMAIL_KERUBIN_NOTIFICADOR_PERSONAL;
 import static br.com.kerubin.api.servicecore.util.CoreUtils.formatDate;
 import static br.com.kerubin.api.servicecore.util.CoreUtils.formatNumber;
@@ -217,7 +217,7 @@ public class BillsNotifier {
 			List<CaixaMovimentoItem> fluxoCaixaResumoMovimentacoes) {
 		
 		
-		MailInfo from = new MailInfo(EMAIL_KERUBIN_NOTIFICADOR, EMAIL_KERUBIN_NOTIFICADOR_PERSONAL, EMAIL_KERUBIN_NOTIFICADOR_APP_PWD);
+		MailInfo from = new MailInfo(EMAIL_KERUBIN_NOTIFICADOR, EMAIL_KERUBIN_NOTIFICADOR_PERSONAL, get_EMAIL_KERUBIN_NOTIFICADOR_APP_PWD());
 		List<MailInfo> recipients = users.stream().map(user -> new MailInfo(user.getEmail(), user.getName(), null)).collect(Collectors.toList());
 		
 		log.info("Notifying bills for users {} ...", recipients);
