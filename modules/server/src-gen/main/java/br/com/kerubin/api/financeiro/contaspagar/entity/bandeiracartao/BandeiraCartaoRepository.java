@@ -25,9 +25,10 @@ public interface BandeiraCartaoRepository extends JpaRepository<BandeiraCartaoEn
 	
 	
 	// WARNING: supports only where clause with like for STRING fields. For relationships entities will get the first string autocomplete key field name.
-	@Query("select distinct ac.id as id, ac.nomeBandeira as nomeBandeira from BandeiraCartaoEntity ac where ( upper(ac.nomeBandeira) like upper(concat('%', :query, '%')) ) order by 1 asc")
+	@Query("select distinct ac.id as id, ac.nomeBandeira as nomeBandeira from BandeiraCartaoEntity ac where ( upper(unaccent(ac.nomeBandeira)) like upper(concat('%', unaccent(:query), '%')) ) order by 1 asc")
 	Collection<BandeiraCartaoAutoComplete> autoComplete(@Param("query") String query);
+	
 	// WARNING: supports only where clause with like for STRING fields. For relationships entities will get the first string autocomplete key field name.
-	@Query("select distinct ac.nomeBandeira as nomeBandeira from BandeiraCartaoEntity ac where ( upper(ac.nomeBandeira) like upper(concat('%', :query, '%')) ) order by 1 asc")
+	@Query("select distinct ac.nomeBandeira as nomeBandeira from BandeiraCartaoEntity ac where ( upper(unaccent(ac.nomeBandeira)) like upper(concat('%', unaccent(:query), '%')) ) order by 1 asc")
 	Collection<BandeiraCartaoNomeBandeiraAutoComplete> bandeiraCartaoNomeBandeiraAutoComplete(@Param("query") String query);
 }

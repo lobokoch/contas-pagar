@@ -49,6 +49,7 @@ service contas_pagar { //xxx
 		listFilter(many: "Contas")
 		web(styleClass: "ui-md-6")
 		help(text: "Informe uma descrição para esta conta a pagar, exemplo: Luz, Combustível, Aluguel, Mensalidade da escola.")
+		unaccent
 		
 		planoContas: refers PlanoConta manyToOne
 		// listFilter(many: "Plano de Contas")
@@ -488,6 +489,7 @@ service contas_pagar { //xxx
 		nome: string
 		label: "Nome"
 		listFilter(many: "Nome do fornecedor")
+		unaccent
 		
 		cnpjCPF: string?
 		label: "Documento (CNPJ/CPF)"
@@ -514,6 +516,7 @@ service contas_pagar { //xxx
 		autoComplete
 		listFilter(many: "Nome do(s) banco(s)")
 		web(styleClass: "ui-md-8")
+		unaccent
 	}
 	
 	@externalEntity
@@ -538,6 +541,7 @@ service contas_pagar { //xxx
 		autoComplete
 		label: "Endereço/localização da agência"
 		web(styleClass: "ui-md-6")
+		unaccent
 		
 	}
 	
@@ -551,6 +555,7 @@ service contas_pagar { //xxx
 		label: "Bandeira do cartão"
 		listFilter(many: "Bandeira(s)")
 		web(styleClass: "ui-md-12")
+		unaccent
 	}
 	
 	@externalEntity
@@ -562,6 +567,7 @@ service contas_pagar { //xxx
 		label: "Nome do títular da conta"
 		autoComplete
 		web(styleClass: "ui-md-6")
+		unaccent
 		
 		agencia: refers AgenciaBancaria manyToOne
 		web(styleClass: "ui-md-4")
@@ -609,6 +615,7 @@ service contas_pagar { //xxx
 		autoComplete
 		label: "Nome do títular do cartão"
 		web(styleClass: "ui-md-6")
+		unaccent
 		
 		//--
 		numeroCartao: string[50] 
@@ -652,6 +659,7 @@ service contas_pagar { //xxx
 		autoComplete
 		web(styleClass: "ui-md-10")		
 		listFilter(many: "Descrições")
+		unaccent
 		
 		tipoFinanceiro: TipoPlanoContaFinanceiro
 		

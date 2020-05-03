@@ -25,6 +25,6 @@ public interface CartaoCreditoRepository extends JpaRepository<CartaoCreditoEnti
 	
 	
 	// WARNING: supports only where clause with like for STRING fields. For relationships entities will get the first string autocomplete key field name.
-	@Query("select distinct ac.id as id, ac.nomeTitular as nomeTitular, ac.numeroCartao as numeroCartao from CartaoCreditoEntity ac where ( upper(ac.nomeTitular) like upper(concat('%', :query, '%')) ) or ( upper(ac.numeroCartao) like upper(concat('%', :query, '%')) ) order by 1 asc")
+	@Query("select distinct ac.id as id, ac.nomeTitular as nomeTitular, ac.numeroCartao as numeroCartao from CartaoCreditoEntity ac where ( upper(unaccent(ac.nomeTitular)) like upper(concat('%', unaccent(:query), '%')) ) or ( upper(ac.numeroCartao) like upper(concat('%', :query, '%')) ) order by 1 asc")
 	Collection<CartaoCreditoAutoComplete> autoComplete(@Param("query") String query);
 }

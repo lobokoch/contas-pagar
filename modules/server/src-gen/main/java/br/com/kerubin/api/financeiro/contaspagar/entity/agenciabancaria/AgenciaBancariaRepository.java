@@ -25,6 +25,6 @@ public interface AgenciaBancariaRepository extends JpaRepository<AgenciaBancaria
 	
 	
 	// WARNING: supports only where clause with like for STRING fields. For relationships entities will get the first string autocomplete key field name.
-	@Query("select distinct ac.id as id, ac.numeroAgencia as numeroAgencia, ac.digitoAgencia as digitoAgencia, ac.endereco as endereco from AgenciaBancariaEntity ac where ( upper(ac.numeroAgencia) like upper(concat('%', :query, '%')) ) or ( upper(ac.endereco) like upper(concat('%', :query, '%')) ) order by 1 asc")
+	@Query("select distinct ac.id as id, ac.numeroAgencia as numeroAgencia, ac.digitoAgencia as digitoAgencia, ac.endereco as endereco from AgenciaBancariaEntity ac where ( upper(ac.numeroAgencia) like upper(concat('%', :query, '%')) ) or ( upper(unaccent(ac.endereco)) like upper(concat('%', unaccent(:query), '%')) ) order by 1 asc")
 	Collection<AgenciaBancariaAutoComplete> autoComplete(@Param("query") String query);
 }

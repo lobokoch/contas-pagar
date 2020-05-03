@@ -25,10 +25,11 @@ public interface BancoRepository extends JpaRepository<BancoEntity, java.util.UU
 	
 	
 	// WARNING: supports only where clause with like for STRING fields. For relationships entities will get the first string autocomplete key field name.
-	@Query("select distinct ac.id as id, ac.numero as numero, ac.nome as nome from BancoEntity ac where ( upper(ac.numero) like upper(concat('%', :query, '%')) ) or ( upper(ac.nome) like upper(concat('%', :query, '%')) ) order by 1 asc")
+	@Query("select distinct ac.id as id, ac.numero as numero, ac.nome as nome from BancoEntity ac where ( upper(ac.numero) like upper(concat('%', :query, '%')) ) or ( upper(unaccent(ac.nome)) like upper(concat('%', unaccent(:query), '%')) ) order by 1 asc")
 	Collection<BancoAutoComplete> autoComplete(@Param("query") String query);
+	
 	// WARNING: supports only where clause with like for STRING fields. For relationships entities will get the first string autocomplete key field name.
-	@Query("select distinct ac.nome as nome from BancoEntity ac where ( upper(ac.nome) like upper(concat('%', :query, '%')) ) order by 1 asc")
+	@Query("select distinct ac.nome as nome from BancoEntity ac where ( upper(unaccent(ac.nome)) like upper(concat('%', unaccent(:query), '%')) ) order by 1 asc")
 	Collection<BancoNomeAutoComplete> bancoNomeAutoComplete(@Param("query") String query);
 	
 	// Begin generated findBy

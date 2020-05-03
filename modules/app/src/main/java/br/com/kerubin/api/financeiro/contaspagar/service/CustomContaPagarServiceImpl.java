@@ -1,8 +1,8 @@
 package br.com.kerubin.api.financeiro.contaspagar.service;
 
 import static br.com.kerubin.api.servicecore.util.CoreUtils.isEmpty;
-import static br.com.kerubin.api.servicecore.util.CoreUtils.isZero;
 import static br.com.kerubin.api.servicecore.util.CoreUtils.isNotEmpty;
+import static br.com.kerubin.api.servicecore.util.CoreUtils.isZero;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;

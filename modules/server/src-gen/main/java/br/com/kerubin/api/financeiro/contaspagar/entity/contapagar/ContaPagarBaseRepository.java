@@ -26,14 +26,17 @@ public interface ContaPagarBaseRepository extends JpaRepository<ContaPagarEntity
 	
 	
 	// WARNING: supports only where clause with like for STRING fields. For relationships entities will get the first string autocomplete key field name.
-	@Query("select distinct ac.id as id, ac.descricao as descricao from ContaPagarEntity ac where ( upper(ac.descricao) like upper(concat('%', :query, '%')) ) order by 1 asc")
+	@Query("select distinct ac.id as id, ac.descricao as descricao from ContaPagarEntity ac where ( upper(unaccent(ac.descricao)) like upper(concat('%', unaccent(:query), '%')) ) order by 1 asc")
 	Collection<ContaPagarAutoComplete> autoComplete(@Param("query") String query);
+	
 	// WARNING: supports only where clause with like for STRING fields. For relationships entities will get the first string autocomplete key field name.
-	@Query("select distinct ac.descricao as descricao from ContaPagarEntity ac where ( upper(ac.descricao) like upper(concat('%', :query, '%')) ) order by 1 asc")
+	@Query("select distinct ac.descricao as descricao from ContaPagarEntity ac where ( upper(unaccent(ac.descricao)) like upper(concat('%', unaccent(:query), '%')) ) order by 1 asc")
 	Collection<ContaPagarDescricaoAutoComplete> contaPagarDescricaoAutoComplete(@Param("query") String query);
+	
 	// WARNING: supports only where clause with like for STRING fields. For relationships entities will get the first string autocomplete key field name.
 	@Query("select distinct ac.histConcBancaria as histConcBancaria from ContaPagarEntity ac where ( upper(ac.histConcBancaria) like upper(concat('%', :query, '%')) ) order by 1 asc")
 	Collection<ContaPagarHistConcBancariaAutoComplete> contaPagarHistConcBancariaAutoComplete(@Param("query") String query);
+	
 	// WARNING: supports only where clause with like for STRING fields. For relationships entities will get the first string autocomplete key field name.
 	@Query("select distinct ac.agrupador as agrupador from ContaPagarEntity ac where ( upper(ac.agrupador) like upper(concat('%', :query, '%')) ) order by 1 asc")
 	Collection<ContaPagarAgrupadorAutoComplete> contaPagarAgrupadorAutoComplete(@Param("query") String query);

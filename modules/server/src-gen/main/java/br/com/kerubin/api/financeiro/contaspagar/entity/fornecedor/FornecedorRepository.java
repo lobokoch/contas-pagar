@@ -25,9 +25,10 @@ public interface FornecedorRepository extends JpaRepository<FornecedorEntity, ja
 	
 	
 	// WARNING: supports only where clause with like for STRING fields. For relationships entities will get the first string autocomplete key field name.
-	@Query("select distinct ac.id as id, ac.nome as nome from FornecedorEntity ac where ( upper(ac.nome) like upper(concat('%', :query, '%')) ) order by 1 asc")
+	@Query("select distinct ac.id as id, ac.nome as nome from FornecedorEntity ac where ( upper(unaccent(ac.nome)) like upper(concat('%', unaccent(:query), '%')) ) order by 1 asc")
 	Collection<FornecedorAutoComplete> autoComplete(@Param("query") String query);
+	
 	// WARNING: supports only where clause with like for STRING fields. For relationships entities will get the first string autocomplete key field name.
-	@Query("select distinct ac.nome as nome from FornecedorEntity ac where ( upper(ac.nome) like upper(concat('%', :query, '%')) ) order by 1 asc")
+	@Query("select distinct ac.nome as nome from FornecedorEntity ac where ( upper(unaccent(ac.nome)) like upper(concat('%', unaccent(:query), '%')) ) order by 1 asc")
 	Collection<FornecedorNomeAutoComplete> fornecedorNomeAutoComplete(@Param("query") String query);
 }

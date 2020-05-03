@@ -1,5 +1,6 @@
 package br.com.kerubin.api.financeiro.contaspagar.conciliacaobancaria;
 
+import static br.com.kerubin.api.database.util.SQLUtils.buildUnaccent;
 import static br.com.kerubin.api.servicecore.util.CoreUtils.daysBetweenAbs;
 import static br.com.kerubin.api.servicecore.util.CoreUtils.format;
 import static br.com.kerubin.api.servicecore.util.CoreUtils.formatMoney;
@@ -32,6 +33,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.querydsl.core.BooleanBuilder;
+import com.querydsl.core.types.dsl.StringTemplate;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 
@@ -73,7 +75,6 @@ public class ConciliacaoBancariaServiceImpl implements ConciliacaoBancariaServic
 	@Inject
 	private ContaPagarMultipleService contaPagarMultipleService;
 	
-	
 	@Transactional(readOnly = true)
 	@Override
 	public ConciliacaoBancariaDTO verificarTransacoes(ConciliacaoBancariaDTO conciliacaoBancariaDTO) {
@@ -89,14 +90,17 @@ public class ConciliacaoBancariaServiceImpl implements ConciliacaoBancariaServic
 		
 		Map<String, ContaPagarEntity> lastVisitedList = new HashMap<>();
 		
+		StringTemplate descricaoUnaccent = buildUnaccent(qContaPagar.descricao);
+		StringTemplate fornecedorNomeUnaccent = buildUnaccent(qContaPagar.fornecedor.nome);
+		
 		conciliacaoBancariaDTO.getTransacoes().forEach(transacao -> {
 			
 			List<String> tokens = getTokens(transacao.getTrnHistorico());
 			BooleanBuilder filtroDescricaoTokens = new BooleanBuilder();
 			BooleanBuilder filtroFornecedorTokens = new BooleanBuilder();
 			if (isNotEmpty(tokens)) {
-				tokens.forEach(token -> filtroDescricaoTokens.or(qContaPagar.descricao.containsIgnoreCase(token)));
-				tokens.forEach(token -> filtroFornecedorTokens.or(qContaPagar.fornecedor.nome.containsIgnoreCase(token)));
+				tokens.forEach(token -> filtroDescricaoTokens.or(descricaoUnaccent.containsIgnoreCase(buildUnaccent(token))));
+				tokens.forEach(token -> filtroFornecedorTokens.or(fornecedorNomeUnaccent.containsIgnoreCase(buildUnaccent(token))));
 			}
 			
 			BooleanBuilder filtroDados = new BooleanBuilder();
