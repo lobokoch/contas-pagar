@@ -2,21 +2,28 @@ package br.com.kerubin.api.notificador.contas;
 
 import static br.com.kerubin.api.messaging.constants.MessagingConstants.HEADER_TENANT;
 import static br.com.kerubin.api.messaging.constants.MessagingConstants.HEADER_USER;
+import static br.com.kerubin.api.servicecore.mail.MailUtils.EMAIL_KERUBIN_FINANCEIRO;
 import static br.com.kerubin.api.servicecore.mail.MailUtils.EMAIL_KERUBIN_NOTIFICADOR;
+import static br.com.kerubin.api.servicecore.mail.MailUtils.EMAIL_KERUBIN_PJ;
+import static br.com.kerubin.api.servicecore.mail.MailUtils.EMAIL_KERUBIN_PLATFORM;
+import static br.com.kerubin.api.servicecore.mail.MailUtils.get_EMAIL_KERUBIN_FINANCEIRO_APP_PWD;
 import static br.com.kerubin.api.servicecore.mail.MailUtils.get_EMAIL_KERUBIN_NOTIFICADOR_APP_PWD;
-import static br.com.kerubin.api.servicecore.mail.MailUtils.EMAIL_KERUBIN_NOTIFICADOR_PERSONAL;
+import static br.com.kerubin.api.servicecore.mail.MailUtils.get_EMAIL_KERUBIN_PJ_PWD;
+import static br.com.kerubin.api.servicecore.mail.MailUtils.get_EMAIL_KERUBIN_PLATFORM_APP_PWD;
 import static br.com.kerubin.api.servicecore.util.CoreUtils.formatDate;
 import static br.com.kerubin.api.servicecore.util.CoreUtils.formatNumber;
 import static br.com.kerubin.api.servicecore.util.CoreUtils.getFirstName;
 import static br.com.kerubin.api.servicecore.util.CoreUtils.getStringAlternate;
 import static br.com.kerubin.api.servicecore.util.CoreUtils.isEmpty;
 import static br.com.kerubin.api.servicecore.util.CoreUtils.isNotEmpty;
+import static br.com.kerubin.api.servicecore.util.CoreUtils.messageFormat;
 
 import java.math.BigDecimal;
 import java.text.MessageFormat;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -49,6 +56,7 @@ import br.com.kerubin.api.notificador.model.ContasReceberSituacaoDoAnoSum;
 import br.com.kerubin.api.notificador.model.FinanceiroResumoData;
 import br.com.kerubin.api.notificador.model.SysUser;
 import br.com.kerubin.api.servicecore.mail.MailInfo;
+import br.com.kerubin.api.servicecore.mail.MailInfoCount;
 import br.com.kerubin.api.servicecore.mail.MailSender;
 import br.com.kerubin.api.servicecore.util.BooleanWrapper;
 import lombok.extern.slf4j.Slf4j;
@@ -78,9 +86,45 @@ public class BillsNotifier {
 	@Inject
 	private ServiceConfig serviceConfig;
 	
+	private List<MailInfoCount> froms = new ArrayList<>();
+	
+	private BillsNotifier() {
+		initFromEmails();
+	}
+	
+	private void initFromEmails() {
+		froms.clear();
+		
+		// Cerca de 2.000 e-mails por dia.
+		MailInfoCount mail = MailInfoCount.builder()
+				.email(EMAIL_KERUBIN_NOTIFICADOR)
+				.password(get_EMAIL_KERUBIN_NOTIFICADOR_APP_PWD()).build();
+		
+		froms.add(mail);
+		
+		mail = MailInfoCount.builder()
+				.email(EMAIL_KERUBIN_PLATFORM)
+				.password(get_EMAIL_KERUBIN_PLATFORM_APP_PWD()).build();
+		
+		froms.add(mail);
+		
+		mail = MailInfoCount.builder()
+				.email(EMAIL_KERUBIN_FINANCEIRO)
+				.password(get_EMAIL_KERUBIN_FINANCEIRO_APP_PWD()).build();
+		
+		froms.add(mail);
+		
+		mail = MailInfoCount.builder()
+				.email(EMAIL_KERUBIN_PJ)
+				.password(get_EMAIL_KERUBIN_PJ_PWD()).build();
+		
+		froms.add(mail);
+	}
+
 	private String getKerubinLink() {
 		return MessageFormat.format(KERUBIN_LINK, serviceConfig.getAllowOrigin());
 	}
+	
 	
 
 	// @Scheduled(fixedDelay = 1000 * 20)
@@ -216,8 +260,6 @@ public class BillsNotifier {
 			ContasReceberHojeResumoCompleto contasReceberHojeResumoCompleto,
 			List<CaixaMovimentoItem> fluxoCaixaResumoMovimentacoes) {
 		
-		
-		MailInfo from = new MailInfo(EMAIL_KERUBIN_NOTIFICADOR, EMAIL_KERUBIN_NOTIFICADOR_PERSONAL, get_EMAIL_KERUBIN_NOTIFICADOR_APP_PWD());
 		List<MailInfo> recipients = users.stream().map(user -> new MailInfo(user.getEmail(), user.getName(), null)).collect(Collectors.toList());
 		
 		log.info("Notifying bills for users {} ...", recipients);
@@ -231,21 +273,50 @@ public class BillsNotifier {
 					contasReceberHojeResumoCompleto,
 					fluxoCaixaResumoMovimentacoes);
 		} catch(Exception e) {
-			log.error(MessageFormat.format("Erro ao gerar mensagem para enviado notificação de contas para: {0}. Erro: {1}", recipients, e.getMessage()), e);
+			log.error(messageFormat("Erro ao gerar mensagem para enviado notificação de contas para: {0}. Erro: {1}", recipients, e.getMessage()), e);
 		}
 		
 		if (isNotEmpty(message)) {
 			try {
-				mailSender.sendMail(from, recipients, subsject, message);
+				sendMail(recipients, subsject, message);
 			} catch (Exception e) {
-				log.error(MessageFormat.format("Erro enviado e-mail de notificação de contas para: {0}. Erro: {1}", recipients, e.getMessage()), e);
+				log.error(messageFormat("Erro enviado e-mail de notificação de contas para: {0}. Erro: {1}", recipients, e.getMessage()), e);
 			}
 		}
-		
 		
 		log.info("DONE notify bills for users {} ...", recipients);
 	}
 	
+	private void sendMail(List<MailInfo> recipients, String subsject, String message) {
+		List<MailInfoCount> fromsRef = new ArrayList<>(froms.size());
+		froms.forEach(fromsRef::add);
+		
+		trySendMail(fromsRef, recipients, subsject, message);
+	}
+	
+	private void trySendMail(List<MailInfoCount> fromsRef, List<MailInfo> recipients, String subsject,
+			String message) {
+		
+		if (isEmpty(fromsRef)) {
+			throw new NotificatorException(messageFormat("Não há mais nenhum e-mail FROM disponível para enviar notificações para os recipientes: {0}", recipients));
+		}
+		
+		MailInfoCount from = fromsRef.remove(0);
+		try {
+			log.info(messageFormat("Trying to send notification FROM: {0}, with count:{1}, to recipients: {2}...", 
+					from.getEmail(), from.getSendCount(), recipients));
+			
+			mailSender.sendMail(from.toMailInfo(), recipients, subsject, message);			
+			from.incCount();
+		} catch (Exception e) {
+			log.error(messageFormat("Erro trying to send notification FROM: {0}, with count:{1}, to recipients: {2}. Error: {3}. WILL TRY AGAIN WITH OTHER FROM E-MAIL.", 
+					from.getEmail(), from.getSendCount(), recipients, e.getMessage()), e);
+			
+			trySendMail(fromsRef, recipients, subsject, message);
+		}
+		
+	}
+
 	private FinanceiroResumoData combineFinanceiroResumoData(ContasPagarHojeResumoCompleto contasPagarHojeResumoCompleto, 
 			ContasReceberHojeResumoCompleto contasReceberHojeResumoCompleto,
 			List<CaixaMovimentoItem> caixaMovimentoItens
