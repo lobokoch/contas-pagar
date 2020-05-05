@@ -319,7 +319,7 @@ service contas_pagar { //xxx
 			
 			// Action: Estorna conta baixada //
 			with(grid.actions)
-			.apply(dataPagamento = null, valorPago = null, tipoPagamento = TipoPagamentoConta.SINGLE)
+			.apply(dataPagamento = null, contaPaga = false, valorPago = null, tipoPagamento = TipoPagamentoConta.SINGLE)
 			.when(contaPaga.isTrue and tipoPagamento.isEquals(TipoPagamentoConta.SINGLE))
 			//.action(name: estornarPagamentoContaComUmClique button(tooltip: "Estornar o pagamento da conta" icon: "pi pi-arrow-up"))
 			.action(name: estornarPagamentoContaComUmClique button(tooltip: "Estornar o pagamento da conta" icon: "pi pi-undo"))

@@ -2,14 +2,7 @@ package br.com.kerubin.api.notificador.contas;
 
 import static br.com.kerubin.api.messaging.constants.MessagingConstants.HEADER_TENANT;
 import static br.com.kerubin.api.messaging.constants.MessagingConstants.HEADER_USER;
-import static br.com.kerubin.api.servicecore.mail.MailUtils.EMAIL_KERUBIN_FINANCEIRO;
-import static br.com.kerubin.api.servicecore.mail.MailUtils.EMAIL_KERUBIN_NOTIFICADOR;
-import static br.com.kerubin.api.servicecore.mail.MailUtils.EMAIL_KERUBIN_PJ;
-import static br.com.kerubin.api.servicecore.mail.MailUtils.EMAIL_KERUBIN_PLATFORM;
-import static br.com.kerubin.api.servicecore.mail.MailUtils.get_EMAIL_KERUBIN_FINANCEIRO_APP_PWD;
-import static br.com.kerubin.api.servicecore.mail.MailUtils.get_EMAIL_KERUBIN_NOTIFICADOR_APP_PWD;
-import static br.com.kerubin.api.servicecore.mail.MailUtils.get_EMAIL_KERUBIN_PJ_PWD;
-import static br.com.kerubin.api.servicecore.mail.MailUtils.get_EMAIL_KERUBIN_PLATFORM_APP_PWD;
+import static br.com.kerubin.api.servicecore.mail.MailUtils.*;
 import static br.com.kerubin.api.servicecore.util.CoreUtils.formatDate;
 import static br.com.kerubin.api.servicecore.util.CoreUtils.formatNumber;
 import static br.com.kerubin.api.servicecore.util.CoreUtils.getFirstName;
@@ -95,10 +88,28 @@ public class BillsNotifier {
 	private void initFromEmails() {
 		froms.clear();
 		
-		// Cerca de 2.000 e-mails por dia.
+		// Cerca de 3.000 e-mails por dia.
 		MailInfoCount mail = MailInfoCount.builder()
 				.email(EMAIL_KERUBIN_NOTIFICADOR)
 				.password(get_EMAIL_KERUBIN_NOTIFICADOR_APP_PWD()).build();
+		
+		froms.add(mail);
+		
+		mail = MailInfoCount.builder()
+				.email(EMAIL_KERUBIN_ALERTA)
+				.password(get_EMAIL_KERUBIN_ALERTA_APP_PWD()).build();
+		
+		froms.add(mail);
+		
+		mail = MailInfoCount.builder()
+				.email(EMAIL_KERUBIN_ALERTA2)
+				.password(get_EMAIL_KERUBIN_ALERTA2_APP_PWD()).build();
+		
+		froms.add(mail);
+		
+		mail = MailInfoCount.builder()
+				.email(EMAIL_KERUBIN_PJ)
+				.password(get_EMAIL_KERUBIN_PJ_PWD()).build();
 		
 		froms.add(mail);
 		
@@ -111,12 +122,6 @@ public class BillsNotifier {
 		mail = MailInfoCount.builder()
 				.email(EMAIL_KERUBIN_FINANCEIRO)
 				.password(get_EMAIL_KERUBIN_FINANCEIRO_APP_PWD()).build();
-		
-		froms.add(mail);
-		
-		mail = MailInfoCount.builder()
-				.email(EMAIL_KERUBIN_PJ)
-				.password(get_EMAIL_KERUBIN_PJ_PWD()).build();
 		
 		froms.add(mail);
 	}

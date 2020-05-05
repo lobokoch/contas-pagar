@@ -289,6 +289,7 @@ public class ContaPagarServiceImpl implements ContaPagarService {
 		
 		if ((Boolean.TRUE.equals(contaPagar.getContaPaga())) && contaPagar.getTipoPagamento().equals(TipoPagamentoConta.SINGLE)) {
 			contaPagar.setDataPagamento(null);
+			contaPagar.setContaPaga(Boolean.FALSE);
 			contaPagar.setValorPago(null);
 			contaPagar.setTipoPagamento(TipoPagamentoConta.SINGLE);
 			
