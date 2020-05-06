@@ -543,13 +543,14 @@ public class BillsNotifier {
 		StringBuilder sb = new StringBuilder();
 		sb.append("");
 		
-		sb.append("<!DOCTYPE html>\r\n");
-		sb.append("<html lang=\"pt-br\">\r\n");
-		sb.append("<head>\r\n");
-		sb.append("<meta charset=\"UTF-8\">\r\n");
-		sb.append("<title>Rerubin - Resumo das contas</title>\r\n");
-		sb.append("</head>\r\n");
-		sb.append("<body>\r\n");
+		sb.append("<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Transitional//EN\" \"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd\">")
+		.append("<html xmlns=\"http://www.w3.org/1999/xhtml\">")
+		.append("<head>")
+		.append("<meta http-equiv=\"Content-Type\" content=\"text/html; charset=UTF-8\" />")
+		.append("<title>Kerubin - Resumo financeiro</title>")
+		.append("<meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\"/>")
+		.append("</head>")
+		.append("<body>\r\n");
 		
 		StringBuilder saudacao = new StringBuilder("Olá, ");
 		if (users.size() == 1) {
@@ -715,7 +716,7 @@ public class BillsNotifier {
 		sb.append("</html>\r\n");
 		
 		html = sb.toString();
-		// saveText(html, "D:\\bkp\\email.HTML");
+		//saveText(html, "D:\\bkp\\email.HTML");
 		
 		return html;
 		
