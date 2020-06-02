@@ -98,38 +98,47 @@ public class CartaoCreditoEntity  {
 	}
 	
 	public void setId(java.util.UUID id) {
+		
 		this.id = id;
 	}
 	
 	public void setBanco(BancoEntity banco) {
+		
 		this.banco = banco;
 	}
 	
 	public void setNomeTitular(String nomeTitular) {
+		
 		this.nomeTitular = nomeTitular != null ? nomeTitular.trim() : nomeTitular; // Chamadas REST fazem trim.
 	}
 	
 	public void setNumeroCartao(String numeroCartao) {
+		
 		this.numeroCartao = numeroCartao != null ? numeroCartao.trim() : numeroCartao; // Chamadas REST fazem trim.
 	}
 	
 	public void setValidade(java.time.LocalDate validade) {
+		
 		this.validade = validade;
 	}
 	
 	public void setValorLimite(java.math.BigDecimal valorLimite) {
+		
 		this.valorLimite = valorLimite;
 	}
 	
 	public void setBandeiraCartao(BandeiraCartaoEntity bandeiraCartao) {
+		
 		this.bandeiraCartao = bandeiraCartao;
 	}
 	
 	public void setAtivo(Boolean ativo) {
+		
 		this.ativo = ativo;
 	}
 	
 	public void setDeleted(Boolean deleted) {
+		
 		this.deleted = deleted;
 	}
 	

@@ -52,18 +52,22 @@ public class BancoEntity  {
 	}
 	
 	public void setId(java.util.UUID id) {
+		
 		this.id = id;
 	}
 	
 	public void setNumero(String numero) {
+		
 		this.numero = numero != null ? numero.trim() : numero; // Chamadas REST fazem trim.
 	}
 	
 	public void setNome(String nome) {
+		
 		this.nome = nome != null ? nome.trim() : nome; // Chamadas REST fazem trim.
 	}
 	
 	public void setDeleted(Boolean deleted) {
+		
 		this.deleted = deleted;
 	}
 	

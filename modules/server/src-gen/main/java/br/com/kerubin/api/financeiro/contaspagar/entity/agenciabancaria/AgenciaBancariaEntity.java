@@ -74,26 +74,32 @@ public class AgenciaBancariaEntity  {
 	}
 	
 	public void setId(java.util.UUID id) {
+		
 		this.id = id;
 	}
 	
 	public void setBanco(BancoEntity banco) {
+		
 		this.banco = banco;
 	}
 	
 	public void setNumeroAgencia(String numeroAgencia) {
+		
 		this.numeroAgencia = numeroAgencia != null ? numeroAgencia.trim() : numeroAgencia; // Chamadas REST fazem trim.
 	}
 	
 	public void setDigitoAgencia(String digitoAgencia) {
+		
 		this.digitoAgencia = digitoAgencia != null ? digitoAgencia.trim() : digitoAgencia; // Chamadas REST fazem trim.
 	}
 	
 	public void setEndereco(String endereco) {
+		
 		this.endereco = endereco != null ? endereco.trim() : endereco; // Chamadas REST fazem trim.
 	}
 	
 	public void setDeleted(Boolean deleted) {
+		
 		this.deleted = deleted;
 	}
 	

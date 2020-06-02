@@ -43,14 +43,17 @@ public class BandeiraCartaoEntity  {
 	}
 	
 	public void setId(java.util.UUID id) {
+		
 		this.id = id;
 	}
 	
 	public void setNomeBandeira(String nomeBandeira) {
+		
 		this.nomeBandeira = nomeBandeira != null ? nomeBandeira.trim() : nomeBandeira; // Chamadas REST fazem trim.
 	}
 	
 	public void setDeleted(Boolean deleted) {
+		
 		this.deleted = deleted;
 	}
 	

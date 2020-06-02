@@ -71,26 +71,32 @@ public class FornecedorEntity  {
 	}
 	
 	public void setId(java.util.UUID id) {
+		
 		this.id = id;
 	}
 	
 	public void setTipoPessoa(TipoPessoa tipoPessoa) {
+		
 		this.tipoPessoa = tipoPessoa;
 	}
 	
 	public void setNome(String nome) {
+		
 		this.nome = nome != null ? nome.trim() : nome; // Chamadas REST fazem trim.
 	}
 	
 	public void setCnpjCPF(String cnpjCPF) {
+		
 		this.cnpjCPF = cnpjCPF != null ? cnpjCPF.trim() : cnpjCPF; // Chamadas REST fazem trim.
 	}
 	
 	public void setAtivo(Boolean ativo) {
+		
 		this.ativo = ativo;
 	}
 	
 	public void setDeleted(Boolean deleted) {
+		
 		this.deleted = deleted;
 	}
 	

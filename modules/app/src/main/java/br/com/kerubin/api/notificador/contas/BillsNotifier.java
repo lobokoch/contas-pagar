@@ -3,6 +3,7 @@ package br.com.kerubin.api.notificador.contas;
 import static br.com.kerubin.api.messaging.constants.MessagingConstants.HEADER_TENANT;
 import static br.com.kerubin.api.messaging.constants.MessagingConstants.HEADER_USER;
 import static br.com.kerubin.api.servicecore.mail.MailUtils.*;
+import static br.com.kerubin.api.servicecore.util.CoreUtils.formatTime;
 import static br.com.kerubin.api.servicecore.util.CoreUtils.formatDate;
 import static br.com.kerubin.api.servicecore.util.CoreUtils.formatNumber;
 import static br.com.kerubin.api.servicecore.util.CoreUtils.getFirstName;
@@ -18,6 +19,7 @@ import java.time.Instant;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -48,6 +50,9 @@ import br.com.kerubin.api.notificador.model.ContasReceberHojeResumoCompleto;
 import br.com.kerubin.api.notificador.model.ContasReceberSituacaoDoAnoSum;
 import br.com.kerubin.api.notificador.model.FinanceiroResumoData;
 import br.com.kerubin.api.notificador.model.SysUser;
+import br.com.kerubin.api.notificador.model.external.clientes.AgendaDTO;
+import br.com.kerubin.api.notificador.model.external.clientes.CompromissoDTO;
+import br.com.kerubin.api.notificador.model.external.clientes.RecursoDTO;
 import br.com.kerubin.api.servicecore.mail.MailInfo;
 import br.com.kerubin.api.servicecore.mail.MailInfoCount;
 import br.com.kerubin.api.servicecore.mail.MailSender;
@@ -62,6 +67,7 @@ public class BillsNotifier {
 	private static final int CONTA_MAX_ITEMS = 5;
 	private static final int MAX_RETRIES = 5;
 	
+	public static final String CADASTROS_CLIENTE_SERVICE = "cadastros-cliente/cadastros/cliente/";
 	public static final String FINANCEIRO_CONTASPAGAR_SERVICE = "financeiro-contaspagar/financeiro/contas_pagar/";
 	public static final String FINANCEIRO_CONTASRECEBER_SERVICE = "financeiro-contasreceber/financeiro/contas_receber/";
 	public static final String FINANCEIRO_FLUXOCAIXA_SERVICE = "financeiro-fluxocaixa/financeiro/fluxo_caixa/";
@@ -213,16 +219,20 @@ public class BillsNotifier {
 		
 		CompletableFuture<List<CaixaMovimentoItem>> fluxoCaixaResumoMovimentacoesFuture = CompletableFuture.supplyAsync(() -> getFluxoCaixaResumoMovimentacoes(userAndTenant));
 		
+		CompletableFuture<AgendaDTO> agendaDoDiaFuture = CompletableFuture.supplyAsync(() -> getAgendaDoDia(userAndTenant));
+		
 	    
 		FinanceiroResumoData financeiroResumoData = CompletableFuture.allOf(contasPagarHojeResumoCompletoFuture, 
 				contasReceberHojeResumoCompletoFuture, 
-				fluxoCaixaResumoMovimentacoesFuture)
+				fluxoCaixaResumoMovimentacoesFuture, 
+				agendaDoDiaFuture)
 				.thenApply(ignored -> {
 					
 					return combineFinanceiroResumoData(
 						contasPagarHojeResumoCompletoFuture.join(),
 						contasReceberHojeResumoCompletoFuture.join(),
-						fluxoCaixaResumoMovimentacoesFuture.join());
+						fluxoCaixaResumoMovimentacoesFuture.join(),
+						agendaDoDiaFuture.join());
 				}
 					).join();
 		
@@ -240,7 +250,8 @@ public class BillsNotifier {
 		notifyBillsForUser(usersOfTenant, 
 				financeiroResumoData.getContasPagarHojeResumoCompleto(), 
 				financeiroResumoData.getContasReceberHojeResumoCompleto(), 
-				financeiroResumoData.getCaixaMovimentoItens());
+				financeiroResumoData.getCaixaMovimentoItens(),
+				financeiroResumoData.getAgendaDTO());
 		
 		/*usersOfTenant.forEach(user -> {
 			CompletableFuture.runAsync( () -> notifyBillsForUser(user, 
@@ -263,7 +274,8 @@ public class BillsNotifier {
 	private void notifyBillsForUser(List<SysUser> users, 
 			ContasPagarHojeResumoCompleto contasPagarHojeResumoCompleto,
 			ContasReceberHojeResumoCompleto contasReceberHojeResumoCompleto,
-			List<CaixaMovimentoItem> fluxoCaixaResumoMovimentacoes) {
+			List<CaixaMovimentoItem> fluxoCaixaResumoMovimentacoes,
+			AgendaDTO agendaDTO) {
 		
 		List<MailInfo> recipients = users.stream().map(user -> new MailInfo(user.getEmail(), user.getName(), null)).collect(Collectors.toList());
 		
@@ -276,7 +288,8 @@ public class BillsNotifier {
 			message = buildNotificationBillsForUserMessage(users, 
 					contasPagarHojeResumoCompleto, 
 					contasReceberHojeResumoCompleto,
-					fluxoCaixaResumoMovimentacoes);
+					fluxoCaixaResumoMovimentacoes,
+					agendaDTO);
 		} catch(Exception e) {
 			log.error(messageFormat("Erro ao gerar mensagem para enviado notificação de contas para: {0}. Erro: {1}", recipients, e.getMessage()), e);
 		}
@@ -324,7 +337,8 @@ public class BillsNotifier {
 
 	private FinanceiroResumoData combineFinanceiroResumoData(ContasPagarHojeResumoCompleto contasPagarHojeResumoCompleto, 
 			ContasReceberHojeResumoCompleto contasReceberHojeResumoCompleto,
-			List<CaixaMovimentoItem> caixaMovimentoItens
+			List<CaixaMovimentoItem> caixaMovimentoItens,
+			AgendaDTO agendaDTO 
 			) {
 		
 		FinanceiroResumoData result = FinanceiroResumoData
@@ -332,6 +346,7 @@ public class BillsNotifier {
 				.contasPagarHojeResumoCompleto(contasPagarHojeResumoCompleto)
 				.contasReceberHojeResumoCompleto(contasReceberHojeResumoCompleto)
 				.caixaMovimentoItens(caixaMovimentoItens)
+				.agendaDTO(agendaDTO)
 				.build();
 		
 		return result;
@@ -355,6 +370,100 @@ public class BillsNotifier {
 		
 		log.info("DONE notification bills for user name: {}, e-mail: {}, tenant: {} ...", user.getName(), user.getEmail(), user.getTenant());
 	}*/
+	
+	private static String bold(String str) {
+		return "<strong>".concat(str).concat("</strong>");
+	}
+	
+	private String buildAgenda(AgendaDTO agenda) {
+		List<CompromissoDTO> compromissos = agenda != null ? agenda.getCompromissos() : Collections.emptyList();
+		int count = compromissos.size();
+		
+		if (count > CONTA_MAX_ITEMS) {
+			compromissos = compromissos.subList(0, CONTA_MAX_ITEMS);
+		}
+		
+		StringBuilder sb = new StringBuilder();
+		
+		BooleanWrapper bw = new BooleanWrapper(true);
+		String trTrue = " style=\"height:25px; background: #f4f4f4;\"";
+		String trFalse = " style=\"height:25px; background: #ffffff;\"";
+		
+		sb.append("<table style=\"margin: auto; width: 90%; border: 1px solid #bdbdbd; border-collapse: collapse;\">");
+		sb.append("<tr").append(getStringAlternate(trTrue, trFalse, bw)).append(">");
+		sb.append("<th style=\"text-align: center; border: 1px solid #bdbdbd;\">").append("Título").append("</th>");
+		sb.append("<th style=\"text-align: center; border: 1px solid #bdbdbd;\">").append("Início").append("</th>");
+		sb.append("<th style=\"text-align: center; border: 1px solid #bdbdbd;\">").append("Fim").append("</th>");
+		sb.append("<th style=\"text-align: center; border: 1px solid #bdbdbd;\">").append("Participantes").append("</th>");
+		sb.append("<th style=\"text-align: center; border: 1px solid #bdbdbd;\">").append("Local").append("</th>");
+		sb.append("</tr>");
+		if (count > 0) {
+			for (int i = 0; i < compromissos.size(); i++) {
+				CompromissoDTO compromisso = compromissos.get(i);
+				String ini = formatDate(compromisso.getDataIni()) + ' ' + formatTime(compromisso.getHoraIni());
+				String fim = formatDate(compromisso.getDataFim()) + ' ' + formatTime(compromisso.getHoraFim());
+				
+				RecursoDTO recurso = null;
+				if (isNotEmpty(compromisso.getRecursos())) {
+					recurso = compromisso.getRecursos()
+							.stream().filter(it -> it.getEmail().equals(compromisso.getOrganizadorEmail()))
+							.findFirst()
+							.orElse(null);
+				} else {
+					compromisso.setRecursos(new ArrayList<>());
+				}
+				
+				if (recurso == null) {
+					recurso = new RecursoDTO(null, compromisso.getOrganizadorNome(), compromisso.getOrganizadorEmail(), 1L);
+				}
+				recurso.setNome(recurso.getNome() + " (organizador)");
+				
+				if (isEmpty(compromisso.getRecursos())) {
+					compromisso.getRecursos().add(recurso);
+				}
+				
+				
+				String participantes = compromisso.getRecursos() //
+						.stream().map(RecursoDTO::getNome).collect(Collectors.joining(", ")); //
+						
+				String local = isNotEmpty(compromisso.getLocal()) ? compromisso.getLocal() : "";
+						
+				sb.append("<tr").append(getStringAlternate(trTrue, trFalse, bw)).append(">");
+				sb.append("<td style=\"text-align: center; border: 1px solid #bdbdbd;\">").append(bold(compromisso.getTitulo())).append("</td>");
+				sb.append("<td style=\"text-align: center; border: 1px solid #bdbdbd;\">").append(ini).append("</td>");
+				sb.append("<td style=\"text-align: center; border: 1px solid #bdbdbd;\">").append(fim).append("</td>");
+				sb.append("<td style=\"text-align: center; border: 1px solid #bdbdbd;\">").append(participantes).append("</td>");
+				sb.append("<td style=\"text-align: center; border: 1px solid #bdbdbd;\">").append(local).append("</td>");
+				sb.append("</tr>");
+				
+			} // for
+			
+			if (count > CONTA_MAX_ITEMS) {
+				sb.append("<tr").append(getStringAlternate(trTrue, trFalse, bw)).append(">");
+				sb.append("<th colspan=\"5\" style=\"text-align: center; border: 1px solid #bdbdbd;\">")
+				.append("Tem mais ")
+				.append(count - CONTA_MAX_ITEMS)
+				.append(" compromissos.")
+				.append(" Para detalhes acesso o ")
+				.append(getKerubinLink())					
+				.append("</th>");
+				sb.append("</tr>");
+			}
+			
+			sb.append("<tr").append(getStringAlternate(trTrue, trFalse, bw)).append(">");
+			sb.append("<th colspan=\"4\" style=\"text-align: right; padding-right: 5px; border: 1px solid #bdbdbd;\">").append("Total de compromissos").append("</th>");
+			sb.append("<th style=\"text-align: center; border: 1px solid #bdbdbd;\">").append(count).append("</th>");
+			sb.append("</tr>");
+		}
+		else {
+			sb.append("<tr").append(getStringAlternate(trTrue, trFalse, bw)).append(">");
+			sb.append("<td colspan=\"5\" style=\"text-align: center; border: 1px solid #bdbdbd;\">").append("<strong>Até o momento não há compromissos para hoje.</strong>").append("</td>");
+			sb.append("</tr>");
+		}
+		sb.append(" </table>");
+		
+		return sb.toString();
+	}
 	
 	private String buildListaContasPagarHoje(ContasPagarHojeResumoCompleto cp) {
 		List<ContasPagarHojeResumo> cpHojeList = cp.getContasPagarHojeResumo();
@@ -532,7 +641,8 @@ public class BillsNotifier {
 	private String buildNotificationBillsForUserMessage(List<SysUser> users,
 			ContasPagarHojeResumoCompleto cp,
 			ContasReceberHojeResumoCompleto cr,
-			List<CaixaMovimentoItem> fc) {
+			List<CaixaMovimentoItem> fc,
+			AgendaDTO agenda) {
 		
 		ContasPagarSituacaoDoAnoSum cpResumoSum = cp.getContasPagarSituacaoDoAnoSum();
 		
@@ -693,6 +803,22 @@ public class BillsNotifier {
 		"              "
 		
 		+ buildListaFluxoCaixaResumoMovimentacoes(fc) +
+		
+		"        \r\n" + 
+		"        </div>\r\n" + 
+		"	</div>\r\n" + 
+		"\r\n" + 
+		
+		"      \r\n" + // Begin Resumo da AGENDA de hoje
+		"       <div style=\"display:table-row;background: #1e94d2;\">\r\n" + 
+		"			<div style=\"border:1px solid #0586d3; border-bottom: 0px; text-align:center;vertical-align:middle; display:table-cell; background: red; width: 100%; color:#fff; padding-top: 5px; padding-bottom: 5px;\">Resumo da agenda de compromissos para hoje (" + todayStr + ")</div>\r\n" + 
+		"		</div>\r\n" + 
+		"      \r\n" + 
+		"      <div style=\"display:table-row;\">\r\n" + 
+		"			<div style=\"border:1px solid #d9d9d9; border-top:0px; text-align:center;vertical-align:middle; display:table-cell; background:  #fff; width: 100%; padding-top: 20px; padding-bottom: 20px\">\r\n" + 
+		"              "
+		
+		+ buildAgenda(agenda) +
 		
 		"        \r\n" + 
 		"        </div>\r\n" + 
@@ -870,6 +996,54 @@ public class BillsNotifier {
 		log.info("Result at getFluxoCaixaResumoMovimentacoes for tenant: {} and user: {}, result: {}", tenant,  username, result);
 		
 		log.info("DONE getFluxoCaixaResumoMovimentacoes for tenant: {} and user: {}...", tenant,  username);
+		return result;
+	}
+	
+	private AgendaDTO getAgendaDoDia(SysUser userAndTenant) {
+		
+		String tenant = userAndTenant.getTenant().getName();
+		String username = userAndTenant.getEmail();
+		String url = HTTP + CADASTROS_CLIENTE_SERVICE + "agenda/agendaDoDia";
+		
+		String logMsg = "Tenant: " + tenant + ", username: " + username + ", URL: " + url;
+		
+		log.info("Starting getAgendaDoDia from: {}...", logMsg);
+		
+		HttpEntity<String> httpEntity = buildHttpHeaders(tenant, username);
+		
+		//////////////
+		ResponseEntity<AgendaDTO> response = null;
+		int attempts = 0;
+		boolean success = false;
+		while (!success && attempts < MAX_RETRIES) {
+			attempts++;
+			try {
+				log.info("Trying {} attempts getting data from: {}...", attempts, logMsg);
+				
+				response = restTemplate.exchange(url, HttpMethod.GET, httpEntity,
+						new ParameterizedTypeReference<AgendaDTO>() {
+				});
+				
+				success = true;
+				
+			} catch (Exception e) {
+				log.error(attempts + " errors getting data from: " + logMsg, e);
+			}
+		} // while
+		
+		if (!success) {
+			log.warn("FAIL with " + attempts + " attempts getting data from: " + logMsg);
+			return null;
+		}
+		
+		log.info("SUCCESS with " + attempts + " attempts getting data from: " + logMsg);
+		//////////////
+		
+		AgendaDTO result = response.getBody();
+		
+		log.info("Result at getAgendaDoDia for tenant: {} and user: {}, result: {}", tenant,  username, result);
+		
+		log.info("DONE getAgendaDoDia for tenant: {} and user: {}...", tenant,  username);
 		return result;
 	}
 	

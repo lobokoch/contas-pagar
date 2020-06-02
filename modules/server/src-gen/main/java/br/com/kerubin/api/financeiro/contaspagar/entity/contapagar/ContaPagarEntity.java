@@ -240,106 +240,132 @@ public class ContaPagarEntity extends AuditingEntity {
 	}
 	
 	public void setId(java.util.UUID id) {
+		
 		this.id = id;
 	}
 	
 	public void setDescricao(String descricao) {
+		
 		this.descricao = descricao != null ? descricao.trim() : descricao; // Chamadas REST fazem trim.
 	}
 	
 	public void setPlanoContas(PlanoContaEntity planoContas) {
+		
 		this.planoContas = planoContas;
 	}
 	
 	public void setDataVencimento(java.time.LocalDate dataVencimento) {
+		
 		this.dataVencimento = dataVencimento;
 	}
 	
 	public void setValor(java.math.BigDecimal valor) {
+		
 		this.valor = valor;
 	}
 	
 	public void setFormaPagamento(FormaPagamento formaPagamento) {
+		
 		this.formaPagamento = formaPagamento;
 	}
 	
 	public void setContaBancaria(ContaBancariaEntity contaBancaria) {
+		
 		this.contaBancaria = contaBancaria;
 	}
 	
 	public void setCartaoCredito(CartaoCreditoEntity cartaoCredito) {
+		
 		this.cartaoCredito = cartaoCredito;
 	}
 	
 	public void setOutrosDescricao(String outrosDescricao) {
+		
 		this.outrosDescricao = outrosDescricao != null ? outrosDescricao.trim() : outrosDescricao; // Chamadas REST fazem trim.
 	}
 	
 	public void setFornecedor(FornecedorEntity fornecedor) {
+		
 		this.fornecedor = fornecedor;
 	}
 	
 	public void setContaPaga(Boolean contaPaga) {
+		
 		this.contaPaga = contaPaga;
 	}
 	
 	public void setDataPagamento(java.time.LocalDate dataPagamento) {
+		
 		this.dataPagamento = dataPagamento;
 	}
 	
 	public void setValorDesconto(java.math.BigDecimal valorDesconto) {
+		
 		this.valorDesconto = valorDesconto;
 	}
 	
 	public void setValorMulta(java.math.BigDecimal valorMulta) {
+		
 		this.valorMulta = valorMulta;
 	}
 	
 	public void setValorJuros(java.math.BigDecimal valorJuros) {
+		
 		this.valorJuros = valorJuros;
 	}
 	
 	public void setValorAcrescimos(java.math.BigDecimal valorAcrescimos) {
+		
 		this.valorAcrescimos = valorAcrescimos;
 	}
 	
 	public void setValorPago(java.math.BigDecimal valorPago) {
+		
 		this.valorPago = valorPago;
 	}
 	
 	public void setMaisOpcoes(Boolean maisOpcoes) {
+		
 		this.maisOpcoes = maisOpcoes;
 	}
 	
 	public void setIdConcBancaria(String idConcBancaria) {
+		
 		this.idConcBancaria = idConcBancaria != null ? idConcBancaria.trim() : idConcBancaria; // Chamadas REST fazem trim.
 	}
 	
 	public void setHistConcBancaria(String histConcBancaria) {
+		
 		this.histConcBancaria = histConcBancaria != null ? histConcBancaria.trim() : histConcBancaria; // Chamadas REST fazem trim.
 	}
 	
 	public void setNumDocConcBancaria(String numDocConcBancaria) {
+		
 		this.numDocConcBancaria = numDocConcBancaria != null ? numDocConcBancaria.trim() : numDocConcBancaria; // Chamadas REST fazem trim.
 	}
 	
 	public void setNumDocumento(String numDocumento) {
+		
 		this.numDocumento = numDocumento != null ? numDocumento.trim() : numDocumento; // Chamadas REST fazem trim.
 	}
 	
 	public void setObservacoes(String observacoes) {
+		
 		this.observacoes = observacoes != null ? observacoes.trim() : observacoes; // Chamadas REST fazem trim.
 	}
 	
 	public void setAgrupador(String agrupador) {
+		
 		this.agrupador = agrupador != null ? agrupador.trim() : agrupador; // Chamadas REST fazem trim.
 	}
 	
 	public void setTipoPagamento(TipoPagamentoConta tipoPagamento) {
+		
 		this.tipoPagamento = tipoPagamento;
 	}
 	
 	public void setContaPagarPai(java.util.UUID contaPagarPai) {
+		
 		this.contaPagarPai = contaPagarPai;
 	}
 	

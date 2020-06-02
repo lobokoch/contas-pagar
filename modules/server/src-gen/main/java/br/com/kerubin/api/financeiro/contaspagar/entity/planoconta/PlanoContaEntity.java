@@ -94,34 +94,42 @@ public class PlanoContaEntity  {
 	}
 	
 	public void setId(java.util.UUID id) {
+		
 		this.id = id;
 	}
 	
 	public void setCodigo(String codigo) {
+		
 		this.codigo = codigo != null ? codigo.trim() : codigo; // Chamadas REST fazem trim.
 	}
 	
 	public void setDescricao(String descricao) {
+		
 		this.descricao = descricao != null ? descricao.trim() : descricao; // Chamadas REST fazem trim.
 	}
 	
 	public void setTipoFinanceiro(TipoPlanoContaFinanceiro tipoFinanceiro) {
+		
 		this.tipoFinanceiro = tipoFinanceiro;
 	}
 	
 	public void setTipoReceitaDespesa(TipoReceitaDespesa tipoReceitaDespesa) {
+		
 		this.tipoReceitaDespesa = tipoReceitaDespesa;
 	}
 	
 	public void setPlanoContaPai(PlanoContaEntity planoContaPai) {
+		
 		this.planoContaPai = planoContaPai;
 	}
 	
 	public void setAtivo(Boolean ativo) {
+		
 		this.ativo = ativo;
 	}
 	
 	public void setDeleted(Boolean deleted) {
+		
 		this.deleted = deleted;
 	}
 	

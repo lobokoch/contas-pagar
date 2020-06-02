@@ -101,38 +101,47 @@ public class ContaBancariaEntity  {
 	}
 	
 	public void setId(java.util.UUID id) {
+		
 		this.id = id;
 	}
 	
 	public void setNomeTitular(String nomeTitular) {
+		
 		this.nomeTitular = nomeTitular != null ? nomeTitular.trim() : nomeTitular; // Chamadas REST fazem trim.
 	}
 	
 	public void setAgencia(AgenciaBancariaEntity agencia) {
+		
 		this.agencia = agencia;
 	}
 	
 	public void setTipoContaBancaria(TipoContaBancaria tipoContaBancaria) {
+		
 		this.tipoContaBancaria = tipoContaBancaria;
 	}
 	
 	public void setNumeroConta(String numeroConta) {
+		
 		this.numeroConta = numeroConta != null ? numeroConta.trim() : numeroConta; // Chamadas REST fazem trim.
 	}
 	
 	public void setDigito(String digito) {
+		
 		this.digito = digito != null ? digito.trim() : digito; // Chamadas REST fazem trim.
 	}
 	
 	public void setDataValidade(java.time.LocalDate dataValidade) {
+		
 		this.dataValidade = dataValidade;
 	}
 	
 	public void setAtivo(Boolean ativo) {
+		
 		this.ativo = ativo;
 	}
 	
 	public void setDeleted(Boolean deleted) {
+		
 		this.deleted = deleted;
 	}
 	

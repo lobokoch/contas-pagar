@@ -164,62 +164,77 @@ public class ContaPagarMultipleEntity extends AuditingEntity {
 	}
 	
 	public void setId(java.util.UUID id) {
+		
 		this.id = id;
 	}
 	
 	public void setDataPagamento(java.time.LocalDate dataPagamento) {
+		
 		this.dataPagamento = dataPagamento;
 	}
 	
 	public void setValorPago(java.math.BigDecimal valorPago) {
+		
 		this.valorPago = valorPago;
 	}
 	
 	public void setDescricao(String descricao) {
+		
 		this.descricao = descricao != null ? descricao.trim() : descricao; // Chamadas REST fazem trim.
 	}
 	
 	public void setFornecedor(FornecedorEntity fornecedor) {
+		
 		this.fornecedor = fornecedor;
 	}
 	
 	public void setMaisOpcoes(Boolean maisOpcoes) {
+		
 		this.maisOpcoes = maisOpcoes;
 	}
 	
 	public void setPlanoContas(PlanoContaEntity planoContas) {
+		
 		this.planoContas = planoContas;
 	}
 	
 	public void setFormaPagamento(FormaPagamento formaPagamento) {
+		
 		this.formaPagamento = formaPagamento;
 	}
 	
 	public void setContaBancaria(ContaBancariaEntity contaBancaria) {
+		
 		this.contaBancaria = contaBancaria;
 	}
 	
 	public void setCartaoCredito(CartaoCreditoEntity cartaoCredito) {
+		
 		this.cartaoCredito = cartaoCredito;
 	}
 	
 	public void setOutrosDescricao(String outrosDescricao) {
+		
 		this.outrosDescricao = outrosDescricao != null ? outrosDescricao.trim() : outrosDescricao; // Chamadas REST fazem trim.
 	}
 	
 	public void setContaPagar(ContaPagarEntity contaPagar) {
+		
 		this.contaPagar = contaPagar;
 	}
 	
 	public void setIdConcBancaria(String idConcBancaria) {
+		
 		this.idConcBancaria = idConcBancaria != null ? idConcBancaria.trim() : idConcBancaria; // Chamadas REST fazem trim.
 	}
 	
 	public void setHistConcBancaria(String histConcBancaria) {
+		
 		this.histConcBancaria = histConcBancaria != null ? histConcBancaria.trim() : histConcBancaria; // Chamadas REST fazem trim.
 	}
 	
 	public void setNumDocConcBancaria(String numDocConcBancaria) {
+		
 		this.numDocConcBancaria = numDocConcBancaria != null ? numDocConcBancaria.trim() : numDocConcBancaria; // Chamadas REST fazem trim.
 	}
 	
