@@ -54,6 +54,10 @@ import br.com.kerubin.api.financeiro.contaspagar.entity.contapagar.ContaPagarLis
 import br.com.kerubin.api.financeiro.contaspagar.entity.contapagar.ContaPagarLookupResult;
 import br.com.kerubin.api.financeiro.contaspagar.entity.contapagar.ContaPagarService;
 import br.com.kerubin.api.financeiro.contaspagar.entity.contapagar.ContaPagarServiceImpl;
+import br.com.kerubin.api.financeiro.contaspagar.entity.contapagarmultiple.ContaPagarMultipleListFilterPredicate;
+import br.com.kerubin.api.financeiro.contaspagar.entity.contapagarmultiple.ContaPagarMultipleListFilterPredicateImpl;
+import br.com.kerubin.api.financeiro.contaspagar.entity.contapagarmultiple.ContaPagarMultipleService;
+import br.com.kerubin.api.financeiro.contaspagar.entity.contapagarmultiple.ContaPagarMultipleServiceImpl;
 import br.com.kerubin.api.financeiro.contaspagar.entity.fornecedor.FornecedorEntity;
 import br.com.kerubin.api.financeiro.contaspagar.entity.fornecedor.FornecedorLookupResult;
 import br.com.kerubin.api.financeiro.contaspagar.entity.fornecedor.FornecedorRepository;
@@ -107,6 +111,16 @@ public class VerificarTransacoesConciliacaoBancariaServiceTest extends Financeir
 		@Bean
 		public PlanoContaListFilterPredicate planoContaListFilterPredicate() {
 			return new PlanoContaListFilterPredicateImpl();
+		}
+		
+		@Bean
+		public ContaPagarMultipleListFilterPredicate contaPagarMultipleListFilterPredicate() {
+			return new ContaPagarMultipleListFilterPredicateImpl();
+		}
+		
+		@Bean
+		public ContaPagarMultipleService contaPagarMultipleService() {
+			return new ContaPagarMultipleServiceImpl(); 
 		}
 		
 	}
