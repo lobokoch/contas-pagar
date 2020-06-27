@@ -96,52 +96,51 @@ public class ContaBancariaEntity  {
 		return ativo;
 	}
 	
+	public boolean isAtivo() {
+		return Boolean.TRUE.equals(ativo);
+	}
+	
 	public Boolean getDeleted() {
 		return deleted;
 	}
 	
+	public boolean isDeleted() {
+		return Boolean.TRUE.equals(deleted);
+	}
+	
 	public void setId(java.util.UUID id) {
-		
 		this.id = id;
 	}
 	
 	public void setNomeTitular(String nomeTitular) {
-		
 		this.nomeTitular = nomeTitular != null ? nomeTitular.trim() : nomeTitular; // Chamadas REST fazem trim.
 	}
 	
 	public void setAgencia(AgenciaBancariaEntity agencia) {
-		
 		this.agencia = agencia;
 	}
 	
 	public void setTipoContaBancaria(TipoContaBancaria tipoContaBancaria) {
-		
 		this.tipoContaBancaria = tipoContaBancaria;
 	}
 	
 	public void setNumeroConta(String numeroConta) {
-		
 		this.numeroConta = numeroConta != null ? numeroConta.trim() : numeroConta; // Chamadas REST fazem trim.
 	}
 	
 	public void setDigito(String digito) {
-		
 		this.digito = digito != null ? digito.trim() : digito; // Chamadas REST fazem trim.
 	}
 	
 	public void setDataValidade(java.time.LocalDate dataValidade) {
-		
 		this.dataValidade = dataValidade;
 	}
 	
 	public void setAtivo(Boolean ativo) {
-		
 		this.ativo = ativo;
 	}
 	
 	public void setDeleted(Boolean deleted) {
-		
 		this.deleted = deleted;
 	}
 	
@@ -193,10 +192,81 @@ public class ContaBancariaEntity  {
 		if (getClass() != obj.getClass())
 			return false;
 		ContaBancariaEntity other = (ContaBancariaEntity) obj;
+			
+		
+		// Field: id
 		if (id == null) {
-			if (other.id != null)
+			if (other.id != null) {
 				return false;
+			}
 		} else if (!id.equals(other.id))
+			return false;
+		
+		// Field: nomeTitular
+		if (nomeTitular == null) {
+			if (other.nomeTitular != null) {
+				return false;
+			}
+		} else if (!nomeTitular.equals(other.nomeTitular))
+			return false;
+		
+		// Field: agencia
+		if (agencia == null) {
+			if (other.agencia != null) {
+				return false;
+			}
+		} else if (agencia.getId() == null) {
+			if (other.agencia.getId() != null)
+				return false;
+		} else if (!agencia.getId().equals(other.agencia.getId())) 
+			return false;
+		
+		// Field: tipoContaBancaria
+		if (tipoContaBancaria == null) {
+			if (other.tipoContaBancaria != null) {
+				return false;
+			}
+		} else if (!tipoContaBancaria.equals(other.tipoContaBancaria))
+			return false;
+		
+		// Field: numeroConta
+		if (numeroConta == null) {
+			if (other.numeroConta != null) {
+				return false;
+			}
+		} else if (!numeroConta.equals(other.numeroConta))
+			return false;
+		
+		// Field: digito
+		if (digito == null) {
+			if (other.digito != null) {
+				return false;
+			}
+		} else if (!digito.equals(other.digito))
+			return false;
+		
+		// Field: dataValidade
+		if (dataValidade == null) {
+			if (other.dataValidade != null) {
+				return false;
+			}
+		} else if (!dataValidade.equals(other.dataValidade))
+			return false;
+		
+		// Field: ativo
+		if (ativo == null) {
+			if (other.ativo != null) {
+				return false;
+			}
+		} else if (!ativo.equals(other.ativo))
+			return false;
+		
+		// Field: deleted
+		if (deleted == null) {
+			if (other.deleted != null) {
+				return false;
+			}
+		} else if (!deleted.equals(other.deleted))
 			return false;
 		
 		return true;

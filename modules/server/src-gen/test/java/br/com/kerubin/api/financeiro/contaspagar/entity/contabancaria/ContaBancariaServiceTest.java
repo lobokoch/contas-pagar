@@ -113,7 +113,6 @@ public class ContaBancariaServiceTest extends FinanceiroContasPagarBaseEntityTes
 		assertThat(actual.getAgencia().getId()).isNotNull();
 		assertThat(actual.getAgencia()).isEqualToIgnoringGivenFields(contaBancaria.getAgencia(), IGNORED_FIELDS);
 		
-		
 	}
 	
 	@Test
@@ -143,8 +142,6 @@ public class ContaBancariaServiceTest extends FinanceiroContasPagarBaseEntityTes
 		
 		assertThat(actual.getAgencia().getId()).isNotNull();
 		assertThat(actual.getAgencia()).isEqualToIgnoringGivenFields(contaBancaria.getAgencia(), IGNORED_FIELDS);
-		
-		
 	}
 	// END CREATE TESTS
 	
@@ -199,7 +196,6 @@ public class ContaBancariaServiceTest extends FinanceiroContasPagarBaseEntityTes
 		assertThat(actual.getAgencia().getId()).isNotNull();
 		assertThat(actual.getAgencia()).isEqualToIgnoringGivenFields(contaBancaria.getAgencia(), IGNORED_FIELDS);
 		
-		
 	}
 	
 	@Test
@@ -232,8 +228,6 @@ public class ContaBancariaServiceTest extends FinanceiroContasPagarBaseEntityTes
 		
 		assertThat(actual.getAgencia().getId()).isNotNull();
 		assertThat(actual.getAgencia()).isEqualToIgnoringGivenFields(contaBancaria.getAgencia(), IGNORED_FIELDS);
-		
-		
 	}
 	// END UPDATE TESTS
 	
@@ -394,15 +388,15 @@ public class ContaBancariaServiceTest extends FinanceiroContasPagarBaseEntityTes
 		// Reset lastDate field to start LocalDate fields with today in this test. 
 		resetNextDate();
 					
-		// Generate 33 records of data for ContaBancariaEntity for this test.
+		// Generate 3 records of data for ContaBancariaEntity for this test.
 		List<ContaBancariaEntity> testData = new ArrayList<>();
-		final int lastRecord = 33;
+		final int lastRecord = 3;
 		final int firstRecord = 1;
 		for (int i = firstRecord; i <= lastRecord; i++) {
 			testData.add(newContaBancariaEntity());
 		}
 		
-		// Check if 33 records of ContaBancariaEntity was generated.
+		// Check if 3 records of ContaBancariaEntity was generated.
 		long count = contaBancariaRepository.count();
 		assertThat(count).isEqualTo(lastRecord);
 		
@@ -430,15 +424,15 @@ public class ContaBancariaServiceTest extends FinanceiroContasPagarBaseEntityTes
 		// Reset lastDate field to start LocalDate fields with today in this test. 
 		resetNextDate();
 					
-		// Generate 33 records of data for AgenciaBancariaEntity for this test.
+		// Generate 3 records of data for AgenciaBancariaEntity for this test.
 		List<AgenciaBancariaEntity> testData = new ArrayList<>();
-		final int lastRecord = 33;
+		final int lastRecord = 3;
 		final int firstRecord = 1;
 		for (int i = firstRecord; i <= lastRecord; i++) {
 			testData.add(newAgenciaBancariaEntity());
 		}
 		
-		// Check if 33 records of AgenciaBancariaEntity was generated.
+		// Check if 3 records of AgenciaBancariaEntity was generated.
 		long count = agenciaBancariaRepository.count();
 		assertThat(count).isEqualTo(lastRecord);
 		

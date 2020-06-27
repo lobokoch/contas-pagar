@@ -6,6 +6,7 @@ import static br.com.kerubin.api.servicecore.util.CoreUtils.format;
 import static br.com.kerubin.api.servicecore.util.CoreUtils.formatMoney;
 import static br.com.kerubin.api.servicecore.util.CoreUtils.getDiff;
 import static br.com.kerubin.api.servicecore.util.CoreUtils.getTokens;
+import static br.com.kerubin.api.servicecore.util.CoreUtils.head;
 import static br.com.kerubin.api.servicecore.util.CoreUtils.isEmpty;
 import static br.com.kerubin.api.servicecore.util.CoreUtils.isEquals;
 import static br.com.kerubin.api.servicecore.util.CoreUtils.isLt;
@@ -487,7 +488,9 @@ public class ConciliacaoBancariaServiceImpl implements ConciliacaoBancariaServic
 		
 		String erroMsg = null;
 		
-		ContaBancariaEntity contaBancariaEntity = contaBancariaRepository.findByNumeroContaAndAgenciaNumeroAgenciaAndAgenciaBancoNumero(contaBancariaId, agenciaId, bancoId);
+		ContaBancariaEntity contaBancariaEntity = head(contaBancariaRepository.
+				findByNumeroContaAndAgenciaNumeroAgenciaAndAgenciaBancoNumero(contaBancariaId, agenciaId, bancoId));
+		
 		if (isEmpty(contaBancariaEntity)) {
 			erroMsg = MessageFormat.format("Conta bancária não encontrada para bancoId:{0}, agenciaId:{1}, contaBancariaId:{2}", bancoId, agenciaId, contaBancariaId);
 			log.error(erroMsg);

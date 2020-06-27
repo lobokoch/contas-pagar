@@ -129,4 +129,13 @@ public class ContaBancariaServiceImpl implements ContaBancariaService {
 	}
 	
 	
+	
+	// Begin findBy methods
+	
+	@Transactional(readOnly = true)
+	@Override
+	public Collection<ContaBancariaEntity> findByNumeroContaAndAgenciaNumeroAgenciaAndAgenciaBancoNumero(String conta, String agencia, String banco) {
+		return contaBancariaRepository.findByNumeroContaAndAgenciaNumeroAgenciaAndAgenciaBancoNumero(conta, agencia, banco);
+	}
+	// End findBy methods
 }

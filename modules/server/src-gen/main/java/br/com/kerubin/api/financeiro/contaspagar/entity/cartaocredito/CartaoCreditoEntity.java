@@ -93,52 +93,51 @@ public class CartaoCreditoEntity  {
 		return ativo;
 	}
 	
+	public boolean isAtivo() {
+		return Boolean.TRUE.equals(ativo);
+	}
+	
 	public Boolean getDeleted() {
 		return deleted;
 	}
 	
+	public boolean isDeleted() {
+		return Boolean.TRUE.equals(deleted);
+	}
+	
 	public void setId(java.util.UUID id) {
-		
 		this.id = id;
 	}
 	
 	public void setBanco(BancoEntity banco) {
-		
 		this.banco = banco;
 	}
 	
 	public void setNomeTitular(String nomeTitular) {
-		
 		this.nomeTitular = nomeTitular != null ? nomeTitular.trim() : nomeTitular; // Chamadas REST fazem trim.
 	}
 	
 	public void setNumeroCartao(String numeroCartao) {
-		
 		this.numeroCartao = numeroCartao != null ? numeroCartao.trim() : numeroCartao; // Chamadas REST fazem trim.
 	}
 	
 	public void setValidade(java.time.LocalDate validade) {
-		
 		this.validade = validade;
 	}
 	
 	public void setValorLimite(java.math.BigDecimal valorLimite) {
-		
 		this.valorLimite = valorLimite;
 	}
 	
 	public void setBandeiraCartao(BandeiraCartaoEntity bandeiraCartao) {
-		
 		this.bandeiraCartao = bandeiraCartao;
 	}
 	
 	public void setAtivo(Boolean ativo) {
-		
 		this.ativo = ativo;
 	}
 	
 	public void setDeleted(Boolean deleted) {
-		
 		this.deleted = deleted;
 	}
 	
@@ -190,10 +189,84 @@ public class CartaoCreditoEntity  {
 		if (getClass() != obj.getClass())
 			return false;
 		CartaoCreditoEntity other = (CartaoCreditoEntity) obj;
+			
+		
+		// Field: id
 		if (id == null) {
-			if (other.id != null)
+			if (other.id != null) {
 				return false;
+			}
 		} else if (!id.equals(other.id))
+			return false;
+		
+		// Field: banco
+		if (banco == null) {
+			if (other.banco != null) {
+				return false;
+			}
+		} else if (banco.getId() == null) {
+			if (other.banco.getId() != null)
+				return false;
+		} else if (!banco.getId().equals(other.banco.getId())) 
+			return false;
+		
+		// Field: nomeTitular
+		if (nomeTitular == null) {
+			if (other.nomeTitular != null) {
+				return false;
+			}
+		} else if (!nomeTitular.equals(other.nomeTitular))
+			return false;
+		
+		// Field: numeroCartao
+		if (numeroCartao == null) {
+			if (other.numeroCartao != null) {
+				return false;
+			}
+		} else if (!numeroCartao.equals(other.numeroCartao))
+			return false;
+		
+		// Field: validade
+		if (validade == null) {
+			if (other.validade != null) {
+				return false;
+			}
+		} else if (!validade.equals(other.validade))
+			return false;
+		
+		// Field: valorLimite
+		if (valorLimite == null) {
+			if (other.valorLimite != null) {
+				return false;
+			}
+		} else if (!valorLimite.equals(other.valorLimite))
+			return false;
+		
+		// Field: bandeiraCartao
+		if (bandeiraCartao == null) {
+			if (other.bandeiraCartao != null) {
+				return false;
+			}
+		} else if (bandeiraCartao.getId() == null) {
+			if (other.bandeiraCartao.getId() != null)
+				return false;
+		} else if (!bandeiraCartao.getId().equals(other.bandeiraCartao.getId())) 
+			return false;
+		
+		// Field: ativo
+		if (ativo == null) {
+			if (other.ativo != null) {
+				return false;
+			}
+		} else if (!ativo.equals(other.ativo))
+			return false;
+		
+		// Field: deleted
+		if (deleted == null) {
+			if (other.deleted != null) {
+				return false;
+			}
+		} else if (!deleted.equals(other.deleted))
 			return false;
 		
 		return true;

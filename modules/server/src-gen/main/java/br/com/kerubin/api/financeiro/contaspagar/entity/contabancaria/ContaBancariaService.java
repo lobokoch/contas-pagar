@@ -35,4 +35,7 @@ public interface ContaBancariaService {
 	 
 	
 	public Collection<ContaBancariaNumeroContaAutoComplete> contaBancariaNumeroContaAutoComplete(String query);
+	// Begin findBy methods
+	Collection<ContaBancariaEntity> findByNumeroContaAndAgenciaNumeroAgenciaAndAgenciaBancoNumero(String conta, String agencia, String banco);
+	// End findBy methods
 }

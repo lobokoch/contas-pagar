@@ -7,8 +7,6 @@ WARNING: DO NOT CHANGE THIS CODE BECAUSE THE CHANGES WILL BE LOST IN THE NEXT CO
 
 package br.com.kerubin.api.financeiro.contaspagar.entity.banco;
 
-import org.springframework.web.bind.annotation.RequestParam;
-import java.util.List;
 import java.util.stream.Collectors;
 
 import javax.validation.Valid;
@@ -32,8 +30,10 @@ import br.com.kerubin.api.financeiro.contaspagar.common.PageResult;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import java.util.Collection;
+import java.util.List;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.web.bind.annotation.RequestParam;
 
 @RestController
 @RequestMapping("financeiro/contas_pagar/entities/banco")
@@ -122,14 +122,16 @@ public class BancoController {
 	
 	
 				
-	// findBy methods
+	// Begin findBy methods
 	
 	@Transactional(readOnly = true)
 	@GetMapping("/findBancoByNumero")
 	@ApiOperation(value = "Retrieves Banco by numero")
-	public ResponseEntity<Banco> findBancoByNumero(String numero) {
+	public Banco findBancoByNumero(@RequestParam String numero) {
 		BancoEntity content = bancoService.findBancoByNumero(numero);
-		return ResponseEntity.ok(bancoDTOConverter.convertEntityToDto(content));
+		Banco result = bancoDTOConverter.convertEntityToDto(content);
+		return result;
 	}
 	
+	// End findBy methods
 }

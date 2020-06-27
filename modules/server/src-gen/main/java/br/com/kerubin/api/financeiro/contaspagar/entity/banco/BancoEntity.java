@@ -51,23 +51,23 @@ public class BancoEntity  {
 		return deleted;
 	}
 	
+	public boolean isDeleted() {
+		return Boolean.TRUE.equals(deleted);
+	}
+	
 	public void setId(java.util.UUID id) {
-		
 		this.id = id;
 	}
 	
 	public void setNumero(String numero) {
-		
 		this.numero = numero != null ? numero.trim() : numero; // Chamadas REST fazem trim.
 	}
 	
 	public void setNome(String nome) {
-		
 		this.nome = nome != null ? nome.trim() : nome; // Chamadas REST fazem trim.
 	}
 	
 	public void setDeleted(Boolean deleted) {
-		
 		this.deleted = deleted;
 	}
 	
@@ -109,10 +109,38 @@ public class BancoEntity  {
 		if (getClass() != obj.getClass())
 			return false;
 		BancoEntity other = (BancoEntity) obj;
+			
+		
+		// Field: id
 		if (id == null) {
-			if (other.id != null)
+			if (other.id != null) {
 				return false;
+			}
 		} else if (!id.equals(other.id))
+			return false;
+		
+		// Field: numero
+		if (numero == null) {
+			if (other.numero != null) {
+				return false;
+			}
+		} else if (!numero.equals(other.numero))
+			return false;
+		
+		// Field: nome
+		if (nome == null) {
+			if (other.nome != null) {
+				return false;
+			}
+		} else if (!nome.equals(other.nome))
+			return false;
+		
+		// Field: deleted
+		if (deleted == null) {
+			if (other.deleted != null) {
+				return false;
+			}
+		} else if (!deleted.equals(other.deleted))
 			return false;
 		
 		return true;

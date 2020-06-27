@@ -89,47 +89,47 @@ public class PlanoContaEntity  {
 		return ativo;
 	}
 	
+	public boolean isAtivo() {
+		return Boolean.TRUE.equals(ativo);
+	}
+	
 	public Boolean getDeleted() {
 		return deleted;
 	}
 	
+	public boolean isDeleted() {
+		return Boolean.TRUE.equals(deleted);
+	}
+	
 	public void setId(java.util.UUID id) {
-		
 		this.id = id;
 	}
 	
 	public void setCodigo(String codigo) {
-		
 		this.codigo = codigo != null ? codigo.trim() : codigo; // Chamadas REST fazem trim.
 	}
 	
 	public void setDescricao(String descricao) {
-		
 		this.descricao = descricao != null ? descricao.trim() : descricao; // Chamadas REST fazem trim.
 	}
 	
 	public void setTipoFinanceiro(TipoPlanoContaFinanceiro tipoFinanceiro) {
-		
 		this.tipoFinanceiro = tipoFinanceiro;
 	}
 	
 	public void setTipoReceitaDespesa(TipoReceitaDespesa tipoReceitaDespesa) {
-		
 		this.tipoReceitaDespesa = tipoReceitaDespesa;
 	}
 	
 	public void setPlanoContaPai(PlanoContaEntity planoContaPai) {
-		
 		this.planoContaPai = planoContaPai;
 	}
 	
 	public void setAtivo(Boolean ativo) {
-		
 		this.ativo = ativo;
 	}
 	
 	public void setDeleted(Boolean deleted) {
-		
 		this.deleted = deleted;
 	}
 	
@@ -179,10 +179,73 @@ public class PlanoContaEntity  {
 		if (getClass() != obj.getClass())
 			return false;
 		PlanoContaEntity other = (PlanoContaEntity) obj;
+			
+		
+		// Field: id
 		if (id == null) {
-			if (other.id != null)
+			if (other.id != null) {
 				return false;
+			}
 		} else if (!id.equals(other.id))
+			return false;
+		
+		// Field: codigo
+		if (codigo == null) {
+			if (other.codigo != null) {
+				return false;
+			}
+		} else if (!codigo.equals(other.codigo))
+			return false;
+		
+		// Field: descricao
+		if (descricao == null) {
+			if (other.descricao != null) {
+				return false;
+			}
+		} else if (!descricao.equals(other.descricao))
+			return false;
+		
+		// Field: tipoFinanceiro
+		if (tipoFinanceiro == null) {
+			if (other.tipoFinanceiro != null) {
+				return false;
+			}
+		} else if (!tipoFinanceiro.equals(other.tipoFinanceiro))
+			return false;
+		
+		// Field: tipoReceitaDespesa
+		if (tipoReceitaDespesa == null) {
+			if (other.tipoReceitaDespesa != null) {
+				return false;
+			}
+		} else if (!tipoReceitaDespesa.equals(other.tipoReceitaDespesa))
+			return false;
+		
+		// Field: planoContaPai
+		if (planoContaPai == null) {
+			if (other.planoContaPai != null) {
+				return false;
+			}
+		} else if (planoContaPai.getId() == null) {
+			if (other.planoContaPai.getId() != null)
+				return false;
+		} else if (!planoContaPai.getId().equals(other.planoContaPai.getId())) 
+			return false;
+		
+		// Field: ativo
+		if (ativo == null) {
+			if (other.ativo != null) {
+				return false;
+			}
+		} else if (!ativo.equals(other.ativo))
+			return false;
+		
+		// Field: deleted
+		if (deleted == null) {
+			if (other.deleted != null) {
+				return false;
+			}
+		} else if (!deleted.equals(other.deleted))
 			return false;
 		
 		return true;

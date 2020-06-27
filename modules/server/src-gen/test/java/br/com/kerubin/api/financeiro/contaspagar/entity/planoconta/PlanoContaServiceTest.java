@@ -107,7 +107,6 @@ public class PlanoContaServiceTest extends FinanceiroContasPagarBaseEntityTest {
 		assertThat(actual.getPlanoContaPai().getId()).isNotNull();
 		assertThat(actual.getPlanoContaPai()).isEqualToIgnoringGivenFields(planoConta.getPlanoContaPai(), IGNORED_FIELDS);
 		
-		
 	}
 	
 	@Test
@@ -130,7 +129,6 @@ public class PlanoContaServiceTest extends FinanceiroContasPagarBaseEntityTest {
 		assertThat(actual).isEqualToIgnoringGivenFields(planoConta, IGNORED_FIELDS);
 		
 		assertThat(actual.getPlanoContaPai()).isNull();
-		
 	}
 	// END CREATE TESTS
 	
@@ -184,7 +182,6 @@ public class PlanoContaServiceTest extends FinanceiroContasPagarBaseEntityTest {
 		assertThat(actual.getPlanoContaPai().getId()).isNotNull();
 		assertThat(actual.getPlanoContaPai()).isEqualToIgnoringGivenFields(planoConta.getPlanoContaPai(), IGNORED_FIELDS);
 		
-		
 	}
 	
 	@Test
@@ -210,7 +207,6 @@ public class PlanoContaServiceTest extends FinanceiroContasPagarBaseEntityTest {
 		assertThat(actual).isEqualToIgnoringGivenFields(planoConta, IGNORED_FIELDS);
 		
 		assertThat(actual.getPlanoContaPai()).isNull();
-		
 	}
 	// END UPDATE TESTS
 	
@@ -371,15 +367,15 @@ public class PlanoContaServiceTest extends FinanceiroContasPagarBaseEntityTest {
 		// Reset lastDate field to start LocalDate fields with today in this test. 
 		resetNextDate();
 					
-		// Generate 33 records of data for PlanoContaEntity for this test.
+		// Generate 3 records of data for PlanoContaEntity for this test.
 		List<PlanoContaEntity> testData = new ArrayList<>();
-		final int lastRecord = 33;
+		final int lastRecord = 3;
 		final int firstRecord = 1;
 		for (int i = firstRecord; i <= lastRecord; i++) {
 			testData.add(newPlanoContaEntity());
 		}
 		
-		// Check if 33 records of PlanoContaEntity was generated.
+		// Check if 3 records of PlanoContaEntity was generated.
 		long count = planoContaRepository.count();
 		assertThat(count).isEqualTo(lastRecord);
 		
@@ -404,15 +400,15 @@ public class PlanoContaServiceTest extends FinanceiroContasPagarBaseEntityTest {
 		// Reset lastDate field to start LocalDate fields with today in this test. 
 		resetNextDate();
 					
-		// Generate 33 records of data for PlanoContaEntity for this test.
+		// Generate 3 records of data for PlanoContaEntity for this test.
 		List<PlanoContaEntity> testData = new ArrayList<>();
-		final int lastRecord = 33;
+		final int lastRecord = 3;
 		final int firstRecord = 1;
 		for (int i = firstRecord; i <= lastRecord; i++) {
 			testData.add(newPlanoContaEntity());
 		}
 		
-		// Check if 33 records of PlanoContaEntity was generated.
+		// Check if 3 records of PlanoContaEntity was generated.
 		long count = planoContaRepository.count();
 		assertThat(count).isEqualTo(lastRecord);
 		
@@ -440,15 +436,15 @@ public class PlanoContaServiceTest extends FinanceiroContasPagarBaseEntityTest {
 		// Reset lastDate field to start LocalDate fields with today in this test. 
 		resetNextDate();
 					
-		// Generate 33 records of data for PlanoContaEntity for this test.
+		// Generate 3 records of data for PlanoContaEntity for this test.
 		List<PlanoContaEntity> testData = new ArrayList<>();
-		final int lastRecord = 33;
+		final int lastRecord = 3;
 		final int firstRecord = 1;
 		for (int i = firstRecord; i <= lastRecord; i++) {
 			testData.add(newPlanoContaEntity());
 		}
 		
-		// Check if 33 records of PlanoContaEntity was generated.
+		// Check if 3 records of PlanoContaEntity was generated.
 		long count = planoContaRepository.count();
 		assertThat(count).isEqualTo(lastRecord);
 		
@@ -484,7 +480,7 @@ public class PlanoContaServiceTest extends FinanceiroContasPagarBaseEntityTest {
 		planoContaEntity.setId(java.util.UUID.randomUUID());
 		planoContaEntity.setCodigo(generateRandomString(255));
 		planoContaEntity.setDescricao(generateRandomString(255));
-		planoContaEntity.setTipoFinanceiro(TipoPlanoContaFinanceiro.DESPESA);
+		planoContaEntity.setTipoFinanceiro(TipoPlanoContaFinanceiro.RECEITA);
 		planoContaEntity.setTipoReceitaDespesa(TipoReceitaDespesa.VARIAVEL);
 		planoContaEntity.setPlanoContaPai(null);
 		planoContaEntity.setAtivo(true);

@@ -108,7 +108,6 @@ public class BandeiraCartaoServiceTest extends FinanceiroContasPagarBaseEntityTe
 		assertThat(actual.getId()).isNotNull();
 		assertThat(actual).isEqualToIgnoringGivenFields(bandeiraCartao, IGNORED_FIELDS);
 		
-		
 	}
 	// END CREATE TESTS
 	
@@ -170,7 +169,6 @@ public class BandeiraCartaoServiceTest extends FinanceiroContasPagarBaseEntityTe
 		assertThat(actual).isNotNull();
 		assertThat(actual.getId()).isNotNull();
 		assertThat(actual).isEqualToIgnoringGivenFields(bandeiraCartao, IGNORED_FIELDS);
-		
 		
 	}
 	// END UPDATE TESTS
@@ -332,15 +330,15 @@ public class BandeiraCartaoServiceTest extends FinanceiroContasPagarBaseEntityTe
 		// Reset lastDate field to start LocalDate fields with today in this test. 
 		resetNextDate();
 					
-		// Generate 33 records of data for BandeiraCartaoEntity for this test.
+		// Generate 3 records of data for BandeiraCartaoEntity for this test.
 		List<BandeiraCartaoEntity> testData = new ArrayList<>();
-		final int lastRecord = 33;
+		final int lastRecord = 3;
 		final int firstRecord = 1;
 		for (int i = firstRecord; i <= lastRecord; i++) {
 			testData.add(newBandeiraCartaoEntity());
 		}
 		
-		// Check if 33 records of BandeiraCartaoEntity was generated.
+		// Check if 3 records of BandeiraCartaoEntity was generated.
 		long count = bandeiraCartaoRepository.count();
 		assertThat(count).isEqualTo(lastRecord);
 		

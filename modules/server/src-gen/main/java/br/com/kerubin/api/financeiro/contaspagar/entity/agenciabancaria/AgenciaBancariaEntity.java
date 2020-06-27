@@ -73,33 +73,31 @@ public class AgenciaBancariaEntity  {
 		return deleted;
 	}
 	
+	public boolean isDeleted() {
+		return Boolean.TRUE.equals(deleted);
+	}
+	
 	public void setId(java.util.UUID id) {
-		
 		this.id = id;
 	}
 	
 	public void setBanco(BancoEntity banco) {
-		
 		this.banco = banco;
 	}
 	
 	public void setNumeroAgencia(String numeroAgencia) {
-		
 		this.numeroAgencia = numeroAgencia != null ? numeroAgencia.trim() : numeroAgencia; // Chamadas REST fazem trim.
 	}
 	
 	public void setDigitoAgencia(String digitoAgencia) {
-		
 		this.digitoAgencia = digitoAgencia != null ? digitoAgencia.trim() : digitoAgencia; // Chamadas REST fazem trim.
 	}
 	
 	public void setEndereco(String endereco) {
-		
 		this.endereco = endereco != null ? endereco.trim() : endereco; // Chamadas REST fazem trim.
 	}
 	
 	public void setDeleted(Boolean deleted) {
-		
 		this.deleted = deleted;
 	}
 	
@@ -145,10 +143,57 @@ public class AgenciaBancariaEntity  {
 		if (getClass() != obj.getClass())
 			return false;
 		AgenciaBancariaEntity other = (AgenciaBancariaEntity) obj;
+			
+		
+		// Field: id
 		if (id == null) {
-			if (other.id != null)
+			if (other.id != null) {
 				return false;
+			}
 		} else if (!id.equals(other.id))
+			return false;
+		
+		// Field: banco
+		if (banco == null) {
+			if (other.banco != null) {
+				return false;
+			}
+		} else if (banco.getId() == null) {
+			if (other.banco.getId() != null)
+				return false;
+		} else if (!banco.getId().equals(other.banco.getId())) 
+			return false;
+		
+		// Field: numeroAgencia
+		if (numeroAgencia == null) {
+			if (other.numeroAgencia != null) {
+				return false;
+			}
+		} else if (!numeroAgencia.equals(other.numeroAgencia))
+			return false;
+		
+		// Field: digitoAgencia
+		if (digitoAgencia == null) {
+			if (other.digitoAgencia != null) {
+				return false;
+			}
+		} else if (!digitoAgencia.equals(other.digitoAgencia))
+			return false;
+		
+		// Field: endereco
+		if (endereco == null) {
+			if (other.endereco != null) {
+				return false;
+			}
+		} else if (!endereco.equals(other.endereco))
+			return false;
+		
+		// Field: deleted
+		if (deleted == null) {
+			if (other.deleted != null) {
+				return false;
+			}
+		} else if (!deleted.equals(other.deleted))
 			return false;
 		
 		return true;

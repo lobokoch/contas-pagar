@@ -110,13 +110,12 @@ public class BancoServiceImpl implements BancoService {
 	
 	
 	
-	// findBy methods
+	// Begin findBy methods
 	
 	@Transactional(readOnly = true)
 	@Override
 	public BancoEntity findBancoByNumero(String numero) {
-		
 		return bancoRepository.findByNumero(numero);
-		
 	}
+	// End findBy methods
 }

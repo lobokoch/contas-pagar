@@ -42,18 +42,19 @@ public class BandeiraCartaoEntity  {
 		return deleted;
 	}
 	
+	public boolean isDeleted() {
+		return Boolean.TRUE.equals(deleted);
+	}
+	
 	public void setId(java.util.UUID id) {
-		
 		this.id = id;
 	}
 	
 	public void setNomeBandeira(String nomeBandeira) {
-		
 		this.nomeBandeira = nomeBandeira != null ? nomeBandeira.trim() : nomeBandeira; // Chamadas REST fazem trim.
 	}
 	
 	public void setDeleted(Boolean deleted) {
-		
 		this.deleted = deleted;
 	}
 	
@@ -93,10 +94,30 @@ public class BandeiraCartaoEntity  {
 		if (getClass() != obj.getClass())
 			return false;
 		BandeiraCartaoEntity other = (BandeiraCartaoEntity) obj;
+			
+		
+		// Field: id
 		if (id == null) {
-			if (other.id != null)
+			if (other.id != null) {
 				return false;
+			}
 		} else if (!id.equals(other.id))
+			return false;
+		
+		// Field: nomeBandeira
+		if (nomeBandeira == null) {
+			if (other.nomeBandeira != null) {
+				return false;
+			}
+		} else if (!nomeBandeira.equals(other.nomeBandeira))
+			return false;
+		
+		// Field: deleted
+		if (deleted == null) {
+			if (other.deleted != null) {
+				return false;
+			}
+		} else if (!deleted.equals(other.deleted))
 			return false;
 		
 		return true;

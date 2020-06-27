@@ -126,7 +126,7 @@ public class ContaPagarMultipleServiceTest extends FinanceiroContasPagarBaseEnti
 		
 		contaPagarMultiple.setId(java.util.UUID.randomUUID());
 		contaPagarMultiple.setDataPagamento(java.time.LocalDate.now().minusDays(1));
-		contaPagarMultiple.setValorPago(new java.math.BigDecimal("18067.15018"));
+		contaPagarMultiple.setValorPago(new java.math.BigDecimal("21447.5930"));
 		contaPagarMultiple.setDescricao(generateRandomString(255));
 		
 		FornecedorEntity fornecedorEntityParam = newFornecedorEntity();
@@ -173,22 +173,17 @@ public class ContaPagarMultipleServiceTest extends FinanceiroContasPagarBaseEnti
 		assertThat(actual.getFornecedor().getId()).isNotNull();
 		assertThat(actual.getFornecedor()).isEqualToIgnoringGivenFields(contaPagarMultiple.getFornecedor(), IGNORED_FIELDS);
 		
-		
 		assertThat(actual.getPlanoContas().getId()).isNotNull();
 		assertThat(actual.getPlanoContas()).isEqualToIgnoringGivenFields(contaPagarMultiple.getPlanoContas(), IGNORED_FIELDS);
-		
 		
 		assertThat(actual.getContaBancaria().getId()).isNotNull();
 		assertThat(actual.getContaBancaria()).isEqualToIgnoringGivenFields(contaPagarMultiple.getContaBancaria(), IGNORED_FIELDS);
 		
-		
 		assertThat(actual.getCartaoCredito().getId()).isNotNull();
 		assertThat(actual.getCartaoCredito()).isEqualToIgnoringGivenFields(contaPagarMultiple.getCartaoCredito(), IGNORED_FIELDS);
 		
-		
 		assertThat(actual.getContaPagar().getId()).isNotNull();
 		assertThat(actual.getContaPagar()).isEqualToIgnoringGivenFields(contaPagarMultiple.getContaPagar(), IGNORED_FIELDS);
-		
 		
 	}
 	
@@ -198,7 +193,7 @@ public class ContaPagarMultipleServiceTest extends FinanceiroContasPagarBaseEnti
 		
 		contaPagarMultiple.setId(java.util.UUID.randomUUID());
 		contaPagarMultiple.setDataPagamento(java.time.LocalDate.now().minusDays(1));
-		contaPagarMultiple.setValorPago(new java.math.BigDecimal("25097.15240"));
+		contaPagarMultiple.setValorPago(new java.math.BigDecimal("15395.8205"));
 		contaPagarMultiple.setDescricao(generateRandomString(255));
 		
 		PlanoContaEntity planoContaEntityParam = newPlanoContaEntity();
@@ -225,14 +220,11 @@ public class ContaPagarMultipleServiceTest extends FinanceiroContasPagarBaseEnti
 		assertThat(actual.getPlanoContas().getId()).isNotNull();
 		assertThat(actual.getPlanoContas()).isEqualToIgnoringGivenFields(contaPagarMultiple.getPlanoContas(), IGNORED_FIELDS);
 		
-		
 		assertThat(actual.getContaPagar().getId()).isNotNull();
 		assertThat(actual.getContaPagar()).isEqualToIgnoringGivenFields(contaPagarMultiple.getContaPagar(), IGNORED_FIELDS);
-		
 		assertThat(actual.getFornecedor()).isNull();
 		assertThat(actual.getContaBancaria()).isNull();
 		assertThat(actual.getCartaoCredito()).isNull();
-		
 	}
 	// END CREATE TESTS
 	
@@ -262,7 +254,7 @@ public class ContaPagarMultipleServiceTest extends FinanceiroContasPagarBaseEnti
 		contaPagarMultiple.setId(id);
 		
 		contaPagarMultiple.setDataPagamento(java.time.LocalDate.now().minusDays(1));
-		contaPagarMultiple.setValorPago(new java.math.BigDecimal("21614.4757"));
+		contaPagarMultiple.setValorPago(new java.math.BigDecimal("28173.28314"));
 		contaPagarMultiple.setDescricao(generateRandomString(255));
 		
 		FornecedorEntity fornecedorEntityParam = newFornecedorEntity();
@@ -309,22 +301,17 @@ public class ContaPagarMultipleServiceTest extends FinanceiroContasPagarBaseEnti
 		assertThat(actual.getFornecedor().getId()).isNotNull();
 		assertThat(actual.getFornecedor()).isEqualToIgnoringGivenFields(contaPagarMultiple.getFornecedor(), IGNORED_FIELDS);
 		
-		
 		assertThat(actual.getPlanoContas().getId()).isNotNull();
 		assertThat(actual.getPlanoContas()).isEqualToIgnoringGivenFields(contaPagarMultiple.getPlanoContas(), IGNORED_FIELDS);
-		
 		
 		assertThat(actual.getContaBancaria().getId()).isNotNull();
 		assertThat(actual.getContaBancaria()).isEqualToIgnoringGivenFields(contaPagarMultiple.getContaBancaria(), IGNORED_FIELDS);
 		
-		
 		assertThat(actual.getCartaoCredito().getId()).isNotNull();
 		assertThat(actual.getCartaoCredito()).isEqualToIgnoringGivenFields(contaPagarMultiple.getCartaoCredito(), IGNORED_FIELDS);
 		
-		
 		assertThat(actual.getContaPagar().getId()).isNotNull();
 		assertThat(actual.getContaPagar()).isEqualToIgnoringGivenFields(contaPagarMultiple.getContaPagar(), IGNORED_FIELDS);
-		
 		
 	}
 	
@@ -337,7 +324,7 @@ public class ContaPagarMultipleServiceTest extends FinanceiroContasPagarBaseEnti
 		contaPagarMultiple.setId(id);
 		
 		contaPagarMultiple.setDataPagamento(java.time.LocalDate.now().minusDays(1));
-		contaPagarMultiple.setValorPago(new java.math.BigDecimal("11104.30176"));
+		contaPagarMultiple.setValorPago(new java.math.BigDecimal("20412.3235"));
 		contaPagarMultiple.setDescricao(generateRandomString(255));
 		
 		PlanoContaEntity planoContaEntityParam = newPlanoContaEntity();
@@ -364,14 +351,11 @@ public class ContaPagarMultipleServiceTest extends FinanceiroContasPagarBaseEnti
 		assertThat(actual.getPlanoContas().getId()).isNotNull();
 		assertThat(actual.getPlanoContas()).isEqualToIgnoringGivenFields(contaPagarMultiple.getPlanoContas(), IGNORED_FIELDS);
 		
-		
 		assertThat(actual.getContaPagar().getId()).isNotNull();
 		assertThat(actual.getContaPagar()).isEqualToIgnoringGivenFields(contaPagarMultiple.getContaPagar(), IGNORED_FIELDS);
-		
 		assertThat(actual.getFornecedor()).isNull();
 		assertThat(actual.getContaBancaria()).isNull();
 		assertThat(actual.getCartaoCredito()).isNull();
-		
 	}
 	// END UPDATE TESTS
 	
@@ -532,15 +516,15 @@ public class ContaPagarMultipleServiceTest extends FinanceiroContasPagarBaseEnti
 		// Reset lastDate field to start LocalDate fields with today in this test. 
 		resetNextDate();
 					
-		// Generate 33 records of data for ContaPagarMultipleEntity for this test.
+		// Generate 3 records of data for ContaPagarMultipleEntity for this test.
 		List<ContaPagarMultipleEntity> testData = new ArrayList<>();
-		final int lastRecord = 33;
+		final int lastRecord = 3;
 		final int firstRecord = 1;
 		for (int i = firstRecord; i <= lastRecord; i++) {
 			testData.add(newContaPagarMultipleEntity());
 		}
 		
-		// Check if 33 records of ContaPagarMultipleEntity was generated.
+		// Check if 3 records of ContaPagarMultipleEntity was generated.
 		long count = contaPagarMultipleRepository.count();
 		assertThat(count).isEqualTo(lastRecord);
 		
@@ -568,15 +552,15 @@ public class ContaPagarMultipleServiceTest extends FinanceiroContasPagarBaseEnti
 		// Reset lastDate field to start LocalDate fields with today in this test. 
 		resetNextDate();
 					
-		// Generate 33 records of data for FornecedorEntity for this test.
+		// Generate 3 records of data for FornecedorEntity for this test.
 		List<FornecedorEntity> testData = new ArrayList<>();
-		final int lastRecord = 33;
+		final int lastRecord = 3;
 		final int firstRecord = 1;
 		for (int i = firstRecord; i <= lastRecord; i++) {
 			testData.add(newFornecedorEntity());
 		}
 		
-		// Check if 33 records of FornecedorEntity was generated.
+		// Check if 3 records of FornecedorEntity was generated.
 		long count = fornecedorRepository.count();
 		assertThat(count).isEqualTo(lastRecord);
 		
@@ -601,15 +585,15 @@ public class ContaPagarMultipleServiceTest extends FinanceiroContasPagarBaseEnti
 		// Reset lastDate field to start LocalDate fields with today in this test. 
 		resetNextDate();
 					
-		// Generate 33 records of data for PlanoContaEntity for this test.
+		// Generate 3 records of data for PlanoContaEntity for this test.
 		List<PlanoContaEntity> testData = new ArrayList<>();
-		final int lastRecord = 33;
+		final int lastRecord = 3;
 		final int firstRecord = 1;
 		for (int i = firstRecord; i <= lastRecord; i++) {
 			testData.add(newPlanoContaEntity());
 		}
 		
-		// Check if 33 records of PlanoContaEntity was generated.
+		// Check if 3 records of PlanoContaEntity was generated.
 		long count = planoContaRepository.count();
 		assertThat(count).isEqualTo(lastRecord);
 		
@@ -634,15 +618,15 @@ public class ContaPagarMultipleServiceTest extends FinanceiroContasPagarBaseEnti
 		// Reset lastDate field to start LocalDate fields with today in this test. 
 		resetNextDate();
 					
-		// Generate 33 records of data for ContaBancariaEntity for this test.
+		// Generate 3 records of data for ContaBancariaEntity for this test.
 		List<ContaBancariaEntity> testData = new ArrayList<>();
-		final int lastRecord = 33;
+		final int lastRecord = 3;
 		final int firstRecord = 1;
 		for (int i = firstRecord; i <= lastRecord; i++) {
 			testData.add(newContaBancariaEntity());
 		}
 		
-		// Check if 33 records of ContaBancariaEntity was generated.
+		// Check if 3 records of ContaBancariaEntity was generated.
 		long count = contaBancariaRepository.count();
 		assertThat(count).isEqualTo(lastRecord);
 		
@@ -667,15 +651,15 @@ public class ContaPagarMultipleServiceTest extends FinanceiroContasPagarBaseEnti
 		// Reset lastDate field to start LocalDate fields with today in this test. 
 		resetNextDate();
 					
-		// Generate 33 records of data for CartaoCreditoEntity for this test.
+		// Generate 3 records of data for CartaoCreditoEntity for this test.
 		List<CartaoCreditoEntity> testData = new ArrayList<>();
-		final int lastRecord = 33;
+		final int lastRecord = 3;
 		final int firstRecord = 1;
 		for (int i = firstRecord; i <= lastRecord; i++) {
 			testData.add(newCartaoCreditoEntity());
 		}
 		
-		// Check if 33 records of CartaoCreditoEntity was generated.
+		// Check if 3 records of CartaoCreditoEntity was generated.
 		long count = cartaoCreditoRepository.count();
 		assertThat(count).isEqualTo(lastRecord);
 		
@@ -700,15 +684,15 @@ public class ContaPagarMultipleServiceTest extends FinanceiroContasPagarBaseEnti
 		// Reset lastDate field to start LocalDate fields with today in this test. 
 		resetNextDate();
 					
-		// Generate 33 records of data for ContaPagarEntity for this test.
+		// Generate 3 records of data for ContaPagarEntity for this test.
 		List<ContaPagarEntity> testData = new ArrayList<>();
-		final int lastRecord = 33;
+		final int lastRecord = 3;
 		final int firstRecord = 1;
 		for (int i = firstRecord; i <= lastRecord; i++) {
 			testData.add(newContaPagarEntity());
 		}
 		
-		// Check if 33 records of ContaPagarEntity was generated.
+		// Check if 3 records of ContaPagarEntity was generated.
 		long count = contaPagarBaseRepository.count();
 		assertThat(count).isEqualTo(lastRecord);
 		
@@ -775,7 +759,7 @@ public class ContaPagarMultipleServiceTest extends FinanceiroContasPagarBaseEnti
 		ContaPagarMultipleEntity contaPagarMultipleEntity = new ContaPagarMultipleEntity();
 		
 		contaPagarMultipleEntity.setDataPagamento(java.time.LocalDate.now().minusDays(1));
-		contaPagarMultipleEntity.setValorPago(new java.math.BigDecimal("9583.22581"));
+		contaPagarMultipleEntity.setValorPago(new java.math.BigDecimal("31053.12030"));
 		contaPagarMultipleEntity.setDescricao(generateRandomString(255));
 		contaPagarMultipleEntity.setFornecedor(newFornecedorEntity());
 		contaPagarMultipleEntity.setMaisOpcoes(false);
@@ -945,7 +929,7 @@ public class ContaPagarMultipleServiceTest extends FinanceiroContasPagarBaseEnti
 		cartaoCreditoEntity.setNomeTitular(generateRandomString(255));
 		cartaoCreditoEntity.setNumeroCartao(generateRandomString(50));
 		cartaoCreditoEntity.setValidade(getNextDate());
-		cartaoCreditoEntity.setValorLimite(new java.math.BigDecimal("5551.30276"));
+		cartaoCreditoEntity.setValorLimite(new java.math.BigDecimal("4319.443"));
 		cartaoCreditoEntity.setBandeiraCartao(newBandeiraCartaoEntity());
 		cartaoCreditoEntity.setAtivo(true);
 		cartaoCreditoEntity.setDeleted(false);
@@ -994,7 +978,7 @@ public class ContaPagarMultipleServiceTest extends FinanceiroContasPagarBaseEnti
 		contaPagarEntity.setDescricao(generateRandomString(255));
 		contaPagarEntity.setPlanoContas(newPlanoContaEntity());
 		contaPagarEntity.setDataVencimento(getNextDate());
-		contaPagarEntity.setValor(new java.math.BigDecimal("30127.12056"));
+		contaPagarEntity.setValor(new java.math.BigDecimal("12482.19849"));
 		contaPagarEntity.setFormaPagamento(FormaPagamento.DINHEIRO);
 		contaPagarEntity.setContaBancaria(newContaBancariaEntity());
 		contaPagarEntity.setCartaoCredito(newCartaoCreditoEntity());
@@ -1002,11 +986,11 @@ public class ContaPagarMultipleServiceTest extends FinanceiroContasPagarBaseEnti
 		contaPagarEntity.setFornecedor(newFornecedorEntity());
 		contaPagarEntity.setContaPaga(false);
 		contaPagarEntity.setDataPagamento(getNextDate());
-		contaPagarEntity.setValorDesconto(new java.math.BigDecimal("3503.20182"));
-		contaPagarEntity.setValorMulta(new java.math.BigDecimal("229.6724"));
-		contaPagarEntity.setValorJuros(new java.math.BigDecimal("6680.3284"));
-		contaPagarEntity.setValorAcrescimos(new java.math.BigDecimal("7072.23875"));
-		contaPagarEntity.setValorPago(new java.math.BigDecimal("1514.8795"));
+		contaPagarEntity.setValorDesconto(new java.math.BigDecimal("29630.16920"));
+		contaPagarEntity.setValorMulta(new java.math.BigDecimal("9724.13528"));
+		contaPagarEntity.setValorJuros(new java.math.BigDecimal("21516.19500"));
+		contaPagarEntity.setValorAcrescimos(new java.math.BigDecimal("3572.21802"));
+		contaPagarEntity.setValorPago(new java.math.BigDecimal("31648.5427"));
 		contaPagarEntity.setMaisOpcoes(false);
 		contaPagarEntity.setIdConcBancaria(generateRandomString(255));
 		contaPagarEntity.setHistConcBancaria(generateRandomString(255));

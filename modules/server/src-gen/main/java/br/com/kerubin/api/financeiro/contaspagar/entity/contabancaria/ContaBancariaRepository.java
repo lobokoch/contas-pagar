@@ -9,10 +9,10 @@ package br.com.kerubin.api.financeiro.contaspagar.entity.contabancaria;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.querydsl.QuerydslPredicateExecutor;
+import java.util.Collection;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.transaction.annotation.Transactional;
-import java.util.Collection;
 import org.springframework.data.repository.query.Param;
 
 @Transactional(readOnly = true)
@@ -34,9 +34,6 @@ public interface ContaBancariaRepository extends JpaRepository<ContaBancariaEnti
 	
 	// Begin generated findBy
 	
-	/** 
-	 * Busca a conta bancária, pelo número da conta, número da agência e número o banco.
-	 **/
-	ContaBancariaEntity findByNumeroContaAndAgenciaNumeroAgenciaAndAgenciaBancoNumero(String conta, String agencia, String banco);
+	Collection<ContaBancariaEntity> findByNumeroContaAndAgenciaNumeroAgenciaAndAgenciaBancoNumero(String conta, String agencia, String banco);
 	// End generated findBy
 }

@@ -110,7 +110,6 @@ public class BancoServiceTest extends FinanceiroContasPagarBaseEntityTest {
 		assertThat(actual.getId()).isNotNull();
 		assertThat(actual).isEqualToIgnoringGivenFields(banco, IGNORED_FIELDS);
 		
-		
 	}
 	// END CREATE TESTS
 	
@@ -174,7 +173,6 @@ public class BancoServiceTest extends FinanceiroContasPagarBaseEntityTest {
 		assertThat(actual).isNotNull();
 		assertThat(actual.getId()).isNotNull();
 		assertThat(actual).isEqualToIgnoringGivenFields(banco, IGNORED_FIELDS);
-		
 		
 	}
 	// END UPDATE TESTS
@@ -336,15 +334,15 @@ public class BancoServiceTest extends FinanceiroContasPagarBaseEntityTest {
 		// Reset lastDate field to start LocalDate fields with today in this test. 
 		resetNextDate();
 					
-		// Generate 33 records of data for BancoEntity for this test.
+		// Generate 3 records of data for BancoEntity for this test.
 		List<BancoEntity> testData = new ArrayList<>();
-		final int lastRecord = 33;
+		final int lastRecord = 3;
 		final int firstRecord = 1;
 		for (int i = firstRecord; i <= lastRecord; i++) {
 			testData.add(newBancoEntity());
 		}
 		
-		// Check if 33 records of BancoEntity was generated.
+		// Check if 3 records of BancoEntity was generated.
 		long count = bancoRepository.count();
 		assertThat(count).isEqualTo(lastRecord);
 		

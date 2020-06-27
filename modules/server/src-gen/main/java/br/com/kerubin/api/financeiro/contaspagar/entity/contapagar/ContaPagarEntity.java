@@ -179,6 +179,10 @@ public class ContaPagarEntity extends AuditingEntity {
 		return contaPaga;
 	}
 	
+	public boolean isContaPaga() {
+		return Boolean.TRUE.equals(contaPaga);
+	}
+	
 	public java.time.LocalDate getDataPagamento() {
 		return dataPagamento;
 	}
@@ -205,6 +209,10 @@ public class ContaPagarEntity extends AuditingEntity {
 	
 	public Boolean getMaisOpcoes() {
 		return maisOpcoes;
+	}
+	
+	public boolean isMaisOpcoes() {
+		return Boolean.TRUE.equals(maisOpcoes);
 	}
 	
 	public String getIdConcBancaria() {
@@ -240,132 +248,106 @@ public class ContaPagarEntity extends AuditingEntity {
 	}
 	
 	public void setId(java.util.UUID id) {
-		
 		this.id = id;
 	}
 	
 	public void setDescricao(String descricao) {
-		
 		this.descricao = descricao != null ? descricao.trim() : descricao; // Chamadas REST fazem trim.
 	}
 	
 	public void setPlanoContas(PlanoContaEntity planoContas) {
-		
 		this.planoContas = planoContas;
 	}
 	
 	public void setDataVencimento(java.time.LocalDate dataVencimento) {
-		
 		this.dataVencimento = dataVencimento;
 	}
 	
 	public void setValor(java.math.BigDecimal valor) {
-		
 		this.valor = valor;
 	}
 	
 	public void setFormaPagamento(FormaPagamento formaPagamento) {
-		
 		this.formaPagamento = formaPagamento;
 	}
 	
 	public void setContaBancaria(ContaBancariaEntity contaBancaria) {
-		
 		this.contaBancaria = contaBancaria;
 	}
 	
 	public void setCartaoCredito(CartaoCreditoEntity cartaoCredito) {
-		
 		this.cartaoCredito = cartaoCredito;
 	}
 	
 	public void setOutrosDescricao(String outrosDescricao) {
-		
 		this.outrosDescricao = outrosDescricao != null ? outrosDescricao.trim() : outrosDescricao; // Chamadas REST fazem trim.
 	}
 	
 	public void setFornecedor(FornecedorEntity fornecedor) {
-		
 		this.fornecedor = fornecedor;
 	}
 	
 	public void setContaPaga(Boolean contaPaga) {
-		
 		this.contaPaga = contaPaga;
 	}
 	
 	public void setDataPagamento(java.time.LocalDate dataPagamento) {
-		
 		this.dataPagamento = dataPagamento;
 	}
 	
 	public void setValorDesconto(java.math.BigDecimal valorDesconto) {
-		
 		this.valorDesconto = valorDesconto;
 	}
 	
 	public void setValorMulta(java.math.BigDecimal valorMulta) {
-		
 		this.valorMulta = valorMulta;
 	}
 	
 	public void setValorJuros(java.math.BigDecimal valorJuros) {
-		
 		this.valorJuros = valorJuros;
 	}
 	
 	public void setValorAcrescimos(java.math.BigDecimal valorAcrescimos) {
-		
 		this.valorAcrescimos = valorAcrescimos;
 	}
 	
 	public void setValorPago(java.math.BigDecimal valorPago) {
-		
 		this.valorPago = valorPago;
 	}
 	
 	public void setMaisOpcoes(Boolean maisOpcoes) {
-		
 		this.maisOpcoes = maisOpcoes;
 	}
 	
 	public void setIdConcBancaria(String idConcBancaria) {
-		
 		this.idConcBancaria = idConcBancaria != null ? idConcBancaria.trim() : idConcBancaria; // Chamadas REST fazem trim.
 	}
 	
 	public void setHistConcBancaria(String histConcBancaria) {
-		
 		this.histConcBancaria = histConcBancaria != null ? histConcBancaria.trim() : histConcBancaria; // Chamadas REST fazem trim.
 	}
 	
 	public void setNumDocConcBancaria(String numDocConcBancaria) {
-		
 		this.numDocConcBancaria = numDocConcBancaria != null ? numDocConcBancaria.trim() : numDocConcBancaria; // Chamadas REST fazem trim.
 	}
 	
 	public void setNumDocumento(String numDocumento) {
-		
 		this.numDocumento = numDocumento != null ? numDocumento.trim() : numDocumento; // Chamadas REST fazem trim.
 	}
 	
 	public void setObservacoes(String observacoes) {
-		
 		this.observacoes = observacoes != null ? observacoes.trim() : observacoes; // Chamadas REST fazem trim.
 	}
 	
 	public void setAgrupador(String agrupador) {
-		
 		this.agrupador = agrupador != null ? agrupador.trim() : agrupador; // Chamadas REST fazem trim.
 	}
 	
 	public void setTipoPagamento(TipoPagamentoConta tipoPagamento) {
-		
 		this.tipoPagamento = tipoPagamento;
 	}
 	
 	public void setContaPagarPai(java.util.UUID contaPagarPai) {
-		
 		this.contaPagarPai = contaPagarPai;
 	}
 	
@@ -459,10 +441,258 @@ public class ContaPagarEntity extends AuditingEntity {
 		if (getClass() != obj.getClass())
 			return false;
 		ContaPagarEntity other = (ContaPagarEntity) obj;
+			
+		
+		// Field: id
 		if (id == null) {
-			if (other.id != null)
+			if (other.id != null) {
 				return false;
+			}
 		} else if (!id.equals(other.id))
+			return false;
+		
+		// Field: descricao
+		if (descricao == null) {
+			if (other.descricao != null) {
+				return false;
+			}
+		} else if (!descricao.equals(other.descricao))
+			return false;
+		
+		// Field: planoContas
+		if (planoContas == null) {
+			if (other.planoContas != null) {
+				return false;
+			}
+		} else if (planoContas.getId() == null) {
+			if (other.planoContas.getId() != null)
+				return false;
+		} else if (!planoContas.getId().equals(other.planoContas.getId())) 
+			return false;
+		
+		// Field: dataVencimento
+		if (dataVencimento == null) {
+			if (other.dataVencimento != null) {
+				return false;
+			}
+		} else if (!dataVencimento.equals(other.dataVencimento))
+			return false;
+		
+		// Field: valor
+		if (valor == null) {
+			if (other.valor != null) {
+				return false;
+			}
+		} else if (!valor.equals(other.valor))
+			return false;
+		
+		// Field: formaPagamento
+		if (formaPagamento == null) {
+			if (other.formaPagamento != null) {
+				return false;
+			}
+		} else if (!formaPagamento.equals(other.formaPagamento))
+			return false;
+		
+		// Field: contaBancaria
+		if (contaBancaria == null) {
+			if (other.contaBancaria != null) {
+				return false;
+			}
+		} else if (contaBancaria.getId() == null) {
+			if (other.contaBancaria.getId() != null)
+				return false;
+		} else if (!contaBancaria.getId().equals(other.contaBancaria.getId())) 
+			return false;
+		
+		// Field: cartaoCredito
+		if (cartaoCredito == null) {
+			if (other.cartaoCredito != null) {
+				return false;
+			}
+		} else if (cartaoCredito.getId() == null) {
+			if (other.cartaoCredito.getId() != null)
+				return false;
+		} else if (!cartaoCredito.getId().equals(other.cartaoCredito.getId())) 
+			return false;
+		
+		// Field: outrosDescricao
+		if (outrosDescricao == null) {
+			if (other.outrosDescricao != null) {
+				return false;
+			}
+		} else if (!outrosDescricao.equals(other.outrosDescricao))
+			return false;
+		
+		// Field: fornecedor
+		if (fornecedor == null) {
+			if (other.fornecedor != null) {
+				return false;
+			}
+		} else if (fornecedor.getId() == null) {
+			if (other.fornecedor.getId() != null)
+				return false;
+		} else if (!fornecedor.getId().equals(other.fornecedor.getId())) 
+			return false;
+		
+		// Field: contaPaga
+		if (contaPaga == null) {
+			if (other.contaPaga != null) {
+				return false;
+			}
+		} else if (!contaPaga.equals(other.contaPaga))
+			return false;
+		
+		// Field: dataPagamento
+		if (dataPagamento == null) {
+			if (other.dataPagamento != null) {
+				return false;
+			}
+		} else if (!dataPagamento.equals(other.dataPagamento))
+			return false;
+		
+		// Field: valorDesconto
+		if (valorDesconto == null) {
+			if (other.valorDesconto != null) {
+				return false;
+			}
+		} else if (!valorDesconto.equals(other.valorDesconto))
+			return false;
+		
+		// Field: valorMulta
+		if (valorMulta == null) {
+			if (other.valorMulta != null) {
+				return false;
+			}
+		} else if (!valorMulta.equals(other.valorMulta))
+			return false;
+		
+		// Field: valorJuros
+		if (valorJuros == null) {
+			if (other.valorJuros != null) {
+				return false;
+			}
+		} else if (!valorJuros.equals(other.valorJuros))
+			return false;
+		
+		// Field: valorAcrescimos
+		if (valorAcrescimos == null) {
+			if (other.valorAcrescimos != null) {
+				return false;
+			}
+		} else if (!valorAcrescimos.equals(other.valorAcrescimos))
+			return false;
+		
+		// Field: valorPago
+		if (valorPago == null) {
+			if (other.valorPago != null) {
+				return false;
+			}
+		} else if (!valorPago.equals(other.valorPago))
+			return false;
+		
+		// Field: maisOpcoes
+		if (maisOpcoes == null) {
+			if (other.maisOpcoes != null) {
+				return false;
+			}
+		} else if (!maisOpcoes.equals(other.maisOpcoes))
+			return false;
+		
+		// Field: idConcBancaria
+		if (idConcBancaria == null) {
+			if (other.idConcBancaria != null) {
+				return false;
+			}
+		} else if (!idConcBancaria.equals(other.idConcBancaria))
+			return false;
+		
+		// Field: histConcBancaria
+		if (histConcBancaria == null) {
+			if (other.histConcBancaria != null) {
+				return false;
+			}
+		} else if (!histConcBancaria.equals(other.histConcBancaria))
+			return false;
+		
+		// Field: numDocConcBancaria
+		if (numDocConcBancaria == null) {
+			if (other.numDocConcBancaria != null) {
+				return false;
+			}
+		} else if (!numDocConcBancaria.equals(other.numDocConcBancaria))
+			return false;
+		
+		// Field: numDocumento
+		if (numDocumento == null) {
+			if (other.numDocumento != null) {
+				return false;
+			}
+		} else if (!numDocumento.equals(other.numDocumento))
+			return false;
+		
+		// Field: observacoes
+		if (observacoes == null) {
+			if (other.observacoes != null) {
+				return false;
+			}
+		} else if (!observacoes.equals(other.observacoes))
+			return false;
+		
+		// Field: agrupador
+		if (agrupador == null) {
+			if (other.agrupador != null) {
+				return false;
+			}
+		} else if (!agrupador.equals(other.agrupador))
+			return false;
+		
+		// Field: tipoPagamento
+		if (tipoPagamento == null) {
+			if (other.tipoPagamento != null) {
+				return false;
+			}
+		} else if (!tipoPagamento.equals(other.tipoPagamento))
+			return false;
+		
+		// Field: contaPagarPai
+		if (contaPagarPai == null) {
+			if (other.contaPagarPai != null) {
+				return false;
+			}
+		} else if (!contaPagarPai.equals(other.contaPagarPai))
+			return false;
+		
+		// Field: createdBy
+		if (createdBy == null) {
+			if (other.createdBy != null) {
+				return false;
+			}
+		} else if (!createdBy.equals(other.createdBy))
+			return false;
+		
+		// Field: createdDate
+		if (createdDate == null) {
+			if (other.createdDate != null) {
+				return false;
+			}
+		} else if (!createdDate.equals(other.createdDate))
+			return false;
+		
+		// Field: lastModifiedBy
+		if (lastModifiedBy == null) {
+			if (other.lastModifiedBy != null) {
+				return false;
+			}
+		} else if (!lastModifiedBy.equals(other.lastModifiedBy))
+			return false;
+		
+		// Field: lastModifiedDate
+		if (lastModifiedDate == null) {
+			if (other.lastModifiedDate != null) {
+				return false;
+			}
+		} else if (!lastModifiedDate.equals(other.lastModifiedDate))
 			return false;
 		
 		return true;

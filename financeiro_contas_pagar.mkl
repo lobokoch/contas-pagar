@@ -5,7 +5,7 @@ domain financeiro
 @webAnalitycs(tagId: "UA-157001792-1" onlyInProduction: true)
 @enableDoc
 @label("Contas a pagar")
-service contas_pagar { //xxx
+service contas_pagar { //xxxx
 	
 	config {
 		groupId: "br.com.kerubin.api"
@@ -515,7 +515,7 @@ service contas_pagar { //xxx
 		label: "Número"
 		autoComplete
 		web(styleClass: "ui-md-4")
-		findBy
+		findBy(enableController resultType: Entity)//
 		
 		nome: string 
 		label: "Nome"
@@ -577,10 +577,16 @@ service contas_pagar { //xxx
 		
 		agencia: refers AgenciaBancaria manyToOne
 		web(styleClass: "ui-md-4")
-		 findBy( ////
-			custom: "findByNumeroContaAndAgenciaNumeroAgenciaAndAgenciaBancoNumero(String conta, String agencia, String banco)" 
+		
+		findBy(
+			methodName: findByNumeroContaAndAgenciaNumeroAgenciaAndAgenciaBancoNumero
+			params: [
+				param(name: conta type: "String")
+				param(name: agencia type: "String")
+				param(name: banco type: "String")
+			]
 			documentation: "Busca a conta bancária, pelo número da conta, número da agência e número o banco."
-			)
+		)
 		
 		tipoContaBancaria: TipoContaBancaria
 		label: "Tipo da conta"

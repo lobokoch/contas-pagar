@@ -31,6 +31,7 @@ public interface BancoService {
 	 
 	
 	public Collection<BancoNomeAutoComplete> bancoNomeAutoComplete(String query);
-	// findBy methods
-	public BancoEntity findBancoByNumero(String numero);
+	// Begin findBy methods
+	BancoEntity findBancoByNumero(String numero);
+	// End findBy methods
 }
