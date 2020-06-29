@@ -5,7 +5,7 @@ domain financeiro
 @webAnalitycs(tagId: "UA-157001792-1" onlyInProduction: true)
 @enableDoc
 @label("Contas a pagar")
-service contas_pagar { //xxxx
+service contas_pagar { //xxx
 	
 	config {
 		groupId: "br.com.kerubin.api"

@@ -140,8 +140,8 @@ public class BillsNotifier {
 
 	// @Scheduled(fixedDelay = 1000 * 20)
 	// second, minute, hour, day of month, monthand day of week. e.g. "0 * * * * MON-FRI"
-	// Executa as 1 da manhã e ao meio dia, todos os dias.
-	@Scheduled(cron = "0 0 1,12 * * *", zone = TIME_ZONE)
+	// Executa as 1 da manhã, ao meio dia, e as 18:00 todos os dias.
+	@Scheduled(cron = "0 0 1,12,18 * * *", zone = TIME_ZONE)
 	public UUID executeNotifyUsersAboutTheBills() {
 		UUID ticket = UUID.randomUUID();
 		tryToNotifyUsersAboutTheBillsAssync(ticket);

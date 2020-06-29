@@ -314,24 +314,13 @@ public class ContaPagarServiceImpl implements ContaPagarService {
 		LocalDate lastDate = contaPagar.getDataVencimento();
 		List<ContaPagarEntity> copies = new ArrayList<>();
 		long interval = contaPagarMakeCopies.getReferenceFieldInterval();
-		int fixedDay = lastDate.getDayOfMonth();
-		int fixedDayCopy = fixedDay;
 		for (int i = 0; i < contaPagarMakeCopies.getNumberOfCopies(); i++) {
 			ContaPagarEntity copiedEntity = contaPagar.clone();
 			copies.add(copiedEntity);
 			copiedEntity.setId(null);
-			lastDate = lastDate.plus(interval, ChronoUnit.DAYS);
-			if (interval == 30) {
-				int length = lastDate.lengthOfMonth();
-				while (fixedDay > length) {
-				    fixedDay--;
-				}
-				lastDate = lastDate.withDayOfMonth(fixedDay);
-				fixedDay = fixedDayCopy;
-			}
+			lastDate = interval == 30 ? lastDate.plusMonths(1) : lastDate.plus(interval, ChronoUnit.DAYS);
 			copiedEntity.setDataVencimento(lastDate);
 		}
-		
 		copies.add(contaPagar);
 		contaPagarBaseRepository.saveAll(copies);
 	}
