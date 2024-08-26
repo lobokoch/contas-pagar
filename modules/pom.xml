@@ -37,7 +37,7 @@
 		<financeiro.planocontas.client.version>1.0.0</financeiro.planocontas.client.version>
 		<cadastros.banco.client.version>1.0.0</cadastros.banco.client.version>
 		<cadastros.fornecedor.client.version>1.0.0</cadastros.fornecedor.client.version>
-		<springfox.swagger2.version>2.9.2</springfox.swagger2.version>
+		<springfox.swagger2.version>2.10.0</springfox.swagger2.version>
 	</properties>
 	<modules>
 		<module>client</module>
